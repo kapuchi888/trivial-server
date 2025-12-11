@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>🎮 Trivial Kapuchi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --accent: #FFE66D;
+            --purple: #A78BFA;
+            --blue: #60A5FA;
+            --success: #10B981;
+            --danger: #EF4444;
+            --dark: #1F2937;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(78, 205, 196, 0.15) 0%, transparent 50%);
+            animation: bgPulse 8s ease-in-out infinite;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .content-wrapper {
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .logo {
+            font-family: 'Fredoka', sans-serif;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            animation: rainbow 3s ease infinite;
+        }
+
+        @keyframes rainbow {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(20deg); }
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6B7280;
+            margin-bottom: 25px;
+            font-size: 1em;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        input {
+            width: 100%;
+            padding: 18px 20px;
+            border: 3px solid #E5E7EB;
+            border-radius: 15px;
+            font-size: 1.2em;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(78, 205, 196, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.3em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Fredoka', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #FF8E53);
+            color: white;
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary), #00D9C9);
+            color: white;
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #E5E7EB, transparent);
+        }
+
+        .divider span {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 0 20px;
+            position: relative;
+            color: #9CA3AF;
+            font-weight: 600;
+        }
+
+        .room-code {
+            background: linear-gradient(135deg, var(--purple), var(--blue));
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 2em;
+            font-weight: 700;
+            letter-spacing: 8px;
+            font-family: 'Fredoka', sans-serif;
+            box-shadow: 0 10px 25px rgba(167, 139, 250, 0.4);
+            animation: pulse 2s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .player-card {
+            background: linear-gradient(135deg, #F3F4F6, #E5E7EB);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.5s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .player-name {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .player-status {
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .status-ready {
+            background: var(--success);
+            color: white;
+        }
+
+        .status-waiting {
+            background: var(--accent);
+            color: var(--dark);
+        }
+
+        .question-number {
+            color: var(--purple);
+            font-weight: 700;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .question-text {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1.4;
+            font-family: 'Fredoka', sans-serif;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+
+        .timer {
+            background: linear-gradient(135deg, var(--danger), #DC2626);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+            animation: timerPulse 1s ease infinite;
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .timer.warning {
+            animation: timerBlink 0.5s ease infinite;
+        }
+
+        @keyframes timerBlink {
+            0%, 100% { background: linear-gradient(135deg, var(--danger), #DC2626); }
+            50% { background: linear-gradient(135deg, #DC2626, var(--danger)); }
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            padding: 25px 20px;
+            border: 3px solid #E5E7EB;
+            border-radius: 15px;
+            background: white;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            position: relative;
+            padding-left: 70px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-btn::before {
+            content: attr(data-letter);
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 45px;
+            height: 45px;
+            background: var(--secondary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.3em;
+        }
+
+        .option-btn:active {
+            transform: scale(0.98);
+        }
+
+        .option-btn.correct {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+            animation: correctAnswer 0.6s ease;
+        }
+
+        .option-btn.correct::before {
+            background: white;
+            color: var(--success);
+        }
+
+        .option-btn.wrong {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+            animation: shake 0.5s ease;
+        }
+
+        .option-btn.wrong::before {
+            background: white;
+            color: var(--danger);
+        }
+
+        .option-btn.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        @keyframes correctAnswer {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .score-card {
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(96, 165, 250, 0.4);
+        }
+
+        .score-name {
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+
+        .score-points {
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .winner-badge {
+            background: var(--accent);
+            color: var(--dark);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            margin-left: 10px;
+            display: inline-block;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            top: -10px;
+            z-index: 9999;
+            animation: confettiFall 3s linear;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(110vh) rotate(360deg);
+            }
+        }
+
+        .error-message {
+            background: var(--danger);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            animation: shake 0.5s ease;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #E5E7EB;
+            border-top-color: var(--secondary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .current-scores {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 15px 0;
+            margin: 0 -20px;
+            padding-left: 20px;
+            padding-right: 20px;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .mini-score {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-wrapper">
+            <!-- Pantalla de Inicio -->
+            <div id="homeScreen" class="screen active">
+                <h1 class="logo">🎮 Trivial Kapuchi</h1>
+                <p class="subtitle">¡Juega con tus amigos online!</p>
+                
+                <div id="errorContainer"></div>
+
+                <div class="input-group">
+                    <label for="playerName">✏️ Tu Nombre</label>
+                    <input type="text" id="playerName" placeholder="Ingresa tu nombre" maxlength="20">
+                </div>
+
+                <button class="btn btn-primary" onclick="createRoom()">
+                    🎯 Crear Partida
+                </button>
+
+                <div class="divider">
+                    <span>O</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="roomCode">🔑 Código de Sala</label>
+                    <input type="text" id="roomCodeInput" placeholder="Ej: ABC123" maxlength="6" style="text-transform: uppercase;">
+                </div>
+
+                <button class="btn btn-secondary" onclick="joinRoom()">
+                    🚀 Unirse a Partida
+                </button>
+            </div>
+
+            <!-- Pantalla de Sala de Espera -->
+            <div id="waitingScreen" class="screen">
+                <h1 class="logo">⏳ Sala de Espera</h1>
+                
+                <div id="roomCodeDisplay" class="room-code"></div>
+
+                <div class="players-list" id="playersList"></div>
+
+                <button class="btn btn-primary" id="readyBtn" onclick="markReady()">
+                    ✅ ¡Estoy Listo!
+                </button>
+
+                <button class="btn btn-secondary" onclick="backToHome()">
+                    ← Volver
+                </button>
+            </div>
+
+            <!-- Pantalla de Juego -->
+            <div id="gameScreen" class="screen">
+                <div class="question-number" id="questionNumber"></div>
+                <div class="question-text" id="questionText"></div>
+
+                <div class="timer" id="timer">10</div>
+
+                <div class="options-grid" id="optionsGrid"></div>
+
+                <div class="current-scores" id="currentScores"></div>
+            </div>
+
+            <!-- Pantalla de Resultados -->
+            <div id="resultsScreen" class="screen">
+                <h1 class="logo">🏆 ¡Juego Terminado!</h1>
+                
+                <div id="finalScores" class="scoreboard"></div>
+
+                <button class="btn btn-primary" onclick="backToHome()">
+                    🎮 Nueva Partida
+                </button>
+            </div>
+
+            <!-- Pantalla de Carga -->
+            <div id="loadingScreen" class="screen">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <h2>Conectando...</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script>
+        // Configuración del servidor - URL CORREGIDA
+        const SERVER_URL = 'https://trivial-kapuchi.onrender.com';
+        
+        const socket = io(SERVER_URL);
+        let currentRoom = null;
+        let playerName = '';
+        let timeLeft = 10;
+        let timerInterval = null;
+        let hasAnswered = false;
+
+        // Mostrar pantalla
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Mostrar error
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
+            setTimeout(() => {
+                errorContainer.innerHTML = '';
+            }, 3000);
+        }
+
+        // Crear sala
+        function createRoom() {
+            playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) {
+                showError('⚠️ Por favor ingresa tu nombre');
+                return;
+            }
+            showScreen('loadingScreen');
+            socket.emit('createRoom', playerName);
+        }
+
+        // Unirse a sala
+        function joinRoom() {
+            playerName = document.getElementById('playerName').value.trim();
+            const roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+            
+            if (!playerName || !roomCode) {
+                showError('⚠️ Ingresa tu nombre y el código de sala');
+                return;
+            }
+            
+            showScreen('loadingScreen');
+            socket.emit('joinRoom', {roomCode, playerName});
+        }
+
+        // Marcar como listo
+        function markReady() {
+            socket.emit('playerReady', currentRoom);
+            const btn = document.getElementById('readyBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Esperando...';
+        }
+
+        // Volver al inicio
+        function backToHome() {
+            location.reload();
+        }
+
+        // Sala creada
+        socket.on('roomCreated', (data) => {
+            currentRoom = data.roomCode;
+            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
+            updatePlayersList([{name: data.playerName, ready: false}]);
+            showScreen('waitingScreen');
+        });
+
+        // Jugador se unió
+        socket.on('playerJoined', (data) => {
+            currentRoom = data.roomCode;
+            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
+            updatePlayersList(data.players);
+            showScreen('waitingScreen');
+        });
+
+        // Error de sala
+        socket.on('roomError', (message) => {
+            showError(message);
+            showScreen('homeScreen');
+        });
+
+        // Actualizar jugadores
+        socket.on('playersUpdate', (players) => {
+            updatePlayersList(players);
+        });
+
+        function updatePlayersList(players) {
+            const list = document.getElementById('playersList');
+            list.innerHTML = players.map(p => `
+                <div class="player-card">
+                    <div class="player-name">👤 ${p.name}</div>
+                    <div class="player-status ${p.ready ? 'status-ready' : 'status-waiting'}">
+                        ${p.ready ? '✅ Listo' : '⏳ Esperando'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Nueva pregunta
+        socket.on('newQuestion', (data) => {
+            hasAnswered = false;
+            showScreen('gameScreen');
+            document.getElementById('questionNumber').textContent = 
+                `Pregunta ${data.questionNumber} de ${data.totalQuestions}`;
+            document.getElementById('questionText').textContent = data.question;
+            
+            const optionsGrid = document.getElementById('optionsGrid');
+            const letters = ['A', 'B', 'C', 'D'];
+            optionsGrid.innerHTML = data.options.map((opt, idx) => `
+                <button class="option-btn" data-letter="${letters[idx]}" onclick="selectAnswer(${idx})">
+                    ${opt}
+                </button>
+            `).join('');
+
+            startTimer();
+        });
+
+        function startTimer() {
+            timeLeft = 10;
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = timeLeft;
+            timerEl.classList.remove('warning');
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = timeLeft;
+                
+                if (timeLeft <= 3) {
+                    timerEl.classList.add('warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    if (!hasAnswered) {
+                        disableOptions();
+                        setTimeout(() => {
+                            socket.emit('nextQuestion', currentRoom);
+                        }, 2000);
+                    }
+                }
+            }, 1000);
+        }
+
+        function selectAnswer(index) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+            
+            clearInterval(timerInterval);
+            socket.emit('submitAnswer', {
+                roomCode: currentRoom,
+                answerIndex: index,
+                timeLeft: timeLeft
+            });
+            
+            // Marcar la opción seleccionada
+            const options = document.querySelectorAll('.option-btn');
+            options[index].style.borderColor = var(--purple);
+            disableOptions();
+        }
+
+        function disableOptions() {
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.add('disabled');
+            });
+        }
+
+        // Resultado de respuesta
+        socket.on('answerResult', (data) => {
+            const options = document.querySelectorAll('.option-btn');
+            options[data.correctAnswer].classList.add('correct');
+            
+            // Si respondió mal, mostrar cuál fue su respuesta
+            if (!data.isCorrect) {
+                options.forEach((opt, idx) => {
+                    if (idx !== data.correctAnswer && opt.style.borderColor) {
+                        opt.classList.add('wrong');
+                    }
+                });
+            }
+
+            // Actualizar puntuaciones actuales
+            updateCurrentScores();
+
+            setTimeout(() => {
+                socket.emit('nextQuestion', currentRoom);
+            }, 3000);
+        });
+
+        // Actualizar puntuaciones durante el juego
+        socket.on('scoresUpdate', (players) => {
+            updateCurrentScores(players);
+        });
+
+        function updateCurrentScores(players) {
+            // Esta función puede implementarse para mostrar puntos en tiempo real
+            // Por ahora usaremos los datos almacenados localmente
+        }
+
+        // Jugador se fue
+        socket.on('playerLeft', (players) => {
+            if (players.length === 0) {
+                showError('⚠️ El otro jugador se desconectó');
+                setTimeout(() => {
+                    backToHome();
+                }, 2000);
+            }
+        });
+
+        // Juego terminado
+        socket.on('gameOver', (data) => {
+            showScreen('resultsScreen');
+            
+            // Crear confetti
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => createConfetti(), i * 30);
+            }
+
+            const finalScores = document.getElementById('finalScores');
+            finalScores.innerHTML = data.players
+                .sort((a, b) => b.score - a.score)
+                .map((p, idx) => `
+                    <div class="score-card">
+                        <div>
+                            <div class="score-name">${idx + 1}. ${p.name}
+                                ${p.name === data.winner ? '<span class="winner-badge">🏆 GANADOR</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="score-points">${p.score} pts</div>
+                    </div>
+                `).join('');
+        });
+
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.background = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A78BFA', '#60A5FA'][Math.floor(Math.random() * 5)];
+            document.body.appendChild(confetti);
+            setTimeout(() => confetti.remove(), 3000);
+        }
+
+        // Manejar errores de conexión
+        socket.on('connect_error', () => {
+            showError('❌ Error de conexión. Verifica tu internet.');
+            showScreen('homeScreen');
+        });
+
+        socket.on('disconnect', () => {
+            showError('⚠️ Desconectado del servidor');
+        });
+
+        // Prevenir zoom en móviles
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
