@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Resto del código del servidor (salas, jugadores, preguntas...)
+// Variables del servidor
 const rooms = {};
 const questions = [
     {
@@ -30,9 +30,54 @@ const questions = [
         options: ["Londres", "Berlín", "París", "Madrid"],
         correct: 2
     },
-    // ... (las otras 9 preguntas que ya tienes)
+    {
+        question: "¿Cuál es el planeta más grande del sistema solar?",
+        options: ["Tierra", "Marte", "Júpiter", "Saturno"],
+        correct: 2
+    },
+    {
+        question: "¿En qué año llegó el hombre a la Luna?",
+        options: ["1965", "1969", "1972", "1975"],
+        correct: 1
+    },
+    {
+        question: "¿Cuál es el océano más grande?",
+        options: ["Atlántico", "Índico", "Ártico", "Pacífico"],
+        correct: 3
+    },
+    {
+        question: "¿Quién pintó la Mona Lisa?",
+        options: ["Van Gogh", "Da Vinci", "Picasso", "Miguel Ángel"],
+        correct: 1
+    },
+    {
+        question: "¿Cuántos continentes hay?",
+        options: ["5", "6", "7", "8"],
+        correct: 2
+    },
+    {
+        question: "¿Cuál es el animal terrestre más rápido?",
+        options: ["León", "Guepardo", "Tigre", "Caballo"],
+        correct: 1
+    },
+    {
+        question: "¿En qué país se encuentra la Torre Eiffel?",
+        options: ["Italia", "España", "Francia", "Alemania"],
+        correct: 2
+    },
+    {
+        question: "¿Cuál es el metal más abundante en la Tierra?",
+        options: ["Oro", "Plata", "Hierro", "Aluminio"],
+        correct: 3
+    },
+    {
+        question: "¿Cuántos jugadores hay en un equipo de fútbol?",
+        options: ["9", "10", "11", "12"],
+        correct: 2
+    }
 ];
 
+// Socket.IO eventos
 io.on('connection', (socket) => {
     console.log('Usuario conectado:', socket.id);
 
@@ -159,14 +204,3 @@ function generateRoomCode() {
 server.listen(PORT, () => {
     console.log(`Servidor corriendo en puerto ${PORT}`);
 });
-```
-
----
-
-## **📂 ESTRUCTURA FINAL:**
-```
-trivial-server/
-├── public/
-│   └── index.html
-├── servidor.js (modificado)
-└── paquete.json
