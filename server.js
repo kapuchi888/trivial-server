@@ -343,10 +343,25 @@ io.on('connection', (socket) => {
             correctAnswer: question.correct
         });
         
-        // Después de 2 segundos, siguiente turno
-        setTimeout(() => {
-            nextTurn(roomCode);
-        }, 2000);
+        // Verificar si el juego terminó (ambos jugadores completaron 10 preguntas)
+        if (room.players.every(p => p.questionsAnswered >= 10)) {
+            // Fin del juego - enviar a AMBOS jugadores
+            setTimeout(() => {
+                const winner = room.players.reduce((max, p) => 
+                    p.score > max.score ? p : max
+                );
+                io.to(roomCode).emit('gameOver', {
+                    players: room.players,
+                    winner: winner.name
+                });
+                delete rooms[roomCode];
+            }, 2000);
+        } else {
+            // Continuar con siguiente turno
+            setTimeout(() => {
+                nextTurn(roomCode);
+            }, 2000);
+        }
     });
 
     socket.on('nextQuestion', (roomCode) => {
@@ -360,8 +375,21 @@ io.on('connection', (socket) => {
             currentPlayer.questionsAnswered++;
             currentPlayer.hasAnswered = true;
             
-            // Avanzar al siguiente turno
-            nextTurn(roomCode);
+            // Verificar si el juego terminó
+            if (room.players.every(p => p.questionsAnswered >= 10)) {
+                // Fin del juego - enviar a AMBOS jugadores
+                const winner = room.players.reduce((max, p) => 
+                    p.score > max.score ? p : max
+                );
+                io.to(roomCode).emit('gameOver', {
+                    players: room.players,
+                    winner: winner.name
+                });
+                delete rooms[roomCode];
+            } else {
+                // Avanzar al siguiente turno
+                nextTurn(roomCode);
+            }
         }
     });
     
@@ -371,20 +399,6 @@ io.on('connection', (socket) => {
         
         // Resetear estado de respuesta del jugador actual
         room.players[room.currentPlayerIndex].hasAnswered = false;
-        
-        // Verificar si ambos jugadores han respondido 10 preguntas
-        if (room.players.every(p => p.questionsAnswered >= 10)) {
-            // Fin del juego
-            const winner = room.players.reduce((max, p) => 
-                p.score > max.score ? p : max
-            );
-            io.to(roomCode).emit('gameOver', {
-                players: room.players,
-                winner: winner.name
-            });
-            delete rooms[roomCode];
-            return;
-        }
         
         // Cambiar de turno
         room.currentPlayerIndex = 1 - room.currentPlayerIndex;
