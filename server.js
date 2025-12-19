@@ -358,7 +358,12 @@ io.on('connection', (socket) => {
             }, 2000);
         } else {
             // Continuar con siguiente turno
+            // Enviar "esperando" al jugador que acaba de contestar
             setTimeout(() => {
+                const otherPlayer = room.players[1 - room.currentPlayerIndex];
+                io.to(socket.id).emit('waitingTurn', {
+                    currentPlayerName: otherPlayer.name
+                });
                 nextTurn(roomCode);
             }, 2000);
         }
