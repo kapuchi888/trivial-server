@@ -272,7 +272,7 @@ io.on('connection', (socket) => {
             currentQuestion: 0,
             currentPlayerIndex: 0, // Índice del jugador que tiene el turno
             started: false,
-            questions: getRandomQuestions(20) // 20 preguntas (10 para cada jugador)
+            questions: getRandomQuestions(30) // 30 preguntas (15 para cada jugador)
         };
         socket.join(roomCode);
         socket.emit('roomCreated', { roomCode, playerName });
@@ -343,8 +343,8 @@ io.on('connection', (socket) => {
             correctAnswer: question.correct
         });
         
-        // Verificar si el juego terminó (ambos jugadores completaron 10 preguntas)
-        if (room.players.every(p => p.questionsAnswered >= 10)) {
+        // Verificar si el juego terminó (ambos jugadores completaron 15 preguntas)
+        if (room.players.every(p => p.questionsAnswered >= 15)) {
             // Fin del juego - enviar a AMBOS jugadores
             setTimeout(() => {
                 const winner = room.players.reduce((max, p) => 
@@ -381,7 +381,7 @@ io.on('connection', (socket) => {
             currentPlayer.hasAnswered = true;
             
             // Verificar si el juego terminó
-            if (room.players.every(p => p.questionsAnswered >= 10)) {
+            if (room.players.every(p => p.questionsAnswered >= 15)) {
                 // Fin del juego - enviar a AMBOS jugadores
                 const winner = room.players.reduce((max, p) => 
                     p.score > max.score ? p : max
@@ -440,7 +440,7 @@ function sendQuestion(roomCode) {
         question: question.question,
         options: question.options,
         questionNumber: currentPlayer.questionsAnswered + 1,
-        totalQuestions: 10
+        totalQuestions: 15
     });
     
     // Enviar "esperando" al otro jugador
