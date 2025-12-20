@@ -427,6 +427,22 @@ io.on('connection', (socket) => {
             }
         }
     });
+    
+    socket.on('leaveRoom', (roomCode) => {
+        const room = rooms[roomCode];
+        if (!room) return;
+        
+        // Eliminar jugador de la sala
+        room.players = room.players.filter(p => p.id !== socket.id);
+        
+        // Si la sala está vacía, eliminarla
+        if (room.players.length === 0) {
+            delete rooms[roomCode];
+        } else {
+            // Notificar al otro jugador
+            io.to(roomCode).emit('playerLeft', room.players);
+        }
+    });
 });
 
 function sendQuestion(roomCode) {
