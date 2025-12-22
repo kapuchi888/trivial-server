@@ -681,7 +681,12 @@ function getRandomQuestions(count = 10) {
 io.on('connection', (socket) => {
     console.log('Usuario conectado:', socket.id);
 
-    socket.on('createRoom', (playerName) => {
+    socket.on('createRoom', (data) => {
+        const playerName = typeof data === 'string' ? data : data.playerName;
+        const mode = (typeof data === 'object' && data.mode) ? data.mode : 'normal';
+        const questionsPerPlayer = mode === 'quick' ? 5 : 15;
+        const totalQuestions = questionsPerPlayer * 2;
+        
         const roomCode = generateRoomCode();
         rooms[roomCode] = {
             players: [{
@@ -694,7 +699,9 @@ io.on('connection', (socket) => {
             currentQuestion: 0,
             currentPlayerIndex: 0, // Índice del jugador que tiene el turno
             started: false,
-            questions: getRandomQuestions(30) // 30 preguntas (15 para cada jugador)
+            mode: mode,
+            questionsPerPlayer: questionsPerPlayer,
+            questions: getRandomQuestions(totalQuestions)
         };
         socket.join(roomCode);
         socket.emit('roomCreated', { roomCode, playerName });
@@ -765,8 +772,8 @@ io.on('connection', (socket) => {
             correctAnswer: question.correct
         });
         
-        // Verificar si el juego terminó (ambos jugadores completaron 15 preguntas)
-        if (room.players.every(p => p.questionsAnswered >= 15)) {
+        // Verificar si el juego terminó (ambos jugadores completaron sus preguntas)
+        if (room.players.every(p => p.questionsAnswered >= room.questionsPerPlayer)) {
             // Fin del juego - enviar a AMBOS jugadores
             setTimeout(() => {
                 const winner = room.players.reduce((max, p) => 
@@ -803,7 +810,7 @@ io.on('connection', (socket) => {
             currentPlayer.hasAnswered = true;
             
             // Verificar si el juego terminó
-            if (room.players.every(p => p.questionsAnswered >= 15)) {
+            if (room.players.every(p => p.questionsAnswered >= room.questionsPerPlayer)) {
                 // Fin del juego - enviar a AMBOS jugadores
                 const winner = room.players.reduce((max, p) => 
                     p.score > max.score ? p : max
@@ -878,7 +885,7 @@ function sendQuestion(roomCode) {
         question: question.question,
         options: question.options,
         questionNumber: currentPlayer.questionsAnswered + 1,
-        totalQuestions: 15
+        totalQuestions: room.questionsPerPlayer
     });
     
     // Enviar "esperando" al otro jugador
