@@ -2,754 +2,720 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>KAPUCHI RACER</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivial Kapuchi ⭐</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            touch-action: none;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: #000;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-            font-family: 'Courier New', monospace;
         }
-
-        #gameContainer {
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
             position: relative;
-            width: 100vw;
-            height: 100vh;
-            max-width: 800px;
-            max-height: 600px;
         }
-
-        #gameCanvas {
+        h1 { text-align: center; color: #667eea; margin-bottom: 20px; }
+        input {
             width: 100%;
-            height: 100%;
-            display: block;
-            background: #0a0a1a;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
         }
-
-        #startScreen, #gameOverScreen {
-            position: absolute;
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.2s;
+        }
+        button:hover { transform: scale(1.05); }
+        button:active { transform: scale(0.95); }
+        .btn-primary { background: #FF6B6B; }
+        .btn-secondary { background: #4ECDC4; }
+        .btn-quick { background: #FFA500; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        .error { background: #f44336; color: white; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .room-code {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 20px 0;
+            letter-spacing: 5px;
+        }
+        .player-list {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        .player { padding: 10px; margin: 5px 0; background: white; border-radius: 5px; }
+        .player.ready { background: #4CAF50; color: white; }
+        .question-text {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: center;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        .timer {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            color: #FF6B6B;
+            margin: 20px 0;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .option-btn {
+            padding: 20px;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            background: white;
+            color: #000;
+            transition: all 0.3s;
+            text-align: left;
+            display: block;
+            width: 100%;
+        }
+        .option-btn:hover { background: #f0f0f0; transform: translateX(5px); }
+        .option-btn.selected { 
+            background: #667eea !important;
+            color: white !important;
+            border-color: #667eea !important;
+            opacity: 1 !important;
+            font-weight: bold;
+        }
+        .option-btn.correct {
+            background: #4CAF50 !important;
+            color: white;
+            border-color: #4CAF50;
+            animation: correctPulse 0.5s;
+        }
+        .option-btn.wrong {
+            background: #f44336 !important;
+            color: white;
+            border-color: #f44336;
+            animation: wrongShake 0.5s;
+        }
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        /* CATEGORÍAS CON COLORES */
+        .category-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 10px auto;
+            text-align: center;
+        }
+        .cat-geografia { background: #3498db; color: white; }
+        .cat-ciencia { background: #2ecc71; color: white; }
+        .cat-historia { background: #e74c3c; color: white; }
+        .cat-deportes { background: #f39c12; color: white; }
+        .cat-arte { background: #9b59b6; color: white; }
+        .cat-entretenimiento { background: #e91e63; color: white; }
+        .cat-general { background: #34495e; color: white; }
+        
+        /* POWER-UP 50/50 */
+        .powerup-btn {
+            background: #FFD700;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 3px solid #FFA500;
+            margin: 10px 0;
+            transition: all 0.3s;
+        }
+        .powerup-btn:hover { transform: scale(1.1); }
+        .powerup-btn:disabled {
+            background: #ccc;
+            border-color: #999;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .powerup-container {
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        /* HISTORIAL */
+        .history-btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            margin: 10px auto;
+            display: block;
+            width: fit-content;
+        }
+        .history-modal {
+            display: none;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            display: flex;
-            flex-direction: column;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(180deg, #0a0a1a 0%, #1a0a2a 50%, #0a1a2a 100%);
-            z-index: 10;
         }
-
-        .hidden {
-            display: none !important;
+        .history-modal.active { display: flex; }
+        .history-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
         }
-
-        .title {
-            font-size: clamp(2rem, 8vw, 4rem);
-            font-weight: bold;
-            color: #0ff;
-            text-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #0ff;
-            margin-bottom: 10px;
-            letter-spacing: 8px;
-            animation: glow 2s ease-in-out infinite alternate;
+        .history-item {
+            background: #f5f5f5;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
         }
-
-        .subtitle {
-            font-size: clamp(1rem, 4vw, 1.5rem);
-            color: #f0f;
-            text-shadow: 0 0 10px #f0f;
-            margin-bottom: 40px;
-            letter-spacing: 4px;
-        }
-
-        @keyframes glow {
-            from { text-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #0ff; }
-            to { text-shadow: 0 0 20px #0ff, 0 0 40px #0ff, 0 0 80px #0ff; }
-        }
-
-        .startBtn {
-            padding: 20px 60px;
-            font-size: clamp(1.2rem, 4vw, 1.8rem);
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            background: transparent;
-            border: 3px solid #0ff;
-            color: #0ff;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            transition: all 0.3s;
-            margin: 10px;
-        }
-
-        .startBtn:hover, .startBtn:active {
-            background: #0ff;
-            color: #000;
-            box-shadow: 0 0 30px #0ff;
-        }
-
-        .instructions {
-            color: #888;
-            font-size: clamp(0.7rem, 2.5vw, 0.9rem);
-            margin-top: 30px;
-            text-align: center;
-            line-height: 1.8;
-        }
-
-        .score-display {
-            font-size: clamp(1.5rem, 5vw, 2.5rem);
-            color: #0ff;
-            margin: 20px 0;
-        }
-
-        #mobileControls {
-            display: none;
+        .history-win { border-left-color: #4CAF50; }
+        .history-lose { border-left-color: #f44336; }
+        
+        /* CONFETTI ANIMATION */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
             position: absolute;
-            bottom: 20px;
-            left: 0;
-            width: 100%;
-            padding: 0 20px;
-            z-index: 5;
+            animation: confetti-fall 3s linear;
         }
-
-        .controlRow {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        .mobileBtn {
-            width: 70px;
-            height: 70px;
-            background: rgba(0, 255, 255, 0.2);
-            border: 2px solid #0ff;
-            border-radius: 50%;
-            color: #0ff;
-            font-size: 1.8rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .mobileBtn:active {
-            background: rgba(0, 255, 255, 0.5);
-        }
-
-        .turboBtn {
-            background: rgba(255, 0, 255, 0.2);
-            border-color: #f0f;
-            color: #f0f;
-            position: absolute;
-            right: 20px;
-            bottom: 100px;
-        }
-
-        .turboBtn:active {
-            background: rgba(255, 0, 255, 0.5);
-        }
-
-        @media (pointer: coarse) {
-            #mobileControls {
-                display: block;
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
             }
         }
+        
+        /* MODE SELECTOR */
+        .mode-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .mode-btn {
+            padding: 30px 15px;
+            border: 3px solid #ddd;
+            border-radius: 15px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .mode-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .mode-btn.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        .mode-icon { font-size: 40px; margin-bottom: 10px; }
+        .mode-name { font-size: 18px; font-weight: bold; }
+        .mode-desc { font-size: 12px; margin-top: 5px; opacity: 0.8; }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <canvas id="gameCanvas"></canvas>
+    <div class="container">
+        <div id="errorContainer"></div>
         
-        <div id="startScreen">
-            <div class="title">KAPUCHI</div>
-            <div class="subtitle">⚡ R A C E R ⚡</div>
-            <button class="startBtn" id="startBtn">INICIAR</button>
-            <div class="instructions">
-                ← → Mover | ESPACIO Turbo<br>
-                Esquiva el tráfico y llega lo más lejos posible
+        <!-- PANTALLA INICIAL -->
+        <div id="homeScreen" class="screen active">
+            <h1>🎮 Trivial Kapuchi</h1>
+            <button class="history-btn" onclick="toggleHistory()">📊 Ver Historial</button>
+            
+            <h3 style="text-align: center; margin: 20px 0;">Selecciona el modo:</h3>
+            <div class="mode-selector">
+                <div class="mode-btn selected" onclick="selectMode('normal')">
+                    <div class="mode-icon">⚡</div>
+                    <div class="mode-name">Normal</div>
+                    <div class="mode-desc">15 preguntas</div>
+                </div>
+                <div class="mode-btn" onclick="selectMode('quick')">
+                    <div class="mode-icon">🚀</div>
+                    <div class="mode-name">Rápido</div>
+                    <div class="mode-desc">5 preguntas</div>
+                </div>
             </div>
+            
+            <input type="text" id="playerName" placeholder="Tu nombre" maxlength="20">
+            <button class="btn-primary" onclick="createRoom()">Crear Partida</button>
+            <button class="btn-secondary" onclick="showJoinScreen()">Unirse a Partida</button>
         </div>
-
-        <div id="gameOverScreen" class="hidden">
-            <div class="title">GAME OVER</div>
-            <div class="score-display">DISTANCIA: <span id="finalScore">0</span> KM</div>
-            <div class="score-display" style="color: #f0f;">RÉCORD: <span id="highScore">0</span> KM</div>
-            <button class="startBtn" id="restartBtn">REINICIAR</button>
+        
+        <!-- PANTALLA UNIRSE -->
+        <div id="joinScreen" class="screen">
+            <h1>🎮 Unirse a Partida</h1>
+            <input type="text" id="playerName2" placeholder="Tu nombre" maxlength="20">
+            <input type="text" id="roomCodeInput" placeholder="Código de sala" maxlength="6">
+            <button class="btn-secondary" onclick="joinRoom()">Unirse a Partida</button>
+            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
         </div>
-
-        <div id="mobileControls">
-            <div class="controlRow">
-                <div class="mobileBtn" id="leftBtn">◀</div>
-                <div class="mobileBtn" id="rightBtn">▶</div>
+        
+        <!-- PANTALLA ESPERA -->
+        <div id="waitingScreen" class="screen">
+            <h1>⏳ Sala de Espera</h1>
+            <div id="roomCodeDisplay" class="room-code"></div>
+            <div id="playersList"></div>
+            <button class="btn-primary" id="readyBtn" onclick="markReady()">¡Estoy Listo!</button>
+            <button class="btn-secondary" onclick="location.reload()">Volver</button>
+        </div>
+        
+        <!-- PANTALLA JUEGO -->
+        <div id="gameScreen" class="screen">
+            <div id="categoryBadge" class="category-badge" style="text-align: center; margin: 10px 0;"></div>
+            <div id="questionNumber" style="text-align: center; color: #667eea; font-weight: bold;"></div>
+            <div id="questionText" class="question-text"></div>
+            <div id="timer" class="timer">10</div>
+            
+            <!-- POWER-UP 50/50 -->
+            <div class="powerup-container">
+                <button id="fiftyFiftyBtn" class="powerup-btn" onclick="useFiftyFifty()">
+                    ⚡ 50/50 (Elimina 2 incorrectas)
+                </button>
             </div>
-            <div class="mobileBtn turboBtn" id="turboBtn">🔥</div>
+            
+            <div id="optionsGrid"></div>
+        </div>
+        
+        <!-- PANTALLA ESPERANDO TURNO -->
+        <div id="waitingTurnScreen" class="screen">
+            <h1>⏳ Esperando turno...</h1>
+            <p style="text-align: center; font-size: 20px; color: #667eea; margin: 20px 0;">
+                <strong id="otherPlayerName"></strong> está respondiendo su pregunta
+            </p>
+            <div style="text-align: center; margin: 30px 0;">
+                <div style="display: inline-block; width: 60px; height: 60px; border: 6px solid #f3f3f3; border-top: 6px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            </div>
+            <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
+        </div>
+        
+        <!-- PANTALLA RESULTADOS -->
+        <div id="resultsScreen" class="screen">
+            <h1>🏆 ¡Juego Terminado!</h1>
+            <div id="finalScores"></div>
+            <form method="GET" action="">
+                <button type="submit" class="btn-primary" style="width: 100%;">🎮 Nueva Partida</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- MODAL HISTORIAL -->
+    <div id="historyModal" class="history-modal">
+        <div class="history-content">
+            <h2 style="text-align: center; margin-bottom: 20px;">📊 Historial de Partidas</h2>
+            <div id="historyList"></div>
+            <button class="btn-secondary" onclick="toggleHistory()" style="margin-top: 20px;">Cerrar</button>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"></script>
     <script>
-        // Canvas setup
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        var socket = io('https://trivial-kapuchi.onrender.com');
+        var currentRoom = null;
+        var playerName = '';
+        var timeLeft = 10;
+        var timerInterval = null;
+        var hasAnswered = false;
+        var gameMode = 'normal'; // 'normal' o 'quick'
+        var fiftyFiftyUsed = false;
+        var currentQuestion = null;
         
-        // Screen elements
-        const startScreen = document.getElementById('startScreen');
-        const gameOverScreen = document.getElementById('gameOverScreen');
-
-        // Set canvas size
-        function resize() {
-            const container = document.getElementById('gameContainer');
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
+        // SISTEMA DE HISTORIAL
+        function saveMatch(result) {
+            var matches = JSON.parse(localStorage.getItem('trivialHistory') || '[]');
+            matches.unshift({
+                date: new Date().toLocaleString('es-ES'),
+                mode: gameMode === 'quick' ? 'Rápido' : 'Normal',
+                result: result.won ? 'Victoria' : 'Derrota',
+                score: result.myScore,
+                opponent: result.opponentName,
+                opponentScore: result.opponentScore
+            });
+            // Mantener solo las últimas 20 partidas
+            if (matches.length > 20) matches = matches.slice(0, 20);
+            localStorage.setItem('trivialHistory', JSON.stringify(matches));
         }
-        resize();
-        window.addEventListener('resize', resize);
-
-        // Game variables
-        let gameRunning = false;
-        let score = 0;
-        let highScore = 0;
-        try {
-            highScore = parseInt(localStorage.getItem('kapuchiRacerHS')) || 0;
-        } catch(e) {}
-
-        let speed = 0;
-        let position = 0;
-        let playerX = 0;
-        let turboActive = false;
-        let turboFuel = 100;
-
-        // Road segments
-        let segments = [];
-        const segmentLength = 200;
-        const roadWidth = 2000;
-        const rumbleLength = 3;
-        const drawDistance = 80;
-
-        // Traffic
-        let cars = [];
-
-        // Input state
-        const keys = { left: false, right: false, turbo: false };
-
-        // Create road
-        function createRoad() {
-            segments = [];
-            for (let i = 0; i < 500; i++) {
-                let curve = 0;
-                if (i > 30 && i < 60) curve = 3;
-                if (i > 80 && i < 120) curve = -4;
-                if (i > 150 && i < 200) curve = Math.sin(i * 0.1) * 5;
-                if (i > 250 && i < 350) curve = Math.cos(i * 0.08) * 6;
-                if (i > 400) curve = Math.sin(i * 0.05) * 4;
+        
+        function loadHistory() {
+            var matches = JSON.parse(localStorage.getItem('trivialHistory') || '[]');
+            var html = '';
+            if (matches.length === 0) {
+                html = '<p style="text-align: center; color: #999;">No hay partidas guardadas aún</p>';
+            } else {
+                var wins = matches.filter(m => m.result === 'Victoria').length;
+                var total = matches.length;
+                html += '<div style="text-align: center; background: #667eea; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px;">';
+                html += '<h3>Estadísticas</h3>';
+                html += '<p style="font-size: 24px; margin: 10px 0;"><strong>' + wins + '</strong> victorias de <strong>' + total + '</strong> partidas</p>';
+                html += '<p>Porcentaje: <strong>' + (total > 0 ? Math.round(wins/total*100) : 0) + '%</strong></p>';
+                html += '</div>';
                 
-                segments.push({
-                    index: i,
-                    curve: curve,
-                    z: i * segmentLength
+                matches.forEach(function(match) {
+                    var className = match.result === 'Victoria' ? 'history-win' : 'history-lose';
+                    html += '<div class="history-item ' + className + '">';
+                    html += '<div style="display: flex; justify-content: space-between; margin-bottom: 5px;">';
+                    html += '<strong>' + match.result + '</strong>';
+                    html += '<span style="color: #999; font-size: 12px;">' + match.date + '</span>';
+                    html += '</div>';
+                    html += '<div style="font-size: 14px;">';
+                    html += '🎮 Modo: ' + match.mode + '<br>';
+                    html += '⭐ Puntos: ' + match.score + '<br>';
+                    html += '👤 vs ' + match.opponent + ' (' + match.opponentScore + ' pts)';
+                    html += '</div>';
+                    html += '</div>';
                 });
             }
+            document.getElementById('historyList').innerHTML = html;
         }
-
-        // Create traffic
-        function createTraffic() {
-            cars = [];
-            for (let i = 0; i < 15; i++) {
-                cars.push({
-                    z: 3000 + i * 3000 + Math.random() * 2000,
-                    lane: Math.floor(Math.random() * 3) - 1,
-                    speed: 80 + Math.random() * 60,
-                    color: ['#ff3366', '#33ff66', '#ffaa00', '#ff66ff', '#66ffff'][Math.floor(Math.random() * 5)]
-                });
+        
+        function toggleHistory() {
+            var modal = document.getElementById('historyModal');
+            if (modal.classList.contains('active')) {
+                modal.classList.remove('active');
+            } else {
+                loadHistory();
+                modal.classList.add('active');
             }
         }
-
-        // Project point to screen
-        function project(z, camZ, x, y) {
-            const scale = 150 / (z - camZ);
-            return {
-                x: canvas.width / 2 + scale * x * canvas.width * 0.5,
-                y: canvas.height / 2 - scale * y * canvas.height * 0.5,
-                w: scale * roadWidth * canvas.width * 0.5,
-                scale: scale
-            };
-        }
-
-        // Draw polygon
-        function drawPoly(x1, y1, x2, y2, x3, y3, x4, y4, color) {
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.lineTo(x3, y3);
-            ctx.lineTo(x4, y4);
-            ctx.closePath();
-            ctx.fill();
-        }
-
-        // Draw hover wheelchair
-        function drawPlayer() {
-            const cx = canvas.width / 2 + playerX * canvas.width * 0.25;
-            const cy = canvas.height - 100;
-            const tilt = playerX * 0.15;
-            
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.rotate(tilt);
-            
-            // Turbo flames
-            if (turboActive && turboFuel > 0) {
-                ctx.fillStyle = '#ff6600';
-                ctx.beginPath();
-                ctx.moveTo(-10, 35);
-                ctx.lineTo(10, 35);
-                ctx.lineTo(0, 70 + Math.random() * 15);
-                ctx.closePath();
-                ctx.fill();
-                
-                ctx.fillStyle = '#ffff00';
-                ctx.beginPath();
-                ctx.moveTo(-5, 35);
-                ctx.lineTo(5, 35);
-                ctx.lineTo(0, 55 + Math.random() * 10);
-                ctx.closePath();
-                ctx.fill();
-            }
-            
-            // Hover glow
-            ctx.shadowColor = '#0ff';
-            ctx.shadowBlur = 20;
-            ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
-            ctx.beginPath();
-            ctx.ellipse(0, 40, 35, 12, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            
-            // Main body
-            ctx.fillStyle = '#1a1a2e';
-            ctx.strokeStyle = '#0ff';
-            ctx.lineWidth = 2;
-            
-            // Seat back
-            ctx.beginPath();
-            ctx.rect(-18, -35, 36, 45);
-            ctx.fill();
-            ctx.stroke();
-            
-            // Seat
-            ctx.fillStyle = '#16213e';
-            ctx.beginPath();
-            ctx.rect(-22, 10, 44, 18);
-            ctx.fill();
-            ctx.stroke();
-            
-            // Armrests
-            ctx.fillStyle = '#0a0a15';
-            ctx.fillRect(-28, 0, 8, 22);
-            ctx.fillRect(20, 0, 8, 22);
-            ctx.strokeRect(-28, 0, 8, 22);
-            ctx.strokeRect(20, 0, 8, 22);
-            
-            // Hover pods
-            ctx.fillStyle = '#0ff';
-            ctx.shadowColor = '#0ff';
-            ctx.shadowBlur = 15;
-            ctx.beginPath();
-            ctx.ellipse(-22, 32, 10, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(22, 32, 10, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            
-            // Control panel lights
-            ctx.fillStyle = '#0a0a15';
-            ctx.fillRect(-12, 8, 24, 10);
-            ctx.fillStyle = turboActive ? '#f0f' : '#0f0';
-            ctx.fillRect(-9, 11, 5, 5);
-            ctx.fillStyle = '#ff0';
-            ctx.fillRect(-2, 11, 5, 5);
-            ctx.fillStyle = '#0ff';
-            ctx.fillRect(5, 11, 5, 5);
-            
-            // Rider head
-            ctx.fillStyle = '#0a0a15';
-            ctx.beginPath();
-            ctx.arc(0, -48, 12, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Visor
-            ctx.fillStyle = '#0ff';
-            ctx.shadowColor = '#0ff';
-            ctx.shadowBlur = 8;
-            ctx.beginPath();
-            ctx.ellipse(0, -46, 9, 5, 0, 0, Math.PI);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            
-            ctx.restore();
-        }
-
-        // Draw traffic car
-        function drawCar(screenX, screenY, scale, color) {
-            const w = 35 * scale * 20;
-            const h = 50 * scale * 20;
-            
-            if (w < 2) return;
-            
-            ctx.save();
-            ctx.translate(screenX, screenY);
-            
-            // Shadow
-            ctx.fillStyle = 'rgba(0,0,0,0.4)';
-            ctx.beginPath();
-            ctx.ellipse(0, h * 0.3, w * 0.7, h * 0.15, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Body
-            ctx.fillStyle = color;
-            ctx.fillRect(-w/2, -h/2, w, h);
-            
-            // Windshield
-            ctx.fillStyle = '#113';
-            ctx.fillRect(-w/3, -h/3, w * 0.66, h/3);
-            
-            // Tail lights
-            ctx.fillStyle = '#f00';
-            ctx.fillRect(-w/2 + 3, h/2 - 8, 6, 5);
-            ctx.fillRect(w/2 - 9, h/2 - 8, 6, 5);
-            
-            ctx.restore();
-        }
-
-        // Main render
-        function render() {
-            const w = canvas.width;
-            const h = canvas.height;
-            
-            // Sky
-            const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.5);
-            skyGrad.addColorStop(0, '#05050f');
-            skyGrad.addColorStop(0.5, '#150520');
-            skyGrad.addColorStop(1, '#201030');
-            ctx.fillStyle = skyGrad;
-            ctx.fillRect(0, 0, w, h * 0.5);
-            
-            // Stars
-            ctx.fillStyle = '#fff';
-            for (let i = 0; i < 40; i++) {
-                const sx = ((i * 137 + position * 0.002) % w);
-                const sy = (i * 73) % (h * 0.4);
-                ctx.fillRect(sx, sy, 1.5, 1.5);
-            }
-            
-            // Ground
-            ctx.fillStyle = '#0a0a12';
-            ctx.fillRect(0, h * 0.5, w, h * 0.5);
-            
-            // Camera position
-            const baseIndex = Math.floor(position / segmentLength) % segments.length;
-            const camZ = position;
-            
-            // Track cumulative curve for offsetting
-            let cumCurve = 0;
-            let maxY = h;
-            
-            // Draw road from back to front
-            for (let n = drawDistance - 1; n >= 0; n--) {
-                const segIdx = (baseIndex + n) % segments.length;
-                const seg = segments[segIdx];
-                
-                const z1 = seg.z - (position % (segments.length * segmentLength));
-                const z2 = z1 + segmentLength;
-                
-                if (z1 <= 0) continue;
-                
-                // Apply curve offset
-                const curveOffset = cumCurve - playerX * roadWidth * 0.5;
-                cumCurve += seg.curve * n * 0.5;
-                
-                const p1 = project(z1, 0, curveOffset, 0);
-                const p2 = project(z2, 0, curveOffset + seg.curve * 20, 0);
-                
-                if (p1.y >= maxY) continue;
-                
-                const fog = n / drawDistance;
-                
-                // Grass
-                const grassDark = Math.floor(segIdx / rumbleLength) % 2 === 0;
-                const gr = grassDark ? 8 : 12;
-                const gg = grassDark ? 15 : 22;
-                const gb = grassDark ? 8 : 12;
-                ctx.fillStyle = `rgb(${gr}, ${gg}, ${gb})`;
-                ctx.fillRect(0, p2.y, w, p1.y - p2.y + 1);
-                
-                // Road
-                const roadGray = Math.floor(35 - fog * 20);
-                ctx.fillStyle = `rgb(${roadGray}, ${roadGray}, ${roadGray + 10})`;
-                drawPoly(
-                    p1.x - p1.w, p1.y,
-                    p1.x + p1.w, p1.y,
-                    p2.x + p2.w, p2.y,
-                    p2.x - p2.w, p2.y,
-                    ctx.fillStyle
-                );
-                
-                // Rumble strips
-                const rumbleOn = Math.floor(segIdx / rumbleLength) % 2 === 0;
-                if (rumbleOn) {
-                    ctx.fillStyle = `rgba(0, 255, 255, ${0.7 - fog * 0.5})`;
-                } else {
-                    ctx.fillStyle = `rgba(255, 0, 255, ${0.7 - fog * 0.5})`;
-                }
-                
-                const rw1 = p1.w * 0.08;
-                const rw2 = p2.w * 0.08;
-                
-                // Left rumble
-                drawPoly(
-                    p1.x - p1.w - rw1, p1.y,
-                    p1.x - p1.w, p1.y,
-                    p2.x - p2.w, p2.y,
-                    p2.x - p2.w - rw2, p2.y,
-                    ctx.fillStyle
-                );
-                
-                // Right rumble
-                drawPoly(
-                    p1.x + p1.w, p1.y,
-                    p1.x + p1.w + rw1, p1.y,
-                    p2.x + p2.w + rw2, p2.y,
-                    p2.x + p2.w, p2.y,
-                    ctx.fillStyle
-                );
-                
-                // Lane markers
-                if (Math.floor(segIdx / 4) % 2 === 0) {
-                    ctx.fillStyle = `rgba(0, 255, 255, ${0.6 - fog * 0.4})`;
-                    const lw1 = p1.w * 0.015;
-                    const lw2 = p2.w * 0.015;
-                    
-                    for (let lane = -1; lane <= 1; lane++) {
-                        const lx1 = p1.x + lane * p1.w * 0.33;
-                        const lx2 = p2.x + lane * p2.w * 0.33;
-                        drawPoly(
-                            lx1 - lw1, p1.y,
-                            lx1 + lw1, p1.y,
-                            lx2 + lw2, p2.y,
-                            lx2 - lw2, p2.y,
-                            ctx.fillStyle
-                        );
-                    }
-                }
-                
-                maxY = p2.y;
-            }
-            
-            // Draw cars
-            cars.forEach(car => {
-                const relZ = car.z - position;
-                if (relZ > 100 && relZ < drawDistance * segmentLength * 0.7) {
-                    const segIdx = Math.floor(car.z / segmentLength) % segments.length;
-                    
-                    // Calculate curve offset for this car
-                    let carCurve = 0;
-                    const carN = Math.floor(relZ / segmentLength);
-                    for (let i = 0; i < carN; i++) {
-                        const idx = (baseIndex + i) % segments.length;
-                        carCurve += segments[idx].curve * i * 0.5;
-                    }
-                    
-                    const carWorldX = car.lane * roadWidth * 0.3 + carCurve - playerX * roadWidth * 0.5;
-                    const p = project(relZ, 0, carWorldX, 0);
-                    
-                    if (p.scale > 0) {
-                        drawCar(p.x, p.y - 20 * p.scale * 20, p.scale, car.color);
-                    }
-                }
+        
+        // SELECCIÓN DE MODO
+        function selectMode(mode) {
+            gameMode = mode;
+            var buttons = document.querySelectorAll('.mode-btn');
+            buttons.forEach(function(btn) {
+                btn.classList.remove('selected');
             });
-            
-            // Draw player
-            drawPlayer();
-            
-            // HUD
-            ctx.fillStyle = '#0ff';
-            ctx.shadowColor = '#0ff';
-            ctx.shadowBlur = 8;
-            ctx.font = 'bold 22px Courier New';
-            ctx.textAlign = 'left';
-            ctx.fillText(Math.floor(speed) + ' KM/H', 15, 35);
-            
-            ctx.fillStyle = '#f0f';
-            ctx.shadowColor = '#f0f';
-            ctx.fillText(Math.floor(score) + ' KM', 15, 62);
-            ctx.shadowBlur = 0;
-            
-            // Turbo bar
-            ctx.fillStyle = '#222';
-            ctx.fillRect(w - 115, 15, 100, 18);
-            ctx.fillStyle = turboFuel > 25 ? '#f0f' : '#ff3333';
-            ctx.fillRect(w - 115, 15, turboFuel, 18);
-            ctx.strokeStyle = '#f0f';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(w - 115, 15, 100, 18);
-            ctx.fillStyle = '#fff';
-            ctx.font = '11px Courier New';
-            ctx.textAlign = 'center';
-            ctx.fillText('TURBO', w - 65, 28);
-            
-            // Logo
-            ctx.fillStyle = '#0ff';
-            ctx.shadowColor = '#0ff';
-            ctx.shadowBlur = 5;
-            ctx.font = 'bold 14px Courier New';
-            ctx.fillText('KAPUCHI RACER', w / 2, 25);
-            ctx.shadowBlur = 0;
+            event.target.closest('.mode-btn').classList.add('selected');
         }
-
-        // Update game
-        function update(dt) {
-            // Speed
-            const maxSpd = turboActive && turboFuel > 0 ? 280 : 180;
-            speed += (maxSpd - speed) * 0.03;
+        
+        // POWER-UP 50/50
+        function useFiftyFifty() {
+            if (fiftyFiftyUsed || hasAnswered) return;
             
-            // Turbo fuel
-            if (turboActive && turboFuel > 0) {
-                turboFuel -= dt * 35;
-            } else if (!turboActive && turboFuel < 100) {
-                turboFuel += dt * 12;
+            fiftyFiftyUsed = true;
+            document.getElementById('fiftyFiftyBtn').disabled = true;
+            document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
+            
+            var options = document.querySelectorAll('.option-btn');
+            var correctIndex = currentQuestion.correct;
+            var incorrectIndices = [];
+            
+            for (var i = 0; i < options.length; i++) {
+                if (i !== correctIndex) {
+                    incorrectIndices.push(i);
+                }
             }
-            turboFuel = Math.max(0, Math.min(100, turboFuel));
             
-            // Position
-            position += speed * dt * 40;
+            // Eliminar 2 incorrectas aleatoriamente
+            var toRemove = [];
+            while (toRemove.length < 2 && incorrectIndices.length > 0) {
+                var randomIndex = Math.floor(Math.random() * incorrectIndices.length);
+                toRemove.push(incorrectIndices[randomIndex]);
+                incorrectIndices.splice(randomIndex, 1);
+            }
             
-            // Score
-            score += speed * dt * 0.008;
-            
-            // Player movement
-            if (keys.left) playerX -= dt * 2.5;
-            if (keys.right) playerX += dt * 2.5;
-            playerX = Math.max(-1.1, Math.min(1.1, playerX));
-            
-            // Apply curve
-            const baseIdx = Math.floor(position / segmentLength) % segments.length;
-            const curve = segments[baseIdx].curve;
-            playerX += curve * speed * 0.000008;
-            
-            // Update cars
-            cars.forEach(car => {
-                car.z -= (speed - car.speed) * dt * 40;
-                
-                if (car.z < position - 500) {
-                    car.z = position + 25000 + Math.random() * 15000;
-                    car.lane = Math.floor(Math.random() * 3) - 1;
-                }
-                
-                // Collision
-                const relZ = car.z - position;
-                if (relZ > 0 && relZ < 250) {
-                    const carX = car.lane * 0.33;
-                    if (Math.abs(carX - playerX) < 0.35) {
-                        gameOver();
-                    }
-                }
+            toRemove.forEach(function(index) {
+                options[index].style.display = 'none';
             });
         }
-
-        // Game over
-        function gameOver() {
-            gameRunning = false;
-            const finalScore = Math.floor(score);
-            if (finalScore > highScore) {
-                highScore = finalScore;
-                try {
-                    localStorage.setItem('kapuchiRacerHS', highScore);
-                } catch(e) {}
+        
+        // ANIMACIÓN CONFETTI
+        function createConfetti() {
+            var colors = ['#FF6B6B', '#4ECDC4', '#FFD93D', '#6BCF7F', '#A78BFA'];
+            for (var i = 0; i < 100; i++) {
+                setTimeout(function() {
+                    var confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(function() {
+                        confetti.remove();
+                    }, 3000);
+                }, i * 30);
             }
-            document.getElementById('finalScore').textContent = finalScore;
-            document.getElementById('highScore').textContent = highScore;
-            gameOverScreen.classList.remove('hidden');
         }
-
-        // Start game
-        function startGame() {
-            startScreen.classList.add('hidden');
-            gameOverScreen.classList.add('hidden');
-            
-            score = 0;
-            speed = 0;
-            position = 0;
-            playerX = 0;
-            turboFuel = 100;
-            turboActive = false;
-            
-            createRoad();
-            createTraffic();
-            
-            gameRunning = true;
-            lastTime = performance.now();
-            requestAnimationFrame(gameLoop);
+        
+        // CATEGORÍAS
+        function getCategoryInfo(question) {
+            var text = question.toLowerCase();
+            if (text.includes('capital') || text.includes('país') || text.includes('continente') || text.includes('océano') || text.includes('río')) {
+                return { name: '🌍 Geografía', class: 'cat-geografia' };
+            } else if (text.includes('planeta') || text.includes('animal') || text.includes('célula') || text.includes('átomo') || text.includes('elemento')) {
+                return { name: '🧪 Ciencia', class: 'cat-ciencia' };
+            } else if (text.includes('año') || text.includes('guerra') || text.includes('emperador') || text.includes('rey')) {
+                return { name: '📜 Historia', class: 'cat-historia' };
+            } else if (text.includes('deporte') || text.includes('jugadores') || text.includes('fútbol') || text.includes('olímpicos')) {
+                return { name: '⚽ Deportes', class: 'cat-deportes' };
+            } else if (text.includes('pintó') || text.includes('escribió') || text.includes('compuso') || text.includes('dirigió')) {
+                return { name: '🎨 Arte', class: 'cat-arte' };
+            } else if (text.includes('película') || text.includes('canta') || text.includes('actor') || text.includes('música')) {
+                return { name: '🎬 Entretenimiento', class: 'cat-entretenimiento' };
+            }
+            return { name: '💡 General', class: 'cat-general' };
         }
-
-        // Game loop
-        let lastTime = 0;
-        function gameLoop(time) {
-            if (!gameRunning) return;
-            
-            const dt = Math.min((time - lastTime) / 1000, 0.05);
-            lastTime = time;
-            
-            update(dt);
-            render();
-            
-            requestAnimationFrame(gameLoop);
+        
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(function(s) {
+                s.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
         }
-
-        // Event listeners
-        document.getElementById('startBtn').addEventListener('click', startGame);
-        document.getElementById('restartBtn').addEventListener('click', startGame);
-
-        // Keyboard
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
-            if (e.key === ' ') { turboActive = true; e.preventDefault(); }
+        
+        function showError(message) {
+            document.getElementById('errorContainer').innerHTML = '<div class="error">' + message + '</div>';
+            setTimeout(function() {
+                document.getElementById('errorContainer').innerHTML = '';
+            }, 3000);
+        }
+        
+        function createRoom() {
+            playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) {
+                showError('Por favor ingresa tu nombre');
+                return;
+            }
+            socket.emit('createRoom', { playerName: playerName, mode: gameMode });
+        }
+        
+        function showJoinScreen() {
+            showScreen('joinScreen');
+        }
+        
+        function joinRoom() {
+            playerName = document.getElementById('playerName2').value.trim();
+            var roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+            if (!playerName || !roomCode) {
+                showError('Por favor completa todos los campos');
+                return;
+            }
+            socket.emit('joinRoom', { roomCode: roomCode, playerName: playerName });
+        }
+        
+        function markReady() {
+            socket.emit('playerReady', currentRoom);
+        }
+        
+        function submitAnswer(index) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+            clearInterval(timerInterval);
+            
+            var options = document.querySelectorAll('.option-btn');
+            options[index].classList.add('selected');
+            
+            socket.emit('submitAnswer', {
+                roomCode: currentRoom,
+                answerIndex: index,
+                timeLeft: timeLeft
+            });
+        }
+        
+        // SOCKET EVENTS
+        socket.on('roomCreated', function(data) {
+            currentRoom = data.roomCode;
+            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
+            document.getElementById('playersList').innerHTML = '<div class="player">' + data.playerName + ' (Tú)</div>';
+            showScreen('waitingScreen');
         });
         
-        document.addEventListener('keyup', function(e) {
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
-            if (e.key === ' ') turboActive = false;
+        socket.on('roomError', function(message) {
+            showError(message);
         });
-
-        // Mobile
-        const leftBtn = document.getElementById('leftBtn');
-        const rightBtn = document.getElementById('rightBtn');
-        const turboBtn = document.getElementById('turboBtn');
-
-        leftBtn.addEventListener('touchstart', function(e) { e.preventDefault(); keys.left = true; });
-        leftBtn.addEventListener('touchend', function(e) { e.preventDefault(); keys.left = false; });
-        rightBtn.addEventListener('touchstart', function(e) { e.preventDefault(); keys.right = true; });
-        rightBtn.addEventListener('touchend', function(e) { e.preventDefault(); keys.right = false; });
-        turboBtn.addEventListener('touchstart', function(e) { e.preventDefault(); turboActive = true; });
-        turboBtn.addEventListener('touchend', function(e) { e.preventDefault(); turboActive = false; });
-
-        // Prevent scroll
-        document.body.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+        
+        socket.on('playerJoined', function(data) {
+            currentRoom = data.roomCode;
+            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
+            var html = '';
+            data.players.forEach(function(p) {
+                var readyText = p.ready ? ' ✓' : '';
+                var className = p.ready ? 'player ready' : 'player';
+                html += '<div class="' + className + '">' + p.name + readyText + '</div>';
+            });
+            document.getElementById('playersList').innerHTML = html;
+            showScreen('waitingScreen');
+        });
+        
+        socket.on('playersUpdate', function(players) {
+            var html = '';
+            players.forEach(function(p) {
+                var readyText = p.ready ? ' ✓' : '';
+                var className = p.ready ? 'player ready' : 'player';
+                html += '<div class="' + className + '">' + p.name + readyText + '</div>';
+            });
+            document.getElementById('playersList').innerHTML = html;
+        });
+        
+        socket.on('newQuestion', function(data) {
+            currentQuestion = data;
+            fiftyFiftyUsed = false;
+            hasAnswered = false;
+            timeLeft = 10;
+            
+            document.getElementById('fiftyFiftyBtn').disabled = false;
+            document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (Elimina 2 incorrectas)';
+            
+            var category = getCategoryInfo(data.question);
+            document.getElementById('categoryBadge').textContent = category.name;
+            document.getElementById('categoryBadge').className = 'category-badge ' + category.class;
+            
+            document.getElementById('questionNumber').textContent = 'Pregunta ' + data.questionNumber + ' de ' + data.totalQuestions;
+            document.getElementById('questionText').textContent = data.question;
+            document.getElementById('timer').textContent = timeLeft;
+            
+            var grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+            data.options.forEach(function(option, index) {
+                var btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = function() { submitAnswer(index); };
+                grid.appendChild(btn);
+            });
+            
+            showScreen('gameScreen');
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(function() {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    if (!hasAnswered) {
+                        hasAnswered = true;
+                        socket.emit('nextQuestion', currentRoom);
+                    }
+                }
+            }, 1000);
+        });
+        
+        socket.on('answerResult', function(data) {
+            var options = document.querySelectorAll('.option-btn');
+            
+            for (var i = 0; i < options.length; i++) {
+                if (options[i].style.opacity === '0.6') {
+                    if (data.isCorrect) {
+                        options[i].classList.add('correct');
+                    } else {
+                        options[i].classList.add('wrong');
+                    }
+                    options[i].style.opacity = '1';
+                    break;
+                }
+            }
+        });
+        
+        socket.on('waitingTurn', function(data) {
+            document.getElementById('otherPlayerName').textContent = data.currentPlayerName;
+            showScreen('waitingTurnScreen');
+        });
+        
+        socket.on('gameOver', function(data) {
+            var html = '<div style="text-align: center;">';
+            data.players.forEach(function(p) {
+                var isMe = p.name === playerName;
+                var isWinner = p.name === data.winner;
+                var style = isWinner ? 'background: #4CAF50; color: white;' : 'background: #f5f5f5;';
+                var crown = isWinner ? ' 👑' : '';
+                html += '<div style="' + style + ' padding: 20px; margin: 10px 0; border-radius: 10px; font-size: 18px;">';
+                html += '<strong>' + p.name + crown + '</strong><br>';
+                html += 'Puntos: ' + p.score;
+                html += '</div>';
+                
+                if (isMe) {
+                    // Guardar en historial
+                    saveMatch({
+                        won: isWinner,
+                        myScore: p.score,
+                        opponentName: data.players.find(pl => pl.name !== playerName).name,
+                        opponentScore: data.players.find(pl => pl.name !== playerName).score
+                    });
+                }
+            });
+            html += '</div>';
+            document.getElementById('finalScores').innerHTML = html;
+            showScreen('resultsScreen');
+            
+            // Confetti si ganaste
+            if (data.winner === playerName) {
+                createConfetti();
+            }
+        });
+        
+        socket.on('playerLeft', function(players) {
+            if (players.length === 0) {
+                showError('El otro jugador se desconectó');
+                setTimeout(function() {
+                    location.reload();
+                }, 2000);
+            }
+        });
+        
+        socket.on('connect_error', function() {
+            showError('Error de conexión');
+        });
     </script>
 </body>
 </html>
