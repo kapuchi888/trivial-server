@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trivial Kapuchi</title>
+    <title>Trivial Kapuchi ⭐</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -20,6 +20,7 @@
             border-radius: 20px;
             max-width: 500px;
             width: 90%;
+            position: relative;
         }
         h1 { text-align: center; color: #667eea; margin-bottom: 20px; }
         input {
@@ -40,9 +41,13 @@
             font-weight: bold;
             cursor: pointer;
             color: white;
+            transition: transform 0.2s;
         }
+        button:hover { transform: scale(1.05); }
+        button:active { transform: scale(0.95); }
         .btn-primary { background: #FF6B6B; }
         .btn-secondary { background: #4ECDC4; }
+        .btn-quick { background: #FFA500; }
         .screen { display: none; }
         .screen.active { display: block; }
         .error { background: #f44336; color: white; padding: 10px; border-radius: 5px; margin: 10px 0; }
@@ -50,88 +55,276 @@
             background: #667eea;
             color: white;
             padding: 20px;
+            border-radius: 10px;
             text-align: center;
             font-size: 32px;
             font-weight: bold;
-            border-radius: 10px;
             margin: 20px 0;
             letter-spacing: 5px;
         }
-        .player-card {
+        .player-list {
             background: #f5f5f5;
             padding: 15px;
-            margin: 10px 0;
             border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
+            margin: 10px 0;
         }
+        .player { padding: 10px; margin: 5px 0; background: white; border-radius: 5px; }
+        .player.ready { background: #4CAF50; color: white; }
         .question-text {
             font-size: 20px;
             font-weight: bold;
             margin: 20px 0;
             text-align: center;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
         }
         .timer {
-            background: #f44336;
-            color: white;
+            font-size: 48px;
+            font-weight: bold;
             text-align: center;
-            padding: 20px;
-            font-size: 40px;
-            border-radius: 10px;
+            color: #FF6B6B;
+            margin: 20px 0;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
             margin: 20px 0;
         }
         .option-btn {
-            background: white;
-            border: 3px solid #ddd;
-            text-align: left;
             padding: 20px;
-            margin: 10px 0;
-            color: #000;
-            font-size: 16px;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.3s;
+            text-align: left;
         }
-        .option-btn:hover { background: #f5f5f5; }
-        .option-btn.correct { background: #4CAF50; color: white; border-color: #4CAF50; }
-        .option-btn.wrong { background: #f44336; color: white; border-color: #f44336; }
-        .score-card {
+        .option-btn:hover { background: #f0f0f0; transform: translateX(5px); }
+        .option-btn.selected { opacity: 0.6; }
+        .option-btn.correct {
+            background: #4CAF50 !important;
+            color: white;
+            border-color: #4CAF50;
+            animation: correctPulse 0.5s;
+        }
+        .option-btn.wrong {
+            background: #f44336 !important;
+            color: white;
+            border-color: #f44336;
+            animation: wrongShake 0.5s;
+        }
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        /* CATEGORÍAS CON COLORES */
+        .category-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 10px auto;
+            text-align: center;
+        }
+        .cat-geografia { background: #3498db; color: white; }
+        .cat-ciencia { background: #2ecc71; color: white; }
+        .cat-historia { background: #e74c3c; color: white; }
+        .cat-deportes { background: #f39c12; color: white; }
+        .cat-arte { background: #9b59b6; color: white; }
+        .cat-entretenimiento { background: #e91e63; color: white; }
+        .cat-general { background: #34495e; color: white; }
+        
+        /* POWER-UP 50/50 */
+        .powerup-btn {
+            background: #FFD700;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 3px solid #FFA500;
+            margin: 10px 0;
+            transition: all 0.3s;
+        }
+        .powerup-btn:hover { transform: scale(1.1); }
+        .powerup-btn:disabled {
+            background: #ccc;
+            border-color: #999;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .powerup-container {
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        /* HISTORIAL */
+        .history-btn {
             background: #667eea;
             color: white;
-            padding: 20px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            margin: 10px auto;
+            display: block;
+            width: fit-content;
+        }
+        .history-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .history-modal.active { display: flex; }
+        .history-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .history-item {
+            background: #f5f5f5;
+            padding: 15px;
             margin: 10px 0;
             border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 20px;
+            border-left: 5px solid #667eea;
         }
+        .history-win { border-left-color: #4CAF50; }
+        .history-lose { border-left-color: #f44336; }
+        
+        /* CONFETTI ANIMATION */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            position: absolute;
+            animation: confetti-fall 3s linear;
+        }
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* MODE SELECTOR */
+        .mode-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .mode-btn {
+            padding: 30px 15px;
+            border: 3px solid #ddd;
+            border-radius: 15px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .mode-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .mode-btn.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        .mode-icon { font-size: 40px; margin-bottom: 10px; }
+        .mode-name { font-size: 18px; font-weight: bold; }
+        .mode-desc { font-size: 12px; margin-top: 5px; opacity: 0.8; }
     </style>
 </head>
 <body>
     <div class="container">
+        <div id="errorContainer"></div>
+        
+        <!-- PANTALLA INICIAL -->
         <div id="homeScreen" class="screen active">
             <h1>🎮 Trivial Kapuchi</h1>
-            <p style="text-align: center; color: #666; margin-bottom: 20px;">¡Juega con tus amigos online!</p>
-            <div id="errorContainer"></div>
+            <button class="history-btn" onclick="toggleHistory()">📊 Ver Historial</button>
+            
+            <h3 style="text-align: center; margin: 20px 0;">Selecciona el modo:</h3>
+            <div class="mode-selector">
+                <div class="mode-btn selected" onclick="selectMode('normal')">
+                    <div class="mode-icon">⚡</div>
+                    <div class="mode-name">Normal</div>
+                    <div class="mode-desc">15 preguntas</div>
+                </div>
+                <div class="mode-btn" onclick="selectMode('quick')">
+                    <div class="mode-icon">🚀</div>
+                    <div class="mode-name">Rápido</div>
+                    <div class="mode-desc">5 preguntas</div>
+                </div>
+            </div>
+            
             <input type="text" id="playerName" placeholder="Tu nombre" maxlength="20">
             <button class="btn-primary" onclick="createRoom()">Crear Partida</button>
-            <p style="text-align: center; margin: 20px 0;">O</p>
+            <button class="btn-secondary" onclick="showJoinScreen()">Unirse a Partida</button>
+        </div>
+        
+        <!-- PANTALLA UNIRSE -->
+        <div id="joinScreen" class="screen">
+            <h1>🎮 Unirse a Partida</h1>
+            <input type="text" id="playerName2" placeholder="Tu nombre" maxlength="20">
             <input type="text" id="roomCodeInput" placeholder="Código de sala" maxlength="6">
             <button class="btn-secondary" onclick="joinRoom()">Unirse a Partida</button>
+            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
         </div>
-
+        
+        <!-- PANTALLA ESPERA -->
         <div id="waitingScreen" class="screen">
             <h1>⏳ Sala de Espera</h1>
             <div id="roomCodeDisplay" class="room-code"></div>
             <div id="playersList"></div>
             <button class="btn-primary" id="readyBtn" onclick="markReady()">¡Estoy Listo!</button>
-            <button class="btn-secondary" onclick="volverAlInicio()">Volver</button>
+            <button class="btn-secondary" onclick="location.reload()">Volver</button>
         </div>
-
+        
+        <!-- PANTALLA JUEGO -->
         <div id="gameScreen" class="screen">
+            <div id="categoryBadge" class="category-badge" style="text-align: center; margin: 10px 0;"></div>
             <div id="questionNumber" style="text-align: center; color: #667eea; font-weight: bold;"></div>
             <div id="questionText" class="question-text"></div>
             <div id="timer" class="timer">10</div>
+            
+            <!-- POWER-UP 50/50 -->
+            <div class="powerup-container">
+                <button id="fiftyFiftyBtn" class="powerup-btn" onclick="useFiftyFifty()">
+                    ⚡ 50/50 (Elimina 2 incorrectas)
+                </button>
+            </div>
+            
             <div id="optionsGrid"></div>
         </div>
-
+        
+        <!-- PANTALLA ESPERANDO TURNO -->
         <div id="waitingTurnScreen" class="screen">
             <h1>⏳ Esperando turno...</h1>
             <p style="text-align: center; font-size: 20px; color: #667eea; margin: 20px 0;">
@@ -147,13 +340,23 @@
                 }
             </style>
         </div>
-
+        
+        <!-- PANTALLA RESULTADOS -->
         <div id="resultsScreen" class="screen">
             <h1>🏆 ¡Juego Terminado!</h1>
             <div id="finalScores"></div>
             <form method="GET" action="">
                 <button type="submit" class="btn-primary" style="width: 100%;">🎮 Nueva Partida</button>
             </form>
+        </div>
+    </div>
+    
+    <!-- MODAL HISTORIAL -->
+    <div id="historyModal" class="history-modal">
+        <div class="history-content">
+            <h2 style="text-align: center; margin-bottom: 20px;">📊 Historial de Partidas</h2>
+            <div id="historyList"></div>
+            <button class="btn-secondary" onclick="toggleHistory()" style="margin-top: 20px;">Cerrar</button>
         </div>
     </div>
 
@@ -165,203 +368,333 @@
         var timeLeft = 10;
         var timerInterval = null;
         var hasAnswered = false;
-
+        var gameMode = 'normal'; // 'normal' o 'quick'
+        var fiftyFiftyUsed = false;
+        var currentQuestion = null;
+        
+        // SISTEMA DE HISTORIAL
+        function saveMatch(result) {
+            var matches = JSON.parse(localStorage.getItem('trivialHistory') || '[]');
+            matches.unshift({
+                date: new Date().toLocaleString('es-ES'),
+                mode: gameMode === 'quick' ? 'Rápido' : 'Normal',
+                result: result.won ? 'Victoria' : 'Derrota',
+                score: result.myScore,
+                opponent: result.opponentName,
+                opponentScore: result.opponentScore
+            });
+            // Mantener solo las últimas 20 partidas
+            if (matches.length > 20) matches = matches.slice(0, 20);
+            localStorage.setItem('trivialHistory', JSON.stringify(matches));
+        }
+        
+        function loadHistory() {
+            var matches = JSON.parse(localStorage.getItem('trivialHistory') || '[]');
+            var html = '';
+            if (matches.length === 0) {
+                html = '<p style="text-align: center; color: #999;">No hay partidas guardadas aún</p>';
+            } else {
+                var wins = matches.filter(m => m.result === 'Victoria').length;
+                var total = matches.length;
+                html += '<div style="text-align: center; background: #667eea; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px;">';
+                html += '<h3>Estadísticas</h3>';
+                html += '<p style="font-size: 24px; margin: 10px 0;"><strong>' + wins + '</strong> victorias de <strong>' + total + '</strong> partidas</p>';
+                html += '<p>Porcentaje: <strong>' + (total > 0 ? Math.round(wins/total*100) : 0) + '%</strong></p>';
+                html += '</div>';
+                
+                matches.forEach(function(match) {
+                    var className = match.result === 'Victoria' ? 'history-win' : 'history-lose';
+                    html += '<div class="history-item ' + className + '">';
+                    html += '<div style="display: flex; justify-content: space-between; margin-bottom: 5px;">';
+                    html += '<strong>' + match.result + '</strong>';
+                    html += '<span style="color: #999; font-size: 12px;">' + match.date + '</span>';
+                    html += '</div>';
+                    html += '<div style="font-size: 14px;">';
+                    html += '🎮 Modo: ' + match.mode + '<br>';
+                    html += '⭐ Puntos: ' + match.score + '<br>';
+                    html += '👤 vs ' + match.opponent + ' (' + match.opponentScore + ' pts)';
+                    html += '</div>';
+                    html += '</div>';
+                });
+            }
+            document.getElementById('historyList').innerHTML = html;
+        }
+        
+        function toggleHistory() {
+            var modal = document.getElementById('historyModal');
+            if (modal.classList.contains('active')) {
+                modal.classList.remove('active');
+            } else {
+                loadHistory();
+                modal.classList.add('active');
+            }
+        }
+        
+        // SELECCIÓN DE MODO
+        function selectMode(mode) {
+            gameMode = mode;
+            var buttons = document.querySelectorAll('.mode-btn');
+            buttons.forEach(function(btn) {
+                btn.classList.remove('selected');
+            });
+            event.target.closest('.mode-btn').classList.add('selected');
+        }
+        
+        // POWER-UP 50/50
+        function useFiftyFifty() {
+            if (fiftyFiftyUsed || hasAnswered) return;
+            
+            fiftyFiftyUsed = true;
+            document.getElementById('fiftyFiftyBtn').disabled = true;
+            document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
+            
+            var options = document.querySelectorAll('.option-btn');
+            var correctIndex = currentQuestion.correct;
+            var incorrectIndices = [];
+            
+            for (var i = 0; i < options.length; i++) {
+                if (i !== correctIndex) {
+                    incorrectIndices.push(i);
+                }
+            }
+            
+            // Eliminar 2 incorrectas aleatoriamente
+            var toRemove = [];
+            while (toRemove.length < 2 && incorrectIndices.length > 0) {
+                var randomIndex = Math.floor(Math.random() * incorrectIndices.length);
+                toRemove.push(incorrectIndices[randomIndex]);
+                incorrectIndices.splice(randomIndex, 1);
+            }
+            
+            toRemove.forEach(function(index) {
+                options[index].style.display = 'none';
+            });
+        }
+        
+        // ANIMACIÓN CONFETTI
+        function createConfetti() {
+            var colors = ['#FF6B6B', '#4ECDC4', '#FFD93D', '#6BCF7F', '#A78BFA'];
+            for (var i = 0; i < 100; i++) {
+                setTimeout(function() {
+                    var confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(function() {
+                        confetti.remove();
+                    }, 3000);
+                }, i * 30);
+            }
+        }
+        
+        // CATEGORÍAS
+        function getCategoryInfo(question) {
+            var text = question.toLowerCase();
+            if (text.includes('capital') || text.includes('país') || text.includes('continente') || text.includes('océano') || text.includes('río')) {
+                return { name: '🌍 Geografía', class: 'cat-geografia' };
+            } else if (text.includes('planeta') || text.includes('animal') || text.includes('célula') || text.includes('átomo') || text.includes('elemento')) {
+                return { name: '🧪 Ciencia', class: 'cat-ciencia' };
+            } else if (text.includes('año') || text.includes('guerra') || text.includes('emperador') || text.includes('rey')) {
+                return { name: '📜 Historia', class: 'cat-historia' };
+            } else if (text.includes('deporte') || text.includes('jugadores') || text.includes('fútbol') || text.includes('olímpicos')) {
+                return { name: '⚽ Deportes', class: 'cat-deportes' };
+            } else if (text.includes('pintó') || text.includes('escribió') || text.includes('compuso') || text.includes('dirigió')) {
+                return { name: '🎨 Arte', class: 'cat-arte' };
+            } else if (text.includes('película') || text.includes('canta') || text.includes('actor') || text.includes('música')) {
+                return { name: '🎬 Entretenimiento', class: 'cat-entretenimiento' };
+            }
+            return { name: '💡 General', class: 'cat-general' };
+        }
+        
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(function(s) {
                 s.classList.remove('active');
             });
             document.getElementById(screenId).classList.add('active');
         }
-
+        
         function showError(message) {
             document.getElementById('errorContainer').innerHTML = '<div class="error">' + message + '</div>';
             setTimeout(function() {
                 document.getElementById('errorContainer').innerHTML = '';
             }, 3000);
         }
-
+        
         function createRoom() {
             playerName = document.getElementById('playerName').value.trim();
             if (!playerName) {
                 showError('Por favor ingresa tu nombre');
                 return;
             }
-            socket.emit('createRoom', playerName);
+            socket.emit('createRoom', { playerName: playerName, mode: gameMode });
         }
-
+        
+        function showJoinScreen() {
+            showScreen('joinScreen');
+        }
+        
         function joinRoom() {
-            playerName = document.getElementById('playerName').value.trim();
+            playerName = document.getElementById('playerName2').value.trim();
             var roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
             if (!playerName || !roomCode) {
-                showError('Ingresa tu nombre y código de sala');
+                showError('Por favor completa todos los campos');
                 return;
             }
-            socket.emit('joinRoom', {roomCode: roomCode, playerName: playerName});
+            socket.emit('joinRoom', { roomCode: roomCode, playerName: playerName });
         }
-
+        
         function markReady() {
             socket.emit('playerReady', currentRoom);
-            document.getElementById('readyBtn').disabled = true;
-            document.getElementById('readyBtn').textContent = 'Esperando...';
         }
-
-        socket.on('roomCreated', function(data) {
-            currentRoom = data.roomCode;
-            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
-            updatePlayersList([{name: data.playerName, ready: false}]);
-            showScreen('waitingScreen');
-        });
-
-        socket.on('playerJoined', function(data) {
-            currentRoom = data.roomCode;
-            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
-            updatePlayersList(data.players);
-            showScreen('waitingScreen');
-        });
-
-        socket.on('roomError', function(message) {
-            showError(message);
-        });
-
-        socket.on('playersUpdate', function(players) {
-            updatePlayersList(players);
-        });
-
-        function updatePlayersList(players) {
-            var html = '';
-            for (var i = 0; i < players.length; i++) {
-                var p = players[i];
-                html += '<div class="player-card">';
-                html += '<div>' + p.name + '</div>';
-                html += '<div>' + (p.ready ? '✅ Listo' : '⏳ Esperando') + '</div>';
-                html += '</div>';
-            }
-            document.getElementById('playersList').innerHTML = html;
-        }
-
-        socket.on('newQuestion', function(data) {
-            hasAnswered = false;
-            showScreen('gameScreen');
-            document.getElementById('questionNumber').textContent = 'Pregunta ' + data.questionNumber + ' de ' + data.totalQuestions;
-            document.getElementById('questionText').textContent = data.question;
-            
-            var optionsGrid = document.getElementById('optionsGrid');
-            optionsGrid.innerHTML = '';
-            var letters = ['A', 'B', 'C', 'D'];
-            
-            for (var i = 0; i < data.options.length; i++) {
-                var btn = document.createElement('button');
-                btn.className = 'option-btn';
-                var texto = letters[i] + '. ' + data.options[i];
-                var textNode = document.createTextNode(texto);
-                btn.appendChild(textNode);
-                btn.setAttribute('data-index', i);
-                
-                // Usar solo touchend PARA móvil, click para desktop
-                (function(idx) {
-                    var touchHandled = false;
-                    
-                    btn.addEventListener('touchend', function(e) {
-                        e.preventDefault();
-                        if (!touchHandled) {
-                            touchHandled = true;
-                            selectAnswer(idx);
-                        }
-                    });
-                    
-                    btn.addEventListener('click', function(e) {
-                        if (!touchHandled) {
-                            selectAnswer(idx);
-                        }
-                        touchHandled = false; // Reset para siguiente pregunta
-                    });
-                })(i);
-                
-                optionsGrid.appendChild(btn);
-            }
-            startTimer();
-        });
-
-        socket.on('waitingTurn', function(data) {
-            showScreen('waitingTurnScreen');
-            document.getElementById('otherPlayerName').textContent = data.currentPlayerName;
-        });
-
-        function startTimer() {
-            timeLeft = 10;
-            var timerEl = document.getElementById('timer');
-            timerEl.textContent = timeLeft;
-            clearInterval(timerInterval);
-            
-            timerInterval = setInterval(function() {
-                if (hasAnswered) {
-                    clearInterval(timerInterval);
-                    return;
-                }
-                
-                timeLeft--;
-                timerEl.textContent = timeLeft;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    if (!hasAnswered) {
-                        hasAnswered = true;
-                        disableOptions();
-                        // Emitir nextQuestion cuando se acaba el tiempo
-                        setTimeout(function() {
-                            socket.emit('nextQuestion', currentRoom);
-                        }, 1000);
-                    }
-                }
-            }, 1000);
-        }
-
-        function selectAnswer(index) {
+        
+        function submitAnswer(index) {
             if (hasAnswered) return;
             hasAnswered = true;
-            
             clearInterval(timerInterval);
             
-            // Marcar visualmente qué botón se seleccionó
-            var buttons = document.querySelectorAll('.option-btn');
-            buttons[index].style.opacity = '0.6';
+            var options = document.querySelectorAll('.option-btn');
+            options[index].classList.add('selected');
             
             socket.emit('submitAnswer', {
                 roomCode: currentRoom,
                 answerIndex: index,
                 timeLeft: timeLeft
             });
-            disableOptions();
         }
-
-        function disableOptions() {
-            var buttons = document.querySelectorAll('.option-btn');
-            for (var i = 0; i < buttons.length; i++) {
-                buttons[i].disabled = true;
-            }
-        }
-
+        
+        // SOCKET EVENTS
+        socket.on('roomCreated', function(data) {
+            currentRoom = data.roomCode;
+            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
+            document.getElementById('playersList').innerHTML = '<div class="player">' + data.playerName + ' (Tú)</div>';
+            showScreen('waitingScreen');
+        });
+        
+        socket.on('roomError', function(message) {
+            showError(message);
+        });
+        
+        socket.on('playerJoined', function(data) {
+            currentRoom = data.roomCode;
+            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
+            var html = '';
+            data.players.forEach(function(p) {
+                var readyText = p.ready ? ' ✓' : '';
+                var className = p.ready ? 'player ready' : 'player';
+                html += '<div class="' + className + '">' + p.name + readyText + '</div>';
+            });
+            document.getElementById('playersList').innerHTML = html;
+            showScreen('waitingScreen');
+        });
+        
+        socket.on('playersUpdate', function(players) {
+            var html = '';
+            players.forEach(function(p) {
+                var readyText = p.ready ? ' ✓' : '';
+                var className = p.ready ? 'player ready' : 'player';
+                html += '<div class="' + className + '">' + p.name + readyText + '</div>';
+            });
+            document.getElementById('playersList').innerHTML = html;
+        });
+        
+        socket.on('newQuestion', function(data) {
+            currentQuestion = data;
+            fiftyFiftyUsed = false;
+            hasAnswered = false;
+            timeLeft = 10;
+            
+            document.getElementById('fiftyFiftyBtn').disabled = false;
+            document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (Elimina 2 incorrectas)';
+            
+            var category = getCategoryInfo(data.question);
+            document.getElementById('categoryBadge').textContent = category.name;
+            document.getElementById('categoryBadge').className = 'category-badge ' + category.class;
+            
+            document.getElementById('questionNumber').textContent = 'Pregunta ' + data.questionNumber + ' de ' + data.totalQuestions;
+            document.getElementById('questionText').textContent = data.question;
+            document.getElementById('timer').textContent = timeLeft;
+            
+            var grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+            data.options.forEach(function(option, index) {
+                var btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = function() { submitAnswer(index); };
+                grid.appendChild(btn);
+            });
+            
+            showScreen('gameScreen');
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(function() {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    if (!hasAnswered) {
+                        hasAnswered = true;
+                        socket.emit('nextQuestion', currentRoom);
+                    }
+                }
+            }, 1000);
+        });
+        
         socket.on('answerResult', function(data) {
             var options = document.querySelectorAll('.option-btn');
             
-            // Buscar el botón que el usuario seleccionó (el que tiene opacity 0.6)
             for (var i = 0; i < options.length; i++) {
                 if (options[i].style.opacity === '0.6') {
-                    // Este es el botón seleccionado
                     if (data.isCorrect) {
-                        options[i].classList.add('correct'); // Verde
+                        options[i].classList.add('correct');
                     } else {
-                        options[i].classList.add('wrong'); // Rojo
+                        options[i].classList.add('wrong');
                     }
-                    options[i].style.opacity = '1'; // Restaurar opacidad
+                    options[i].style.opacity = '1';
                     break;
                 }
             }
-            
-            // NO cambiar de pantalla aquí - el servidor decidirá qué enviar
-            // (waitingTurn o gameOver)
         });
-
+        
+        socket.on('waitingTurn', function(data) {
+            document.getElementById('otherPlayerName').textContent = data.currentPlayerName;
+            showScreen('waitingTurnScreen');
+        });
+        
+        socket.on('gameOver', function(data) {
+            var html = '<div style="text-align: center;">';
+            data.players.forEach(function(p) {
+                var isMe = p.name === playerName;
+                var isWinner = p.name === data.winner;
+                var style = isWinner ? 'background: #4CAF50; color: white;' : 'background: #f5f5f5;';
+                var crown = isWinner ? ' 👑' : '';
+                html += '<div style="' + style + ' padding: 20px; margin: 10px 0; border-radius: 10px; font-size: 18px;">';
+                html += '<strong>' + p.name + crown + '</strong><br>';
+                html += 'Puntos: ' + p.score;
+                html += '</div>';
+                
+                if (isMe) {
+                    // Guardar en historial
+                    saveMatch({
+                        won: isWinner,
+                        myScore: p.score,
+                        opponentName: data.players.find(pl => pl.name !== playerName).name,
+                        opponentScore: data.players.find(pl => pl.name !== playerName).score
+                    });
+                }
+            });
+            html += '</div>';
+            document.getElementById('finalScores').innerHTML = html;
+            showScreen('resultsScreen');
+            
+            // Confetti si ganaste
+            if (data.winner === playerName) {
+                createConfetti();
+            }
+        });
+        
         socket.on('playerLeft', function(players) {
             if (players.length === 0) {
                 showError('El otro jugador se desconectó');
@@ -370,27 +703,10 @@
                 }, 2000);
             }
         });
-
-        socket.on('gameOver', function(data) {
-            showScreen('resultsScreen');
-            var html = '';
-            data.players.sort(function(a, b) { return b.score - a.score; });
-            for (var i = 0; i < data.players.length; i++) {
-                var p = data.players[i];
-                html += '<div class="score-card">';
-                html += '<div>' + (i + 1) + '. ' + p.name;
-                if (p.name === data.winner) html += ' 🏆';
-                html += '</div>';
-                html += '<div>' + p.score + ' pts</div>';
-                html += '</div>';
-            }
-            document.getElementById('finalScores').innerHTML = html;
-        });
-
+        
         socket.on('connect_error', function() {
             showError('Error de conexión');
         });
     </script>
 </body>
 </html>
-
