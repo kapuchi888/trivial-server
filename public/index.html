@@ -654,14 +654,15 @@
         socket.on('answerResult', function(data) {
             var options = document.querySelectorAll('.option-btn');
             
+            // Buscar la opción que el usuario seleccionó
             for (var i = 0; i < options.length; i++) {
-                if (options[i].style.opacity === '0.6') {
+                if (options[i].classList.contains('selected')) {
+                    // Solo colorear la que seleccionaste
                     if (data.isCorrect) {
                         options[i].classList.add('correct');
                     } else {
                         options[i].classList.add('wrong');
                     }
-                    options[i].style.opacity = '1';
                     break;
                 }
             }
