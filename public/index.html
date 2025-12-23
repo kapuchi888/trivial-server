@@ -614,13 +614,21 @@
             hasAnswered = false;
             timeLeft = 10;
             
-            // Actualizar el estado del botón según si ya fue usado
-            if (fiftyFiftyUsed) {
-                document.getElementById('fiftyFiftyBtn').disabled = true;
-                document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
+            // Ocultar comodín en modo rápido
+            var powerupContainer = document.querySelector('.powerup-container');
+            if (gameMode === 'quick') {
+                powerupContainer.style.display = 'none';
             } else {
-                document.getElementById('fiftyFiftyBtn').disabled = false;
-                document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por partida)';
+                powerupContainer.style.display = 'block';
+                
+                // Actualizar el estado del botón según si ya fue usado
+                if (fiftyFiftyUsed) {
+                    document.getElementById('fiftyFiftyBtn').disabled = true;
+                    document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
+                } else {
+                    document.getElementById('fiftyFiftyBtn').disabled = false;
+                    document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por partida)';
+                }
             }
             
             var category = getCategoryInfo(data.question);
@@ -726,3 +734,4 @@
     </script>
 </body>
 </html>
+
