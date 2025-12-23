@@ -325,8 +325,8 @@
             
             <!-- POWER-UP 50/50 -->
             <div class="powerup-container">
-                <button id="fiftyFiftyBtn" class="powerup-btn" onclick="useFiftyFifty()">
-                    ⚡ 50/50 (Elimina 2 incorrectas)
+                <button id="fiftyFiftyBtn" class="powerup-btn" onclick="useFiftyFifty()" title="Elimina 2 respuestas incorrectas. Solo puedes usarlo 1 vez por partida">
+                    ⚡ 50/50 (1 por partida)
                 </button>
             </div>
             
@@ -610,12 +610,18 @@
         
         socket.on('newQuestion', function(data) {
             currentQuestion = data;
-            fiftyFiftyUsed = false;
+            // fiftyFiftyUsed NO se resetea - solo 1 uso por partida
             hasAnswered = false;
             timeLeft = 10;
             
-            document.getElementById('fiftyFiftyBtn').disabled = false;
-            document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (Elimina 2 incorrectas)';
+            // Actualizar el estado del botón según si ya fue usado
+            if (fiftyFiftyUsed) {
+                document.getElementById('fiftyFiftyBtn').disabled = true;
+                document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
+            } else {
+                document.getElementById('fiftyFiftyBtn').disabled = false;
+                document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por partida)';
+            }
             
             var category = getCategoryInfo(data.question);
             document.getElementById('categoryBadge').textContent = category.name;
