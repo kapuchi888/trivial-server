@@ -29,10 +29,35 @@ const rooms = {};
 // ===== CARGAR PREGUNTAS DESDE JSON =====
 const allQuestions = JSON.parse(fs.readFileSync('./questions.json', 'utf8'));
 
-// Función para seleccionar preguntas aleatorias
+// Función para mezclar array (Fisher-Yates shuffle)
+function shuffleArray(array) {
+    const shuffled = [...array]; // Copia del array
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+// Función para seleccionar preguntas aleatorias SIN REPETIR
 function getRandomQuestions(count = 10) {
-    const shuffled = allQuestions.sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count);
+    const shuffled = shuffleArray(allQuestions);
+    const selected = [];
+    const usedTexts = new Set(); // Para verificar duplicados por texto
+    
+    for (let question of shuffled) {
+        // Solo añadir si no hemos usado esta pregunta exacta
+        if (!usedTexts.has(question.question)) {
+            selected.push(question);
+            usedTexts.add(question.question);
+            
+            if (selected.length >= count) {
+                break;
+            }
+        }
+    }
+    
+    return selected;
 }
 
 // Socket.IO eventos
