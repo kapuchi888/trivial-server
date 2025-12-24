@@ -68,7 +68,8 @@ io.on('connection', (socket) => {
         const playerName = typeof data === 'string' ? data : data.playerName;
         const mode = (typeof data === 'object' && data.mode) ? data.mode : 'normal';
         const questionsPerPlayer = mode === 'quick' ? 5 : 15;
-        const totalQuestions = questionsPerPlayer * 2;
+        const maxPlayers = 4; // Máximo 4 jugadores
+        const totalQuestions = questionsPerPlayer * maxPlayers; // Preparar para 4 jugadores
         
         const roomCode = generateRoomCode();
         rooms[roomCode] = {
@@ -84,6 +85,7 @@ io.on('connection', (socket) => {
             started: false,
             mode: mode,
             questionsPerPlayer: questionsPerPlayer,
+            maxPlayers: maxPlayers,
             questions: getRandomQuestions(totalQuestions)
         };
         socket.join(roomCode);
@@ -91,15 +93,26 @@ io.on('connection', (socket) => {
     });
 
     socket.on('joinRoom', ({roomCode, playerName}) => {
-        const room = rooms[roomCode];
+        // Limpiar código: quitar espacios y convertir a mayúsculas
+        const cleanRoomCode = roomCode.trim().toUpperCase();
+        
+        console.log('🔍 Intento de unión:', cleanRoomCode);
+        console.log('📚 Salas disponibles:', Object.keys(rooms));
+        
+        const room = rooms[cleanRoomCode];
         if (!room) {
+            console.log('❌ Sala no encontrada:', cleanRoomCode);
             socket.emit('roomError', 'Sala no encontrada');
             return;
         }
-        if (room.players.length >= 2) {
-            socket.emit('roomError', 'Sala llena');
+        if (room.players.length >= room.maxPlayers) {
+            console.log('❌ Sala llena:', cleanRoomCode);
+            socket.emit('roomError', 'Sala llena (máximo 4 jugadores)');
             return;
         }
+        
+        console.log('✅ Jugador unido a sala:', cleanRoomCode);
+        
         room.players.push({
             id: socket.id,
             name: playerName,
@@ -107,9 +120,9 @@ io.on('connection', (socket) => {
             score: 0,
             questionsAnswered: 0
         });
-        socket.join(roomCode);
-        io.to(roomCode).emit('playerJoined', {
-            roomCode,
+        socket.join(cleanRoomCode);
+        io.to(cleanRoomCode).emit('playerJoined', {
+            roomCode: cleanRoomCode,
             players: room.players
         });
     });
@@ -123,7 +136,8 @@ io.on('connection', (socket) => {
         
         io.to(roomCode).emit('playersUpdate', room.players);
         
-        if (room.players.length === 2 && room.players.every(p => p.ready)) {
+        // Empezar cuando hay al menos 2 jugadores y todos están listos
+        if (room.players.length >= 2 && room.players.every(p => p.ready)) {
             room.started = true;
             sendQuestion(roomCode);
         }
@@ -155,27 +169,23 @@ io.on('connection', (socket) => {
             correctAnswer: question.correct
         });
         
-        // Verificar si el juego terminó (ambos jugadores completaron sus preguntas)
+        // Verificar si el juego terminó (todos los jugadores completaron sus preguntas)
         if (room.players.every(p => p.questionsAnswered >= room.questionsPerPlayer)) {
-            // Fin del juego - enviar a AMBOS jugadores
+            // Fin del juego - Crear ranking
             setTimeout(() => {
-                const winner = room.players.reduce((max, p) => 
-                    p.score > max.score ? p : max
-                );
+                // Ordenar jugadores por puntuación (mayor a menor)
+                const ranking = [...room.players].sort((a, b) => b.score - a.score);
+                
                 io.to(roomCode).emit('gameOver', {
                     players: room.players,
-                    winner: winner.name
+                    ranking: ranking,
+                    winner: ranking[0].name
                 });
                 delete rooms[roomCode];
             }, 2000);
         } else {
             // Continuar con siguiente turno
-            // Enviar "esperando" al jugador que acaba de contestar
             setTimeout(() => {
-                const otherPlayer = room.players[1 - room.currentPlayerIndex];
-                io.to(socket.id).emit('waitingTurn', {
-                    currentPlayerName: otherPlayer.name
-                });
                 nextTurn(roomCode);
             }, 2000);
         }
@@ -217,8 +227,8 @@ io.on('connection', (socket) => {
         // Resetear estado de respuesta del jugador actual
         room.players[room.currentPlayerIndex].hasAnswered = false;
         
-        // Cambiar de turno
-        room.currentPlayerIndex = 1 - room.currentPlayerIndex;
+        // Cambiar de turno (rotar entre todos los jugadores)
+        room.currentPlayerIndex = (room.currentPlayerIndex + 1) % room.players.length;
         room.currentQuestion++;
         
         // Resetear estado del siguiente jugador
@@ -261,7 +271,6 @@ function sendQuestion(roomCode) {
     const room = rooms[roomCode];
     const question = room.questions[room.currentQuestion];
     const currentPlayer = room.players[room.currentPlayerIndex];
-    const otherPlayer = room.players[1 - room.currentPlayerIndex];
     
     // Enviar pregunta solo al jugador actual
     io.to(currentPlayer.id).emit('newQuestion', {
@@ -271,9 +280,14 @@ function sendQuestion(roomCode) {
         totalQuestions: room.questionsPerPlayer
     });
     
-    // Enviar "esperando" al otro jugador
-    io.to(otherPlayer.id).emit('waitingTurn', {
-        currentPlayerName: currentPlayer.name
+    // Enviar "esperando" a TODOS los demás jugadores
+    room.players.forEach((player, index) => {
+        if (index !== room.currentPlayerIndex) {
+            io.to(player.id).emit('waitingTurn', {
+                currentPlayerName: currentPlayer.name,
+                allPlayers: room.players
+            });
+        }
     });
 }
 
