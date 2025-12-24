@@ -311,6 +311,9 @@
         <div id="waitingScreen" class="screen">
             <h1>⏳ Sala de Espera</h1>
             <div id="roomCodeDisplay" class="room-code"></div>
+            <p style="font-size: 16px; color: #888; margin: 10px 0;">
+                <span id="playerCount">1</span>/4 jugadores · Mínimo 2 para empezar
+            </p>
             <div id="playersList"></div>
             <button class="btn-primary" id="readyBtn" onclick="markReady()">¡Estoy Listo!</button>
             <button class="btn-secondary" onclick="location.reload()">Volver</button>
@@ -547,6 +550,10 @@
         function joinRoom() {
             playerName = document.getElementById('playerName2').value.trim();
             var roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+            
+            console.log('🔍 Intentando unirse a sala:', roomCode);
+            console.log('📝 Longitud del código:', roomCode.length);
+            
             if (!playerName || !roomCode) {
                 showError('Por favor completa todos los campos');
                 return;
@@ -582,7 +589,13 @@
         });
         
         socket.on('roomError', function(message) {
-            showError(message);
+            if (message === 'Sala no encontrada') {
+                showError('❌ Sala no encontrada. Posibles causas:\n• El código expiró\n• El creador salió\n• Código incorrecto');
+            } else if (message === 'Sala llena') {
+                showError('❌ Esta sala ya tiene 2 jugadores');
+            } else {
+                showError(message);
+            }
         });
         
         socket.on('playerJoined', function(data) {
@@ -595,6 +608,13 @@
                 html += '<div class="' + className + '">' + p.name + readyText + '</div>';
             });
             document.getElementById('playersList').innerHTML = html;
+            
+            // Actualizar contador de jugadores
+            var counterElement = document.getElementById('playerCount');
+            if (counterElement) {
+                counterElement.textContent = data.players.length;
+            }
+            
             showScreen('waitingScreen');
         });
         
@@ -606,6 +626,12 @@
                 html += '<div class="' + className + '">' + p.name + readyText + '</div>';
             });
             document.getElementById('playersList').innerHTML = html;
+            
+            // Actualizar contador de jugadores
+            var counterElement = document.getElementById('playerCount');
+            if (counterElement) {
+                counterElement.textContent = players.length;
+            }
         });
         
         socket.on('newQuestion', function(data) {
@@ -684,36 +710,91 @@
         
         socket.on('waitingTurn', function(data) {
             document.getElementById('otherPlayerName').textContent = data.currentPlayerName;
+            
+            // Mostrar tabla de puntuaciones si hay múltiples jugadores
+            if (data.allPlayers && data.allPlayers.length > 2) {
+                var scoresHtml = '<div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">';
+                scoresHtml += '<h3 style="margin-bottom: 10px;">📊 Puntuaciones actuales:</h3>';
+                
+                var sortedPlayers = [...data.allPlayers].sort((a, b) => b.score - a.score);
+                sortedPlayers.forEach(function(p) {
+                    var isMe = p.name === playerName;
+                    var isCurrent = p.name === data.currentPlayerName;
+                    var style = 'padding: 8px; margin: 5px 0; border-radius: 5px; ';
+                    
+                    if (isCurrent) {
+                        style += 'background: rgba(102, 126, 234, 0.3); border: 2px solid #667eea;';
+                    } else {
+                        style += 'background: rgba(255,255,255,0.05);';
+                    }
+                    
+                    scoresHtml += '<div style="' + style + '">';
+                    scoresHtml += p.name + (isMe ? ' (Tú)' : '') + (isCurrent ? ' 🎯' : '') + ': <strong>' + p.score + ' pts</strong>';
+                    scoresHtml += '</div>';
+                });
+                scoresHtml += '</div>';
+                
+                var waitingDiv = document.getElementById('otherPlayerName').parentElement;
+                var existingScores = waitingDiv.querySelector('.scores-table');
+                if (existingScores) {
+                    existingScores.remove();
+                }
+                var div = document.createElement('div');
+                div.className = 'scores-table';
+                div.innerHTML = scoresHtml;
+                waitingDiv.appendChild(div);
+            }
+            
             showScreen('waitingTurnScreen');
         });
         
         socket.on('gameOver', function(data) {
             var html = '<div style="text-align: center;">';
-            data.players.forEach(function(p) {
+            html += '<h2 style="font-size: 32px; margin-bottom: 30px;">🏆 RANKING FINAL 🏆</h2>';
+            
+            // Usar el ranking ordenado del servidor
+            var ranking = data.ranking || data.players.sort((a, b) => b.score - a.score);
+            var medals = ['🥇', '🥈', '🥉', '4º'];
+            
+            ranking.forEach(function(p, index) {
                 var isMe = p.name === playerName;
-                var isWinner = p.name === data.winner;
-                var style = isWinner ? 'background: #4CAF50; color: white;' : 'background: #f5f5f5;';
-                var crown = isWinner ? ' 👑' : '';
-                html += '<div style="' + style + ' padding: 20px; margin: 10px 0; border-radius: 10px; font-size: 18px;">';
-                html += '<strong>' + p.name + crown + '</strong><br>';
-                html += 'Puntos: ' + p.score;
+                var position = index + 1;
+                var medal = medals[index] || (position + 'º');
+                var style = '';
+                
+                if (position === 1) {
+                    style = 'background: linear-gradient(135deg, #FFD700, #FFA500); color: white;';
+                } else if (position === 2) {
+                    style = 'background: linear-gradient(135deg, #C0C0C0, #808080); color: white;';
+                } else if (position === 3) {
+                    style = 'background: linear-gradient(135deg, #CD7F32, #8B4513); color: white;';
+                } else {
+                    style = 'background: #f5f5f5;';
+                }
+                
+                html += '<div style="' + style + ' padding: 25px; margin: 15px 0; border-radius: 15px; font-size: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
+                html += '<div style="font-size: 36px; margin-bottom: 10px;">' + medal + '</div>';
+                html += '<strong style="font-size: 24px;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong><br>';
+                html += '<span style="font-size: 28px; font-weight: bold;">' + p.score + ' pts</span>';
                 html += '</div>';
                 
                 if (isMe) {
                     // Guardar en historial
+                    var opponents = ranking.filter(pl => pl.name !== playerName);
                     saveMatch({
-                        won: isWinner,
+                        won: position === 1,
                         myScore: p.score,
-                        opponentName: data.players.find(pl => pl.name !== playerName).name,
-                        opponentScore: data.players.find(pl => pl.name !== playerName).score
+                        opponentName: opponents.map(o => o.name).join(', '),
+                        opponentScore: opponents.map(o => o.score).join(', ')
                     });
                 }
             });
+            
             html += '</div>';
             document.getElementById('finalScores').innerHTML = html;
             showScreen('resultsScreen');
             
-            // Confetti si ganaste
+            // Confetti si ganaste (1er lugar)
             if (data.winner === playerName) {
                 createConfetti();
             }
@@ -734,4 +815,3 @@
     </script>
 </body>
 </html>
-
