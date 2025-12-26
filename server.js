@@ -23,11 +23,217 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
 
+// API para obtener preguntas aleatorias (modo CPU)
+app.get('/api/questions', (req, res) => {
+    const count = parseInt(req.query.count) || 10;
+    const questions = getRandomQuestions(count);
+    res.json(questions);
+});
+
 // Variables del servidor
 const rooms = {};
 
-// ===== CARGAR PREGUNTAS DESDE JSON =====
-const allQuestions = JSON.parse(fs.readFileSync('./questions.json', 'utf8'));
+// ===== SISTEMA DE PREGUNTAS CON OPEN TRIVIA DB Y TRADUCCIÓN =====
+let allQuestions = [];
+const CACHE_SIZE = 200; // Preguntas en caché
+const REFILL_THRESHOLD = 50; // Recargar cuando queden menos de 50
+
+// Función para traducir texto de inglés a español
+async function translateToSpanish(text) {
+    try {
+        const https = require('https');
+        const querystring = require('querystring');
+        
+        return new Promise((resolve, reject) => {
+            // Usar API de traducción gratuita
+            const postData = JSON.stringify({
+                q: text,
+                source: 'en',
+                target: 'es',
+                format: 'text'
+            });
+            
+            const options = {
+                hostname: 'translate.argosopentech.com',
+                port: 443,
+                path: '/translate',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(postData)
+                }
+            };
+            
+            const req = https.request(options, (res) => {
+                let data = '';
+                
+                res.on('data', (chunk) => {
+                    data += chunk;
+                });
+                
+                res.on('end', () => {
+                    try {
+                        const json = JSON.parse(data);
+                        resolve(json.translatedText || text);
+                    } catch (e) {
+                        resolve(text); // Si falla, devolver original
+                    }
+                });
+            });
+            
+            req.on('error', (e) => {
+                resolve(text); // Si falla, devolver original
+            });
+            
+            req.write(postData);
+            req.end();
+            
+            // Timeout de 3 segundos
+            setTimeout(() => {
+                req.destroy();
+                resolve(text);
+            }, 3000);
+        });
+    } catch (error) {
+        return text; // Si hay error, devolver original
+    }
+}
+
+// Función para traducir un lote de textos
+async function translateBatch(texts) {
+    const promises = texts.map(text => translateToSpanish(text));
+    return await Promise.all(promises);
+}
+
+// Función para obtener preguntas de Open Trivia DB
+async function fetchQuestionsFromAPI(amount = 50) {
+    try {
+        const https = require('https');
+        
+        return new Promise((resolve, reject) => {
+            const url = `https://opentdb.com/api.php?amount=${amount}&type=multiple`;
+            
+            https.get(url, (resp) => {
+                let data = '';
+                
+                resp.on('data', (chunk) => {
+                    data += chunk;
+                });
+                
+                resp.on('end', async () => {
+                    try {
+                        const json = JSON.parse(data);
+                        
+                        if (json.response_code === 0 && json.results) {
+                            console.log(`📥 Descargadas ${json.results.length} preguntas, traduciendo...`);
+                            
+                            // Procesar preguntas
+                            const formattedQuestions = [];
+                            
+                            for (let q of json.results) {
+                                // Decodificar HTML entities
+                                const decodeHTML = (html) => {
+                                    return html
+                                        .replace(/&quot;/g, '"')
+                                        .replace(/&#039;/g, "'")
+                                        .replace(/&amp;/g, '&')
+                                        .replace(/&lt;/g, '<')
+                                        .replace(/&gt;/g, '>')
+                                        .replace(/&ntilde;/g, 'ñ')
+                                        .replace(/&aacute;/g, 'á')
+                                        .replace(/&eacute;/g, 'é')
+                                        .replace(/&iacute;/g, 'í')
+                                        .replace(/&oacute;/g, 'ó')
+                                        .replace(/&uacute;/g, 'ú');
+                                };
+                                
+                                // Preparar textos para traducir
+                                const questionText = decodeHTML(q.question);
+                                const allOptions = [...q.incorrect_answers.map(decodeHTML), decodeHTML(q.correct_answer)];
+                                
+                                // Traducir pregunta y opciones
+                                const textsToTranslate = [questionText, ...allOptions];
+                                const translated = await translateBatch(textsToTranslate);
+                                
+                                const translatedQuestion = translated[0];
+                                const translatedOptions = translated.slice(1);
+                                
+                                // Mezclar opciones
+                                const shuffled = shuffleArray(translatedOptions);
+                                const correctIndex = shuffled.indexOf(translated[translated.length - 1]);
+                                
+                                formattedQuestions.push({
+                                    question: translatedQuestion,
+                                    options: shuffled,
+                                    correct: correctIndex
+                                });
+                            }
+                            
+                            console.log(`✅ ${formattedQuestions.length} preguntas traducidas al español`);
+                            resolve(formattedQuestions);
+                        } else {
+                            reject(new Error('API response error'));
+                        }
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            }).on('error', (err) => {
+                reject(err);
+            });
+        });
+    } catch (error) {
+        console.error('❌ Error al obtener preguntas de API:', error.message);
+        return [];
+    }
+}
+
+// Función para cargar preguntas locales de respaldo
+function loadLocalQuestions() {
+    try {
+        const localQuestions = JSON.parse(fs.readFileSync('./questions.json', 'utf8'));
+        console.log(`📁 Cargadas ${localQuestions.length} preguntas locales de respaldo`);
+        return localQuestions;
+    } catch (error) {
+        console.log('⚠️ No se encontró questions.json, usando preguntas mínimas');
+        return [
+            { question: "¿Capital de Francia?", options: ["Londres", "París", "Berlín", "Madrid"], correct: 1 },
+            { question: "¿Capital de España?", options: ["Barcelona", "Madrid", "Sevilla", "Valencia"], correct: 1 },
+            { question: "¿Capital de Italia?", options: ["Milán", "Roma", "Nápoles", "Florencia"], correct: 1 },
+            { question: "¿Planeta más grande?", options: ["Tierra", "Júpiter", "Marte", "Saturno"], correct: 1 },
+            { question: "¿Océano más grande?", options: ["Atlántico", "Pacífico", "Índico", "Ártico"], correct: 1 }
+        ];
+    }
+}
+
+// Inicializar preguntas al arrancar
+async function initializeQuestions() {
+    console.log('🔄 Inicializando sistema de preguntas...');
+    
+    // Intentar cargar de la API
+    const apiQuestions = await fetchQuestionsFromAPI(50); // Empezar con 50 para que sea más rápido
+    
+    if (apiQuestions.length > 0) {
+        allQuestions = apiQuestions;
+        console.log(`✅ Sistema listo con ${allQuestions.length} preguntas traducidas`);
+    } else {
+        // Usar preguntas locales como respaldo
+        allQuestions = loadLocalQuestions();
+        console.log(`📁 Sistema usando ${allQuestions.length} preguntas locales`);
+    }
+}
+
+// Recargar preguntas automáticamente cuando se agoten
+async function refillQuestionsIfNeeded() {
+    if (allQuestions.length < REFILL_THRESHOLD) {
+        console.log(`🔄 Recargando preguntas (quedan ${allQuestions.length})...`);
+        const newQuestions = await fetchQuestionsFromAPI(50);
+        if (newQuestions.length > 0) {
+            allQuestions.push(...newQuestions);
+            console.log(`✅ Agregadas ${newQuestions.length} preguntas nuevas. Total: ${allQuestions.length}`);
+        }
+    }
+}
 
 // Función para mezclar array (Fisher-Yates shuffle)
 function shuffleArray(array) {
@@ -41,6 +247,9 @@ function shuffleArray(array) {
 
 // Función para seleccionar preguntas aleatorias SIN REPETIR
 function getRandomQuestions(count = 10) {
+    // Recargar si es necesario (sin esperar)
+    refillQuestionsIfNeeded();
+    
     const shuffled = shuffleArray(allQuestions);
     const selected = [];
     const usedTexts = new Set(); // Para verificar duplicados por texto
@@ -295,6 +504,12 @@ function generateRoomCode() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
-server.listen(PORT, () => {
-    console.log(`Servidor corriendo en puerto ${PORT}`);
-});
+// Inicializar y arrancar servidor
+(async () => {
+    await initializeQuestions();
+    
+    server.listen(PORT, () => {
+        console.log(`🚀 Servidor Trivial Kapuchi corriendo en puerto ${PORT}`);
+        console.log(`📚 Preguntas disponibles: ${allQuestions.length}`);
+    });
+})();
