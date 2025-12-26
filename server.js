@@ -94,7 +94,7 @@ async function translateBatch(texts) {
     return translated;
 }
 
-// Función para obtener preguntas de The Trivia API (SIN TRADUCCIÓN - VERSIÓN DE PRUEBA)
+// Función para obtener preguntas de The Trivia API CON TRADUCCIÓN
 async function fetchQuestionsFromAPI(amount = 50) {
     try {
         const https = require('https');
@@ -114,24 +114,53 @@ async function fetchQuestionsFromAPI(amount = 50) {
                         const questions = JSON.parse(data);
                         
                         if (Array.isArray(questions) && questions.length > 0) {
-                            console.log(`📥 Descargadas ${questions.length} preguntas de The Trivia API`);
+                            console.log(`📥 Descargadas ${questions.length} preguntas de The Trivia API, traduciendo...`);
                             
-                            // Procesar preguntas SIN traducir (por ahora en inglés)
-                            const formattedQuestions = questions.map(q => {
-                                const allOptions = [...q.incorrectAnswers, q.correctAnswer];
-                                const shuffled = shuffleArray(allOptions);
-                                const correctIndex = shuffled.indexOf(q.correctAnswer);
-                                
-                                return {
-                                    question: q.question,
-                                    options: shuffled,
-                                    correct: correctIndex,
-                                    category: q.category,
-                                    difficulty: q.difficulty
-                                };
-                            });
+                            // Procesar preguntas CON traducción
+                            const formattedQuestions = [];
                             
-                            console.log(`✅ ${formattedQuestions.length} preguntas listas (en inglés temporalmente)`);
+                            for (let q of questions) {
+                                try {
+                                    // Preparar textos para traducir
+                                    const questionText = q.question;
+                                    const allOptions = [...q.incorrectAnswers, q.correctAnswer];
+                                    
+                                    // Traducir pregunta y opciones
+                                    const textsToTranslate = [questionText, ...allOptions];
+                                    const translated = await translateBatch(textsToTranslate);
+                                    
+                                    const translatedQuestion = translated[0];
+                                    const translatedOptions = translated.slice(1);
+                                    
+                                    // Mezclar opciones
+                                    const shuffled = shuffleArray(translatedOptions);
+                                    const correctIndex = shuffled.indexOf(translated[translated.length - 1]);
+                                    
+                                    formattedQuestions.push({
+                                        question: translatedQuestion,
+                                        options: shuffled,
+                                        correct: correctIndex,
+                                        category: q.category,
+                                        difficulty: q.difficulty
+                                    });
+                                } catch (error) {
+                                    // Si falla la traducción de una pregunta, usar en inglés
+                                    console.log(`⚠️ Error traduciendo pregunta, usando inglés`);
+                                    const allOptions = [...q.incorrectAnswers, q.correctAnswer];
+                                    const shuffled = shuffleArray(allOptions);
+                                    const correctIndex = shuffled.indexOf(q.correctAnswer);
+                                    
+                                    formattedQuestions.push({
+                                        question: q.question,
+                                        options: shuffled,
+                                        correct: correctIndex,
+                                        category: q.category,
+                                        difficulty: q.difficulty
+                                    });
+                                }
+                            }
+                            
+                            console.log(`✅ ${formattedQuestions.length} preguntas traducidas al español`);
                             resolve(formattedQuestions);
                         } else {
                             reject(new Error('API response error'));
@@ -179,7 +208,7 @@ async function initializeQuestions() {
     
     if (apiQuestions.length > 0) {
         allQuestions = apiQuestions;
-        console.log(`✅ Sistema listo con ${allQuestions.length} preguntas de The Trivia API`);
+        console.log(`✅ Sistema listo con ${allQuestions.length} preguntas traducidas al español`);
     } else {
         // Usar preguntas locales como respaldo
         allQuestions = loadLocalQuestions();
