@@ -45,26 +45,11 @@ async function translateToSpanish(text) {
         const querystring = require('querystring');
         
         return new Promise((resolve, reject) => {
-            // Usar API de traducción gratuita
-            const postData = JSON.stringify({
-                q: text,
-                source: 'en',
-                target: 'es',
-                format: 'text'
-            });
+            // Usar MyMemory Translation API (más confiable)
+            const encodedText = encodeURIComponent(text);
+            const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|es`;
             
-            const options = {
-                hostname: 'translate.argosopentech.com',
-                port: 443,
-                path: '/translate',
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(postData)
-                }
-            };
-            
-            const req = https.request(options, (res) => {
+            https.get(url, (res) => {
                 let data = '';
                 
                 res.on('data', (chunk) => {
@@ -74,35 +59,39 @@ async function translateToSpanish(text) {
                 res.on('end', () => {
                     try {
                         const json = JSON.parse(data);
-                        resolve(json.translatedText || text);
+                        if (json.responseData && json.responseData.translatedText) {
+                            resolve(json.responseData.translatedText);
+                        } else {
+                            resolve(text); // Si falla, devolver original
+                        }
                     } catch (e) {
-                        resolve(text); // Si falla, devolver original
+                        resolve(text);
                     }
                 });
-            });
-            
-            req.on('error', (e) => {
-                resolve(text); // Si falla, devolver original
-            });
-            
-            req.write(postData);
-            req.end();
-            
-            // Timeout de 3 segundos
-            setTimeout(() => {
-                req.destroy();
+            }).on('error', (e) => {
                 resolve(text);
-            }, 3000);
+            });
+            
+            // Timeout de 5 segundos
+            setTimeout(() => {
+                resolve(text);
+            }, 5000);
         });
     } catch (error) {
-        return text; // Si hay error, devolver original
+        return text;
     }
 }
 
 // Función para traducir un lote de textos
 async function translateBatch(texts) {
-    const promises = texts.map(text => translateToSpanish(text));
-    return await Promise.all(promises);
+    const translated = [];
+    for (let text of texts) {
+        const result = await translateToSpanish(text);
+        translated.push(result);
+        // Pequeño delay para no saturar la API
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    return translated;
 }
 
 // Función para obtener preguntas de Open Trivia DB
