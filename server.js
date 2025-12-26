@@ -38,16 +38,15 @@ let allQuestions = [];
 const CACHE_SIZE = 200; // Preguntas en caché
 const REFILL_THRESHOLD = 50; // Recargar cuando queden menos de 50
 
-// Función para traducir texto de inglés a español
+// Función para traducir texto de inglés a español usando Google Translate
 async function translateToSpanish(text) {
     try {
         const https = require('https');
-        const querystring = require('querystring');
         
-        return new Promise((resolve, reject) => {
-            // Usar MyMemory Translation API (más confiable)
+        return new Promise((resolve) => {
+            // Usar Google Translate API no oficial (más confiable)
             const encodedText = encodeURIComponent(text);
-            const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|es`;
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=es&dt=t&q=${encodedText}`;
             
             https.get(url, (res) => {
                 let data = '';
@@ -58,24 +57,28 @@ async function translateToSpanish(text) {
                 
                 res.on('end', () => {
                     try {
-                        const json = JSON.parse(data);
-                        if (json.responseData && json.responseData.translatedText) {
-                            resolve(json.responseData.translatedText);
+                        const parsed = JSON.parse(data);
+                        // Google Translate devuelve formato: [[[traducción, original, ...]]]
+                        if (parsed && parsed[0] && parsed[0][0] && parsed[0][0][0]) {
+                            const translated = parsed[0].map(item => item[0]).join('');
+                            resolve(translated);
                         } else {
                             resolve(text); // Si falla, devolver original
                         }
                     } catch (e) {
+                        console.log(`⚠️ Error traduciendo: ${text.substring(0, 30)}...`);
                         resolve(text);
                     }
                 });
             }).on('error', (e) => {
+                console.log(`⚠️ Error de conexión traduciendo`);
                 resolve(text);
             });
             
-            // Timeout de 5 segundos
+            // Timeout de 3 segundos
             setTimeout(() => {
                 resolve(text);
-            }, 5000);
+            }, 3000);
         });
     } catch (error) {
         return text;
@@ -88,8 +91,8 @@ async function translateBatch(texts) {
     for (let text of texts) {
         const result = await translateToSpanish(text);
         translated.push(result);
-        // Pequeño delay para no saturar la API
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Pequeño delay para no saturar (Google es más rápido)
+        await new Promise(resolve => setTimeout(resolve, 50));
     }
     return translated;
 }
