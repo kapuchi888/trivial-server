@@ -7,47 +7,104 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
         .container {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 500px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 30px;
+            max-width: 550px;
             width: 90%;
             position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
-        h1 { text-align: center; color: #667eea; margin-bottom: 20px; }
+        h1 { 
+            text-align: center; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 48px;
+            margin-bottom: 10px;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
         input {
             width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
+            padding: 18px 20px;
+            margin: 15px 0;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 17px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
         }
         button {
             width: 100%;
-            padding: 15px;
-            margin: 10px 0;
+            padding: 18px;
+            margin: 12px 0;
             border: none;
-            border-radius: 10px;
+            border-radius: 15px;
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 700;
             cursor: pointer;
             color: white;
-            transition: transform 0.2s;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
-        button:hover { transform: scale(1.05); }
-        button:active { transform: scale(0.95); }
-        .btn-primary { background: #FF6B6B; }
-        .btn-secondary { background: #4ECDC4; }
-        .btn-quick { background: #FFA500; }
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        button:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        button:active { 
+            transform: translateY(-1px); 
+        }
+        .btn-primary { 
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+        }
+        .btn-secondary { 
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a3a0 100%);
+        }
+        .btn-quick { 
+            background: linear-gradient(135deg, #ffa500 0%, #ff6347 100%);
+        }
         .screen { display: none; }
         .screen.active { display: block; }
         .error { background: #f44336; color: white; padding: 10px; border-radius: 5px; margin: 10px 0; }
@@ -180,16 +237,23 @@
         
         /* HISTORIAL */
         .history-btn {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
+            padding: 12px 24px;
+            border-radius: 12px;
             font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             border: none;
-            margin: 10px auto;
+            margin: -10px auto 20px auto;
             display: block;
             width: fit-content;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+        .history-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
         .history-modal {
             display: none;
@@ -243,11 +307,85 @@
         .mode-selector {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 25px 0;
+        }
+        .mode-btn {
+            padding: 35px 20px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .mode-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.4s;
+            z-index: -1;
+        }
+        .mode-btn:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+        }
+        .mode-btn:hover::after {
+            opacity: 1;
+        }
+        .mode-btn:hover .mode-icon,
+        .mode-btn:hover .mode-name,
+        .mode-btn:hover .mode-desc {
+            color: white;
+        }
+        .mode-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+        }
+        .mode-btn.selected .mode-icon,
+        .mode-btn.selected .mode-name,
+        .mode-btn.selected .mode-desc {
+            color: white;
+        }
+        .mode-icon { 
+            font-size: 50px; 
+            margin-bottom: 12px;
+            display: block;
+            transition: all 0.3s;
+        }
+        .mode-name { 
+            font-size: 20px; 
+            font-weight: 800; 
+            margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+        .mode-desc { 
+            font-size: 13px; 
+            margin-top: 5px; 
+            opacity: 0.8;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        /* Difficulty selector */
+        .difficulty-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 10px;
             margin: 20px 0;
         }
-        .mode-btn {
-            padding: 30px 15px;
+        .difficulty-btn {
+            padding: 25px 10px;
             border: 3px solid #ddd;
             border-radius: 15px;
             background: white;
@@ -255,19 +393,31 @@
             transition: all 0.3s;
             text-align: center;
         }
-        .mode-btn:hover {
-            border-color: #667eea;
+        .difficulty-btn:hover {
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-        .mode-btn.selected {
-            border-color: #667eea;
-            background: #667eea;
+        .difficulty-btn[data-difficulty="easy"]:hover,
+        .difficulty-btn[data-difficulty="easy"].selected {
+            border-color: #4CAF50;
+            background: #4CAF50;
             color: white;
         }
-        .mode-icon { font-size: 40px; margin-bottom: 10px; }
-        .mode-name { font-size: 18px; font-weight: bold; }
-        .mode-desc { font-size: 12px; margin-top: 5px; opacity: 0.8; }
+        .difficulty-btn[data-difficulty="normal"]:hover,
+        .difficulty-btn[data-difficulty="normal"].selected {
+            border-color: #FF9800;
+            background: #FF9800;
+            color: white;
+        }
+        .difficulty-btn[data-difficulty="hard"]:hover,
+        .difficulty-btn[data-difficulty="hard"].selected {
+            border-color: #F44336;
+            background: #F44336;
+            color: white;
+        }
+        .difficulty-icon { font-size: 36px; margin-bottom: 8px; }
+        .difficulty-name { font-size: 16px; font-weight: bold; }
+        .difficulty-desc { font-size: 11px; margin-top: 5px; opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -277,9 +427,14 @@
         <!-- PANTALLA INICIAL -->
         <div id="homeScreen" class="screen active">
             <h1>🎮 Trivial Kapuchi</h1>
+            <p style="text-align: center; color: #666; font-size: 16px; margin-top: -5px; margin-bottom: 30px; font-weight: 500;">
+                Pon a prueba tus conocimientos
+            </p>
             <button class="history-btn" onclick="toggleHistory()">📊 Ver Historial</button>
             
-            <h3 style="text-align: center; margin: 20px 0;">Selecciona el modo:</h3>
+            <h3 style="text-align: center; margin: 30px 0 15px 0; color: #333; font-size: 18px; font-weight: 700;">
+                Selecciona el modo
+            </h3>
             <div class="mode-selector">
                 <div class="mode-btn selected" onclick="selectMode('normal')">
                     <div class="mode-icon">⚡</div>
@@ -293,9 +448,41 @@
                 </div>
             </div>
             
-            <input type="text" id="playerName" placeholder="Tu nombre" maxlength="20">
-            <button class="btn-primary" onclick="createRoom()">Crear Partida</button>
-            <button class="btn-secondary" onclick="showJoinScreen()">Unirse a Partida</button>
+            <input type="text" id="playerName" placeholder="✨ Escribe tu nombre" maxlength="20">
+            <button class="btn-primary" onclick="createRoom()">
+                <span style="position: relative; z-index: 1;">🌐 Multijugador Online</span>
+            </button>
+            <button class="btn-primary" onclick="startCPUGame()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <span style="position: relative; z-index: 1;">🤖 Jugar vs CPU</span>
+            </button>
+            <button class="btn-secondary" onclick="showJoinScreen()">
+                <span style="position: relative; z-index: 1;">🎯 Unirse a Partida</span>
+            </button>
+        </div>
+        
+        <!-- PANTALLA SELECCIÓN CPU -->
+        <div id="cpuScreen" class="screen">
+            <h1>🤖 Jugar contra CPU</h1>
+            <h3 style="text-align: center; margin: 20px 0;">Selecciona la dificultad:</h3>
+            <div class="difficulty-selector">
+                <div class="difficulty-btn" onclick="selectDifficulty('easy')" data-difficulty="easy">
+                    <div class="difficulty-icon">🟢</div>
+                    <div class="difficulty-name">Fácil</div>
+                    <div class="difficulty-desc">CPU acierta ~40%</div>
+                </div>
+                <div class="difficulty-btn selected" onclick="selectDifficulty('normal')" data-difficulty="normal">
+                    <div class="difficulty-icon">🟡</div>
+                    <div class="difficulty-name">Normal</div>
+                    <div class="difficulty-desc">CPU acierta ~60%</div>
+                </div>
+                <div class="difficulty-btn" onclick="selectDifficulty('hard')" data-difficulty="hard">
+                    <div class="difficulty-icon">🔴</div>
+                    <div class="difficulty-name">Difícil</div>
+                    <div class="difficulty-desc">CPU acierta ~80%</div>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="startCPUGameWithDifficulty()">Empezar Partida</button>
+            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
         </div>
         
         <!-- PANTALLA UNIRSE -->
@@ -383,6 +570,17 @@
         var gameMode = 'normal'; // 'normal' o 'quick'
         var fiftyFiftyUsed = false;
         var currentQuestion = null;
+        var cpuDifficulty = 'normal'; // 'easy', 'normal', 'hard'
+        
+        // MODO CPU
+        var cpuMode = false;
+        var cpuScore = 0;
+        var playerScore = 0;
+        var cpuQuestionsAnswered = 0;
+        var playerQuestionsAnswered = 0;
+        var cpuQuestions = [];
+        var currentQuestionIndex = 0;
+        var isPlayerTurn = true;
         
         // SISTEMA DE HISTORIAL
         function saveMatch(result) {
@@ -450,6 +648,275 @@
                 btn.classList.remove('selected');
             });
             event.target.closest('.mode-btn').classList.add('selected');
+        }
+        
+        // ===== MODO CPU =====
+        function startCPUGame() {
+            playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) {
+                showError('Por favor escribe tu nombre');
+                return;
+            }
+            showScreen('cpuScreen');
+        }
+        
+        function selectDifficulty(difficulty) {
+            cpuDifficulty = difficulty;
+            var buttons = document.querySelectorAll('.difficulty-btn');
+            buttons.forEach(function(btn) {
+                btn.classList.remove('selected');
+            });
+            event.target.closest('.difficulty-btn').classList.add('selected');
+        }
+        
+        function startCPUGameWithDifficulty() {
+            cpuMode = true;
+            cpuScore = 0;
+            playerScore = 0;
+            cpuQuestionsAnswered = 0;
+            playerQuestionsAnswered = 0;
+            currentQuestionIndex = 0;
+            isPlayerTurn = true;
+            fiftyFiftyUsed = false;
+            
+            // Generar preguntas aleatorias
+            var questionsPerPlayer = gameMode === 'quick' ? 5 : 15;
+            var totalQuestions = questionsPerPlayer * 2;
+            
+            // Simulamos que pedimos preguntas al servidor
+            fetch('https://trivial-kapuchi.onrender.com/api/questions?count=' + totalQuestions)
+                .then(response => response.json())
+                .then(questions => {
+                    cpuQuestions = questions;
+                    showCPUGame();
+                })
+                .catch(() => {
+                    // Si falla, genera preguntas locales básicas
+                    cpuQuestions = generateLocalQuestions(totalQuestions);
+                    showCPUGame();
+                });
+        }
+        
+        function generateLocalQuestions(count) {
+            var localQuestions = [
+                { question: "¿Capital de Francia?", options: ["Londres", "París", "Berlín", "Madrid"], correct: 1 },
+                { question: "¿Planeta más grande?", options: ["Tierra", "Júpiter", "Marte", "Saturno"], correct: 1 },
+                { question: "¿Año llegada a la Luna?", options: ["1965", "1969", "1972", "1975"], correct: 1 },
+                { question: "¿Océano más grande?", options: ["Atlántico", "Pacífico", "Índico", "Ártico"], correct: 1 },
+                { question: "¿Quién pintó la Mona Lisa?", options: ["Van Gogh", "Da Vinci", "Picasso", "Miguel Ángel"], correct: 1 }
+            ];
+            
+            var questions = [];
+            for (var i = 0; i < count; i++) {
+                questions.push(localQuestions[i % localQuestions.length]);
+            }
+            return questions;
+        }
+        
+        function showCPUGame() {
+            showScreen('gameScreen');
+            sendCPUQuestion();
+        }
+        
+        function sendCPUQuestion() {
+            if (isPlayerTurn) {
+                // Turno del jugador
+                var questionsPerPlayer = gameMode === 'quick' ? 5 : 15;
+                if (playerQuestionsAnswered >= questionsPerPlayer) {
+                    // Jugador terminó, turno de CPU
+                    isPlayerTurn = false;
+                    if (cpuQuestionsAnswered >= questionsPerPlayer) {
+                        endCPUGame();
+                        return;
+                    }
+                    setTimeout(sendCPUQuestion, 1000);
+                    return;
+                }
+                
+                currentQuestion = cpuQuestions[currentQuestionIndex];
+                hasAnswered = false;
+                timeLeft = 10;
+                
+                // Mostrar comodín solo en modo normal
+                if (gameMode === 'normal') {
+                    document.querySelector('.powerup-container').style.display = 'block';
+                    if (fiftyFiftyUsed) {
+                        document.getElementById('fiftyFiftyBtn').disabled = true;
+                        document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
+                    } else {
+                        document.getElementById('fiftyFiftyBtn').disabled = false;
+                        document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por partida)';
+                    }
+                } else {
+                    document.querySelector('.powerup-container').style.display = 'none';
+                }
+                
+                var category = getCategoryInfo(currentQuestion.question);
+                document.getElementById('categoryBadge').textContent = category.name;
+                document.getElementById('categoryBadge').className = 'category-badge ' + category.class;
+                
+                var questionsPerPlayer = gameMode === 'quick' ? 5 : 15;
+                document.getElementById('questionNumber').textContent = 'Pregunta ' + (playerQuestionsAnswered + 1) + ' de ' + questionsPerPlayer;
+                document.getElementById('questionText').textContent = currentQuestion.question;
+                document.getElementById('timer').textContent = timeLeft;
+                
+                var grid = document.getElementById('optionsGrid');
+                grid.innerHTML = '';
+                currentQuestion.options.forEach(function(option, index) {
+                    var btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = option;
+                    btn.onclick = function() { submitCPUAnswer(index); };
+                    grid.appendChild(btn);
+                });
+                
+                clearInterval(timerInterval);
+                timerInterval = setInterval(function() {
+                    timeLeft--;
+                    document.getElementById('timer').textContent = timeLeft;
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        if (!hasAnswered) {
+                            submitCPUAnswer(-1); // No respondió
+                        }
+                    }
+                }, 1000);
+            } else {
+                // Turno de la CPU
+                showCPUThinking();
+            }
+        }
+        
+        function submitCPUAnswer(answerIndex) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+            clearInterval(timerInterval);
+            
+            var isCorrect = answerIndex === currentQuestion.correct;
+            
+            if (isCorrect) {
+                playerScore += timeLeft * 10;
+            }
+            
+            // Marcar respuesta seleccionada
+            var options = document.querySelectorAll('.option-btn');
+            if (answerIndex >= 0) {
+                options[answerIndex].classList.add(isCorrect ? 'correct' : 'wrong');
+            }
+            
+            playerQuestionsAnswered++;
+            currentQuestionIndex++;
+            
+            setTimeout(function() {
+                isPlayerTurn = false;
+                sendCPUQuestion();
+            }, 2000);
+        }
+        
+        function showCPUThinking() {
+            document.getElementById('questionText').textContent = '🤖 La CPU está pensando...';
+            document.getElementById('timer').textContent = '🤔';
+            document.getElementById('optionsGrid').innerHTML = '';
+            document.querySelector('.powerup-container').style.display = 'none';
+            
+            // CPU responde en 2-6 segundos
+            var thinkingTime = Math.random() * 4000 + 2000;
+            
+            setTimeout(function() {
+                processCPUAnswer();
+            }, thinkingTime);
+        }
+        
+        function processCPUAnswer() {
+            var question = cpuQuestions[currentQuestionIndex];
+            
+            // CPU acierta según dificultad
+            var accuracy = 0.6; // Normal por defecto
+            if (cpuDifficulty === 'easy') {
+                accuracy = 0.4;
+            } else if (cpuDifficulty === 'hard') {
+                accuracy = 0.8;
+            }
+            
+            var cpuCorrect = Math.random() < accuracy;
+            
+            // Tiempo aleatorio de respuesta (2-8 segundos)
+            var cpuTime = Math.floor(Math.random() * 7) + 2;
+            
+            if (cpuCorrect) {
+                cpuScore += cpuTime * 10;
+            }
+            
+            // Mostrar resultado
+            var difficultyEmoji = cpuDifficulty === 'easy' ? '🟢' : cpuDifficulty === 'hard' ? '🔴' : '🟡';
+            document.getElementById('questionText').textContent = difficultyEmoji + ' CPU respondió ' + (cpuCorrect ? 'correctamente ✓' : 'incorrectamente ✗');
+            
+            cpuQuestionsAnswered++;
+            currentQuestionIndex++;
+            
+            var questionsPerPlayer = gameMode === 'quick' ? 5 : 15;
+            
+            setTimeout(function() {
+                if (playerQuestionsAnswered >= questionsPerPlayer && cpuQuestionsAnswered >= questionsPerPlayer) {
+                    endCPUGame();
+                } else {
+                    isPlayerTurn = true;
+                    sendCPUQuestion();
+                }
+            }, 2000);
+        }
+        
+        function endCPUGame() {
+            var difficultyBadge = cpuDifficulty === 'easy' ? '🟢' : cpuDifficulty === 'hard' ? '🔴' : '🟡';
+            var difficultyText = cpuDifficulty === 'easy' ? 'Fácil' : cpuDifficulty === 'hard' ? 'Difícil' : 'Normal';
+            
+            var ranking = [
+                { name: playerName, score: playerScore },
+                { name: difficultyBadge + ' CPU (' + difficultyText + ')', score: cpuScore }
+            ].sort((a, b) => b.score - a.score);
+            
+            var html = '<div style="text-align: center;">';
+            html += '<h2 style="font-size: 32px; margin-bottom: 30px;">🏆 RANKING FINAL 🏆</h2>';
+            
+            var medals = ['🥇', '🥈'];
+            
+            ranking.forEach(function(p, index) {
+                var isMe = p.name === playerName;
+                var position = index + 1;
+                var medal = medals[index];
+                var style = '';
+                
+                if (position === 1) {
+                    style = 'background: linear-gradient(135deg, #FFD700, #FFA500); color: white;';
+                } else {
+                    style = 'background: linear-gradient(135deg, #C0C0C0, #808080); color: white;';
+                }
+                
+                html += '<div style="' + style + ' padding: 25px; margin: 15px 0; border-radius: 15px; font-size: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
+                html += '<div style="font-size: 36px; margin-bottom: 10px;">' + medal + '</div>';
+                html += '<strong style="font-size: 24px;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong><br>';
+                html += '<span style="font-size: 28px; font-weight: bold;">' + p.score + ' pts</span>';
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            document.getElementById('finalScores').innerHTML = html;
+            showScreen('resultsScreen');
+            
+            // Guardar en historial
+            saveMatch({
+                won: ranking[0].name === playerName,
+                myScore: playerScore,
+                opponentName: difficultyBadge + ' CPU (' + difficultyText + ')',
+                opponentScore: cpuScore
+            });
+            
+            // Confetti si ganaste
+            if (ranking[0].name === playerName) {
+                createConfetti();
+            }
+            
+            cpuMode = false;
         }
         
         // POWER-UP 50/50
