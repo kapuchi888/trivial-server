@@ -35,8 +35,8 @@ const rooms = {};
 
 // ===== SISTEMA DE PREGUNTAS CON OPEN TRIVIA DB Y TRADUCCIÓN =====
 let allQuestions = [];
-const CACHE_SIZE = 200; // Preguntas en caché
-const REFILL_THRESHOLD = 50; // Recargar cuando queden menos de 50
+const CACHE_SIZE = 500; // Preguntas en caché inicial (MODO EXTREMO)
+const REFILL_THRESHOLD = 200; // Recargar cuando queden menos de 200
 
 // Función para traducir texto de inglés a español usando Google Translate
 async function translateToSpanish(text) {
@@ -204,14 +204,25 @@ function loadLocalQuestions() {
 
 // Inicializar preguntas al arrancar
 async function initializeQuestions() {
-    console.log('🔄 Inicializando sistema de preguntas con The Trivia API...');
+    console.log('🔄 Inicializando sistema de preguntas MODO EXTREMO (500 preguntas)...');
+    console.log('⏳ Esto tomará ~40-60 segundos, pero valdrá la pena...');
     
-    // Intentar cargar de la API
-    const apiQuestions = await fetchQuestionsFromAPI(50);
+    // Cargar 500 preguntas en 10 lotes de 50
+    const allFetched = [];
+    for (let i = 0; i < 10; i++) {
+        console.log(`📥 Descargando lote ${i + 1}/10...`);
+        const batch = await fetchQuestionsFromAPI(50);
+        if (batch.length > 0) {
+            allFetched.push(...batch);
+        }
+        // Pequeña pausa entre lotes
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
     
-    if (apiQuestions.length > 0) {
-        allQuestions = apiQuestions;
+    if (allFetched.length > 0) {
+        allQuestions = allFetched;
         console.log(`✅ Sistema listo con ${allQuestions.length} preguntas traducidas al español`);
+        console.log(`🎮 ¡Ahora puedes jugar muchas partidas sin repeticiones!`);
     } else {
         // Usar preguntas locales como respaldo
         allQuestions = loadLocalQuestions();
@@ -223,10 +234,19 @@ async function initializeQuestions() {
 async function refillQuestionsIfNeeded() {
     if (allQuestions.length < REFILL_THRESHOLD) {
         console.log(`🔄 Recargando preguntas (quedan ${allQuestions.length})...`);
-        const newQuestions = await fetchQuestionsFromAPI(50);
-        if (newQuestions.length > 0) {
-            allQuestions.push(...newQuestions);
-            console.log(`✅ Agregadas ${newQuestions.length} preguntas nuevas. Total: ${allQuestions.length}`);
+        
+        // Descargar 200 preguntas en 4 lotes de 50
+        const allFetched = [];
+        for (let i = 0; i < 4; i++) {
+            const batch = await fetchQuestionsFromAPI(50);
+            if (batch.length > 0) {
+                allFetched.push(...batch);
+            }
+        }
+        
+        if (allFetched.length > 0) {
+            allQuestions.push(...allFetched);
+            console.log(`✅ Agregadas ${allFetched.length} preguntas nuevas. Total: ${allQuestions.length}`);
         }
     }
 }
