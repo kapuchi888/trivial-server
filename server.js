@@ -94,7 +94,7 @@ async function translateBatch(texts) {
     return translated;
 }
 
-// Función para obtener preguntas de The Trivia API
+// Función para obtener preguntas de The Trivia API (SIN TRADUCCIÓN - VERSIÓN DE PRUEBA)
 async function fetchQuestionsFromAPI(amount = 50) {
     try {
         const https = require('https');
@@ -114,46 +114,35 @@ async function fetchQuestionsFromAPI(amount = 50) {
                         const questions = JSON.parse(data);
                         
                         if (Array.isArray(questions) && questions.length > 0) {
-                            console.log(`📥 Descargadas ${questions.length} preguntas de The Trivia API, traduciendo...`);
+                            console.log(`📥 Descargadas ${questions.length} preguntas de The Trivia API`);
                             
-                            // Procesar preguntas
-                            const formattedQuestions = [];
-                            
-                            for (let q of questions) {
-                                // Preparar textos para traducir
-                                const questionText = q.question;
+                            // Procesar preguntas SIN traducir (por ahora en inglés)
+                            const formattedQuestions = questions.map(q => {
                                 const allOptions = [...q.incorrectAnswers, q.correctAnswer];
+                                const shuffled = shuffleArray(allOptions);
+                                const correctIndex = shuffled.indexOf(q.correctAnswer);
                                 
-                                // Traducir pregunta y opciones
-                                const textsToTranslate = [questionText, ...allOptions];
-                                const translated = await translateBatch(textsToTranslate);
-                                
-                                const translatedQuestion = translated[0];
-                                const translatedOptions = translated.slice(1);
-                                
-                                // Mezclar opciones
-                                const shuffled = shuffleArray(translatedOptions);
-                                const correctIndex = shuffled.indexOf(translated[translated.length - 1]);
-                                
-                                formattedQuestions.push({
-                                    question: translatedQuestion,
+                                return {
+                                    question: q.question,
                                     options: shuffled,
                                     correct: correctIndex,
                                     category: q.category,
                                     difficulty: q.difficulty
-                                });
-                            }
+                                };
+                            });
                             
-                            console.log(`✅ ${formattedQuestions.length} preguntas traducidas al español`);
+                            console.log(`✅ ${formattedQuestions.length} preguntas listas (en inglés temporalmente)`);
                             resolve(formattedQuestions);
                         } else {
                             reject(new Error('API response error'));
                         }
                     } catch (e) {
+                        console.error('Error parsing API response:', e.message);
                         reject(e);
                     }
                 });
             }).on('error', (err) => {
+                console.error('Error connecting to API:', err.message);
                 reject(err);
             });
         });
@@ -186,11 +175,11 @@ async function initializeQuestions() {
     console.log('🔄 Inicializando sistema de preguntas con The Trivia API...');
     
     // Intentar cargar de la API
-    const apiQuestions = await fetchQuestionsFromAPI(50); // Empezar con 50 para que sea más rápido
+    const apiQuestions = await fetchQuestionsFromAPI(50);
     
     if (apiQuestions.length > 0) {
         allQuestions = apiQuestions;
-        console.log(`✅ Sistema listo con ${allQuestions.length} preguntas traducidas de The Trivia API`);
+        console.log(`✅ Sistema listo con ${allQuestions.length} preguntas de The Trivia API`);
     } else {
         // Usar preguntas locales como respaldo
         allQuestions = loadLocalQuestions();
