@@ -35,8 +35,8 @@ const rooms = {};
 
 // ===== SISTEMA DE PREGUNTAS CON OPEN TRIVIA DB Y TRADUCCIÓN =====
 let allQuestions = [];
-const CACHE_SIZE = 500; // Preguntas en caché inicial (MODO EXTREMO)
-const REFILL_THRESHOLD = 200; // Recargar cuando queden menos de 200
+const CACHE_SIZE = 1000; // Preguntas en caché inicial (ÓPTIMO PARA 4 JUGADORES)
+const REFILL_THRESHOLD = 300; // Recargar cuando queden menos de 300
 
 // Función para traducir texto de inglés a español usando Google Translate
 async function translateToSpanish(text) {
@@ -204,13 +204,13 @@ function loadLocalQuestions() {
 
 // Inicializar preguntas al arrancar
 async function initializeQuestions() {
-    console.log('🔄 Inicializando sistema de preguntas MODO EXTREMO (500 preguntas)...');
-    console.log('⏳ Esto tomará ~40-60 segundos, pero valdrá la pena...');
+    console.log('🔄 Inicializando sistema con 1000 preguntas (óptimo para 4 jugadores)...');
+    console.log('⏳ Esto tomará ~80-100 segundos, cargando...');
     
-    // Cargar 500 preguntas en 10 lotes de 50
+    // Cargar 1000 preguntas en 20 lotes de 50
     const allFetched = [];
-    for (let i = 0; i < 10; i++) {
-        console.log(`📥 Descargando lote ${i + 1}/10...`);
+    for (let i = 0; i < 20; i++) {
+        console.log(`📥 Descargando lote ${i + 1}/20 (${allFetched.length} preguntas cargadas)...`);
         const batch = await fetchQuestionsFromAPI(50);
         if (batch.length > 0) {
             allFetched.push(...batch);
@@ -222,7 +222,7 @@ async function initializeQuestions() {
     if (allFetched.length > 0) {
         allQuestions = allFetched;
         console.log(`✅ Sistema listo con ${allQuestions.length} preguntas traducidas al español`);
-        console.log(`🎮 ¡Ahora puedes jugar muchas partidas sin repeticiones!`);
+        console.log(`🎮 Perfecto para partidas con 2-4 jugadores sin repeticiones!`);
     } else {
         // Usar preguntas locales como respaldo
         allQuestions = loadLocalQuestions();
@@ -235,9 +235,9 @@ async function refillQuestionsIfNeeded() {
     if (allQuestions.length < REFILL_THRESHOLD) {
         console.log(`🔄 Recargando preguntas (quedan ${allQuestions.length})...`);
         
-        // Descargar 200 preguntas en 4 lotes de 50
+        // Descargar 300 preguntas en 6 lotes de 50
         const allFetched = [];
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 6; i++) {
             const batch = await fetchQuestionsFromAPI(50);
             if (batch.length > 0) {
                 allFetched.push(...batch);
