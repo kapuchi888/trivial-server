@@ -1,1350 +1,490 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trivial Kapuchi ⭐</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 25px 20px;
-            border-radius: 25px;
-            max-width: 550px;
-            width: 90%;
-            position: relative;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-height: 95vh;
-            overflow-y: auto;
-        }
-        
-        /* Ocultar scrollbar pero mantener funcionalidad */
-        .container::-webkit-scrollbar {
-            width: 0px;
-            background: transparent;
-        }
-        
-        h1 { 
-            text-align: center; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 36px;
-            margin-bottom: 5px;
-            font-weight: 900;
-            letter-spacing: -1px;
-        }
-        
-        /* Optimización móvil */
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px 15px;
-                width: 95%;
-                max-height: 98vh;
-            }
-            h1 {
-                font-size: 32px;
-                margin-bottom: 3px;
-            }
-        }
-        input {
-            width: 100%;
-            padding: 14px 16px;
-            margin: 10px 0;
-            border: 3px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-        }
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            transform: translateY(-1px);
-        }
-        button {
-            width: 100%;
-            padding: 14px;
-            margin: 8px 0;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            color: white;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        @media (max-width: 600px) {
-            input {
-                padding: 12px 14px;
-                margin: 8px 0;
-                font-size: 15px;
-            }
-            button {
-                padding: 12px;
-                margin: 6px 0;
-                font-size: 15px;
-            }
-        }
-        button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        button:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-        button:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        }
-        button:active { 
-            transform: translateY(-1px); 
-        }
-        .btn-primary { 
-            background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
-        }
-        .btn-secondary { 
-            background: linear-gradient(135deg, #4ecdc4 0%, #44a3a0 100%);
-        }
-        .btn-quick { 
-            background: linear-gradient(135deg, #ffa500 0%, #ff6347 100%);
-        }
-        .screen { display: none; }
-        .screen.active { display: block; }
-        .error { background: #f44336; color: white; padding: 10px; border-radius: 5px; margin: 10px 0; }
-        .room-code {
-            background: #667eea;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 32px;
-            font-weight: bold;
-            margin: 20px 0;
-            letter-spacing: 5px;
-        }
-        .player-list {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 10px 0;
-        }
-        .player { padding: 10px; margin: 5px 0; background: white; border-radius: 5px; }
-        .player.ready { background: #4CAF50; color: white; }
-        .question-text {
-            font-size: 20px;
-            font-weight: bold;
-            margin: 20px 0;
-            text-align: center;
-            padding: 20px;
-            background: #f5f5f5;
-            border-radius: 10px;
-        }
-        .timer {
-            font-size: 48px;
-            font-weight: bold;
-            text-align: center;
-            color: #FF6B6B;
-            margin: 20px 0;
-        }
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-            margin: 20px 0;
-        }
-        .option-btn {
-            padding: 20px;
-            border: 3px solid #ddd;
-            border-radius: 10px;
-            font-size: 18px;
-            cursor: pointer;
-            background: white;
-            color: #000;
-            transition: all 0.3s;
-            text-align: left;
-            display: block;
-            width: 100%;
-        }
-        .option-btn:hover { background: #f0f0f0; transform: translateX(5px); }
-        .option-btn.selected { 
-            background: #667eea !important;
-            color: white !important;
-            border-color: #667eea !important;
-            opacity: 1 !important;
-            font-weight: bold;
-        }
-        .option-btn.correct {
-            background: #4CAF50 !important;
-            color: white;
-            border-color: #4CAF50;
-            animation: correctPulse 0.5s;
-        }
-        .option-btn.wrong {
-            background: #f44336 !important;
-            color: white;
-            border-color: #f44336;
-            animation: wrongShake 0.5s;
-        }
-        @keyframes correctPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        @keyframes wrongShake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-        
-        /* CATEGORÍAS CON COLORES */
-        .category-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-            margin: 10px auto;
-            text-align: center;
-        }
-        .cat-geografia { background: #3498db; color: white; }
-        .cat-ciencia { background: #2ecc71; color: white; }
-        .cat-historia { background: #e74c3c; color: white; }
-        .cat-deportes { background: #f39c12; color: white; }
-        .cat-arte { background: #9b59b6; color: white; }
-        .cat-entretenimiento { background: #e91e63; color: white; }
-        .cat-general { background: #34495e; color: white; }
-        
-        /* POWER-UP 50/50 */
-        .powerup-btn {
-            background: #FFD700;
-            color: #000;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            border: 3px solid #FFA500;
-            margin: 10px 0;
-            transition: all 0.3s;
-        }
-        .powerup-btn:hover { transform: scale(1.1); }
-        .powerup-btn:disabled {
-            background: #ccc;
-            border-color: #999;
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-        .powerup-container {
-            text-align: center;
-            margin: 15px 0;
-        }
-        
-        /* HISTORIAL */
-        .history-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            margin: -5px auto 15px auto;
-            display: block;
-            width: fit-content;
-            box-shadow: 0 3px 12px rgba(102, 126, 234, 0.3);
-            transition: all 0.3s ease;
-        }
-        .history-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        @media (max-width: 600px) {
-            .history-btn {
-                padding: 8px 16px;
-                font-size: 12px;
-                margin: 0 auto 12px auto;
-            }
-        }
-        .history-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .history-modal.active { display: flex; }
-        .history-content {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .history-item {
-            background: #f5f5f5;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 10px;
-            border-left: 5px solid #667eea;
-        }
-        .history-win { border-left-color: #4CAF50; }
-        .history-lose { border-left-color: #f44336; }
-        
-        /* CONFETTI ANIMATION */
-        .confetti {
-            position: fixed;
-            width: 10px;
-            height: 10px;
-            background: #f0f;
-            position: absolute;
-            animation: confetti-fall 3s linear;
-        }
-        @keyframes confetti-fall {
-            to {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        /* MODE SELECTOR */
-        .mode-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin: 15px 0;
-        }
-        .mode-btn {
-            padding: 25px 15px;
-            border: none;
-            border-radius: 16px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: center;
-            position: relative;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-        .mode-btn::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            opacity: 0;
-            transition: opacity 0.4s;
-            z-index: -1;
-        }
-        .mode-btn:hover {
-            transform: translateY(-8px) scale(1.03);
-            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
-        }
-        .mode-btn:hover::after {
-            opacity: 1;
-        }
-        .mode-btn:hover .mode-icon,
-        .mode-btn:hover .mode-name,
-        .mode-btn:hover .mode-desc {
-            color: white;
-        }
-        .mode-btn.selected {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.5);
-        }
-        .mode-btn.selected .mode-icon,
-        .mode-btn.selected .mode-name,
-        .mode-btn.selected .mode-desc {
-            color: white;
-        }
-        .mode-icon { 
-            font-size: 40px; 
-            margin-bottom: 8px;
-            display: block;
-            transition: all 0.3s;
-        }
-        .mode-name { 
-            font-size: 17px; 
-            font-weight: 800; 
-            margin-bottom: 3px;
-            transition: all 0.3s;
-        }
-        .mode-desc { 
-            font-size: 12px; 
-            margin-top: 3px; 
-            opacity: 0.8;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        @media (max-width: 600px) {
-            .mode-selector {
-                gap: 10px;
-                margin: 12px 0;
-            }
-            .mode-btn {
-                padding: 20px 12px;
-            }
-            .mode-icon {
-                font-size: 36px;
-                margin-bottom: 6px;
-            }
-            .mode-name {
-                font-size: 16px;
-            }
-            .mode-desc {
-                font-size: 11px;
-            }
-        }
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        /* Difficulty selector */
-        .difficulty-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin: 20px 0;
-        }
-        .difficulty-btn {
-            padding: 25px 10px;
-            border: 3px solid #ddd;
-            border-radius: 15px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
-        .difficulty-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .difficulty-btn[data-difficulty="easy"]:hover,
-        .difficulty-btn[data-difficulty="easy"].selected {
-            border-color: #4CAF50;
-            background: #4CAF50;
-            color: white;
-        }
-        .difficulty-btn[data-difficulty="normal"]:hover,
-        .difficulty-btn[data-difficulty="normal"].selected {
-            border-color: #FF9800;
-            background: #FF9800;
-            color: white;
-        }
-        .difficulty-btn[data-difficulty="hard"]:hover,
-        .difficulty-btn[data-difficulty="hard"].selected {
-            border-color: #F44336;
-            background: #F44336;
-            color: white;
-        }
-        .difficulty-icon { font-size: 36px; margin-bottom: 8px; }
-        .difficulty-name { font-size: 16px; font-weight: bold; }
-        .difficulty-desc { font-size: 11px; margin-top: 5px; opacity: 0.8; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div id="errorContainer"></div>
-        
-        <!-- PANTALLA INICIAL -->
-        <div id="homeScreen" class="screen active">
-            <h1>🎮 Trivial Kapuchi</h1>
-            <p style="text-align: center; color: #666; font-size: 14px; margin-top: -3px; margin-bottom: 15px; font-weight: 500;">
-                Pon a prueba tus conocimientos
-            </p>
-            <button class="history-btn" onclick="toggleHistory()">📊 Ver Historial</button>
-            
-            <h3 style="text-align: center; margin: 20px 0 10px 0; color: #333; font-size: 16px; font-weight: 700;">
-                Selecciona el modo
-            </h3>
-            <div class="mode-selector">
-                <div class="mode-btn selected" onclick="selectMode('normal')">
-                    <div class="mode-icon">⚡</div>
-                    <div class="mode-name">Normal</div>
-                    <div class="mode-desc">15 preguntas</div>
-                </div>
-                <div class="mode-btn" onclick="selectMode('quick')">
-                    <div class="mode-icon">🚀</div>
-                    <div class="mode-name">Rápido</div>
-                    <div class="mode-desc">5 preguntas</div>
-                </div>
-            </div>
-            
-            <input type="text" id="playerName" placeholder="✨ Escribe tu nombre" maxlength="20">
-            <button class="btn-primary" onclick="createRoom()">
-                <span style="position: relative; z-index: 1;">🌐 Multijugador Online</span>
-            </button>
-            <button class="btn-primary" onclick="startCPUGame()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <span style="position: relative; z-index: 1;">🤖 Jugar vs CPU</span>
-            </button>
-            <button class="btn-secondary" onclick="showJoinScreen()">
-                <span style="position: relative; z-index: 1;">🎯 Unirse a Partida</span>
-            </button>
-        </div>
-        
-        <!-- PANTALLA SELECCIÓN CPU -->
-        <div id="cpuScreen" class="screen">
-            <h1>🤖 Jugar contra CPU</h1>
-            <h3 style="text-align: center; margin: 20px 0;">Selecciona la dificultad:</h3>
-            <div class="difficulty-selector">
-                <div class="difficulty-btn" onclick="selectDifficulty('easy')" data-difficulty="easy">
-                    <div class="difficulty-icon">🟢</div>
-                    <div class="difficulty-name">Fácil</div>
-                    <div class="difficulty-desc">CPU acierta ~40%</div>
-                </div>
-                <div class="difficulty-btn selected" onclick="selectDifficulty('normal')" data-difficulty="normal">
-                    <div class="difficulty-icon">🟡</div>
-                    <div class="difficulty-name">Normal</div>
-                    <div class="difficulty-desc">CPU acierta ~60%</div>
-                </div>
-                <div class="difficulty-btn" onclick="selectDifficulty('hard')" data-difficulty="hard">
-                    <div class="difficulty-icon">🔴</div>
-                    <div class="difficulty-name">Difícil</div>
-                    <div class="difficulty-desc">CPU acierta ~80%</div>
-                </div>
-            </div>
-            <button class="btn-primary" onclick="startCPUGameWithDifficulty()">Empezar Partida</button>
-            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
-        </div>
-        
-        <!-- PANTALLA UNIRSE -->
-        <div id="joinScreen" class="screen">
-            <h1>🎮 Unirse a Partida</h1>
-            <input type="text" id="playerName2" placeholder="Tu nombre" maxlength="20">
-            <input type="text" id="roomCodeInput" placeholder="Código de sala" maxlength="6">
-            <button class="btn-secondary" onclick="joinRoom()">Unirse a Partida</button>
-            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
-        </div>
-        
-        <!-- PANTALLA ESPERA -->
-        <div id="waitingScreen" class="screen">
-            <h1>⏳ Sala de Espera</h1>
-            <div id="roomCodeDisplay" class="room-code"></div>
-            <p style="font-size: 16px; color: #888; margin: 10px 0;">
-                <span id="playerCount">1</span>/4 jugadores · Mínimo 2 para empezar
-            </p>
-            <div id="playersList"></div>
-            <button class="btn-primary" id="readyBtn" onclick="markReady()">¡Estoy Listo!</button>
-            <button class="btn-secondary" onclick="location.reload()">Volver</button>
-        </div>
-        
-        <!-- PANTALLA JUEGO -->
-        <div id="gameScreen" class="screen">
-            <div id="categoryBadge" class="category-badge" style="text-align: center; margin: 10px 0;"></div>
-            <div id="questionNumber" style="text-align: center; color: #667eea; font-weight: bold;"></div>
-            <div id="questionText" class="question-text"></div>
-            <div id="timer" class="timer">10</div>
-            
-            <!-- POWER-UP 50/50 -->
-            <div class="powerup-container">
-                <button id="fiftyFiftyBtn" class="powerup-btn" onclick="useFiftyFifty()" title="Elimina 2 respuestas incorrectas. Solo puedes usarlo 1 vez por partida">
-                    ⚡ 50/50 (1 por partida)
-                </button>
-            </div>
-            
-            <div id="optionsGrid"></div>
-        </div>
-        
-        <!-- PANTALLA ESPERANDO TURNO -->
-        <div id="waitingTurnScreen" class="screen">
-            <h1>⏳ Esperando turno...</h1>
-            <p style="text-align: center; font-size: 20px; color: #667eea; margin: 20px 0;">
-                <strong id="otherPlayerName"></strong> está respondiendo su pregunta
-            </p>
-            <div style="text-align: center; margin: 30px 0;">
-                <div style="display: inline-block; width: 60px; height: 60px; border: 6px solid #f3f3f3; border-top: 6px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-            </div>
-            <style>
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            </style>
-        </div>
-        
-        <!-- PANTALLA RESULTADOS -->
-        <div id="resultsScreen" class="screen">
-            <h1>🏆 ¡Juego Terminado!</h1>
-            <div id="finalScores"></div>
-            <form method="GET" action="">
-                <button type="submit" class="btn-primary" style="width: 100%;">🎮 Nueva Partida</button>
-            </form>
-        </div>
-    </div>
-    
-    <!-- MODAL HISTORIAL -->
-    <div id="historyModal" class="history-modal">
-        <div class="history-content">
-            <h2 style="text-align: center; margin-bottom: 20px;">📊 Historial de Partidas</h2>
-            <div id="historyList"></div>
-            <button class="btn-secondary" onclick="toggleHistory()" style="margin-top: 20px;">Cerrar</button>
-        </div>
-    </div>
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+const path = require('path');
+const fs = require('fs');
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"></script>
-    <script>
-        var socket = io('https://trivial-kapuchi.onrender.com');
-        var currentRoom = null;
-        var playerName = '';
-        var timeLeft = 10;
-        var timerInterval = null;
-        var hasAnswered = false;
-        var gameMode = 'normal'; // 'normal' o 'quick'
-        var fiftyFiftyUsed = false;
-        var currentQuestion = null;
-        var cpuDifficulty = 'normal'; // 'easy', 'normal', 'hard'
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
+const PORT = process.env.PORT || 3000;
+
+// Servir archivos estáticos desde la carpeta 'public'
+app.use(express.static('public'));
+
+// Ruta principal
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/index.html');
+});
+
+// API para obtener preguntas aleatorias (modo CPU)
+app.get('/api/questions', (req, res) => {
+    const count = parseInt(req.query.count) || 10;
+    const questions = getRandomQuestions(count);
+    res.json(questions);
+});
+
+// Variables del servidor
+const rooms = {};
+
+// ===== SISTEMA DE PREGUNTAS CON OPEN TRIVIA DB Y TRADUCCIÓN =====
+let allQuestions = [];
+const CACHE_SIZE = 200; // Preguntas en caché
+const REFILL_THRESHOLD = 50; // Recargar cuando queden menos de 50
+
+// Función para traducir texto de inglés a español
+async function translateToSpanish(text) {
+    try {
+        const https = require('https');
+        const querystring = require('querystring');
         
-        // MODO CPU
-        var cpuMode = false;
-        var cpuScore = 0;
-        var playerScore = 0;
-        var cpuQuestionsAnswered = 0;
-        var playerQuestionsAnswered = 0;
-        var cpuQuestions = [];
-        var currentQuestionIndex = 0;
-        var isPlayerTurn = true;
-        
-        // SISTEMA DE HISTORIAL
-        function saveMatch(result) {
-            var matches = JSON.parse(localStorage.getItem('trivialHistory') || '[]');
-            matches.unshift({
-                date: new Date().toLocaleString('es-ES'),
-                mode: gameMode === 'quick' ? 'Rápido' : 'Normal',
-                result: result.won ? 'Victoria' : 'Derrota',
-                score: result.myScore,
-                opponent: result.opponentName,
-                opponentScore: result.opponentScore
-            });
-            // Mantener solo las últimas 20 partidas
-            if (matches.length > 20) matches = matches.slice(0, 20);
-            localStorage.setItem('trivialHistory', JSON.stringify(matches));
-        }
-        
-        function loadHistory() {
-            var matches = JSON.parse(localStorage.getItem('trivialHistory') || '[]');
-            var html = '';
-            if (matches.length === 0) {
-                html = '<p style="text-align: center; color: #999;">No hay partidas guardadas aún</p>';
-            } else {
-                var wins = matches.filter(m => m.result === 'Victoria').length;
-                var total = matches.length;
-                html += '<div style="text-align: center; background: #667eea; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px;">';
-                html += '<h3>Estadísticas</h3>';
-                html += '<p style="font-size: 24px; margin: 10px 0;"><strong>' + wins + '</strong> victorias de <strong>' + total + '</strong> partidas</p>';
-                html += '<p>Porcentaje: <strong>' + (total > 0 ? Math.round(wins/total*100) : 0) + '%</strong></p>';
-                html += '</div>';
-                
-                matches.forEach(function(match) {
-                    var className = match.result === 'Victoria' ? 'history-win' : 'history-lose';
-                    html += '<div class="history-item ' + className + '">';
-                    html += '<div style="display: flex; justify-content: space-between; margin-bottom: 5px;">';
-                    html += '<strong>' + match.result + '</strong>';
-                    html += '<span style="color: #999; font-size: 12px;">' + match.date + '</span>';
-                    html += '</div>';
-                    html += '<div style="font-size: 14px;">';
-                    html += '🎮 Modo: ' + match.mode + '<br>';
-                    html += '⭐ Puntos: ' + match.score + '<br>';
-                    html += '👤 vs ' + match.opponent + ' (' + match.opponentScore + ' pts)';
-                    html += '</div>';
-                    html += '</div>';
-                });
-            }
-            document.getElementById('historyList').innerHTML = html;
-        }
-        
-        function toggleHistory() {
-            var modal = document.getElementById('historyModal');
-            if (modal.classList.contains('active')) {
-                modal.classList.remove('active');
-            } else {
-                loadHistory();
-                modal.classList.add('active');
-            }
-        }
-        
-        // SELECCIÓN DE MODO
-        function selectMode(mode) {
-            gameMode = mode;
-            var buttons = document.querySelectorAll('.mode-btn');
-            buttons.forEach(function(btn) {
-                btn.classList.remove('selected');
-            });
-            event.target.closest('.mode-btn').classList.add('selected');
-        }
-        
-        // ===== MODO CPU =====
-        function startCPUGame() {
-            playerName = document.getElementById('playerName').value.trim();
-            if (!playerName) {
-                showError('Por favor escribe tu nombre');
-                return;
-            }
-            showScreen('cpuScreen');
-        }
-        
-        function selectDifficulty(difficulty) {
-            cpuDifficulty = difficulty;
-            var buttons = document.querySelectorAll('.difficulty-btn');
-            buttons.forEach(function(btn) {
-                btn.classList.remove('selected');
-            });
-            event.target.closest('.difficulty-btn').classList.add('selected');
-        }
-        
-        function startCPUGameWithDifficulty() {
-            cpuMode = true;
-            cpuScore = 0;
-            playerScore = 0;
-            cpuQuestionsAnswered = 0;
-            playerQuestionsAnswered = 0;
-            currentQuestionIndex = 0;
-            isPlayerTurn = true;
-            fiftyFiftyUsed = false;
+        return new Promise((resolve, reject) => {
+            // Usar MyMemory Translation API (más confiable)
+            const encodedText = encodeURIComponent(text);
+            const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|es`;
             
-            // Generar preguntas aleatorias
-            var questionsPerPlayer = gameMode === 'quick' ? 5 : 15;
-            var totalQuestions = questionsPerPlayer * 2;
-            
-            // Simulamos que pedimos preguntas al servidor
-            fetch('https://trivial-kapuchi.onrender.com/api/questions?count=' + totalQuestions)
-                .then(response => response.json())
-                .then(questions => {
-                    cpuQuestions = questions;
-                    showCPUGame();
-                })
-                .catch(() => {
-                    // Si falla, genera preguntas locales básicas
-                    cpuQuestions = generateLocalQuestions(totalQuestions);
-                    showCPUGame();
-                });
-        }
-        
-        function generateLocalQuestions(count) {
-            var localQuestions = [
-                { question: "¿Capital de Francia?", options: ["Londres", "París", "Berlín", "Madrid"], correct: 1 },
-                { question: "¿Planeta más grande?", options: ["Tierra", "Júpiter", "Marte", "Saturno"], correct: 1 },
-                { question: "¿Año llegada a la Luna?", options: ["1965", "1969", "1972", "1975"], correct: 1 },
-                { question: "¿Océano más grande?", options: ["Atlántico", "Pacífico", "Índico", "Ártico"], correct: 1 },
-                { question: "¿Quién pintó la Mona Lisa?", options: ["Van Gogh", "Da Vinci", "Picasso", "Miguel Ángel"], correct: 1 }
-            ];
-            
-            var questions = [];
-            for (var i = 0; i < count; i++) {
-                questions.push(localQuestions[i % localQuestions.length]);
-            }
-            return questions;
-        }
-        
-        function showCPUGame() {
-            showScreen('gameScreen');
-            sendCPUQuestion();
-        }
-        
-        function sendCPUQuestion() {
-            if (isPlayerTurn) {
-                // Turno del jugador
-                var questionsPerPlayer = gameMode === 'quick' ? 5 : 15;
-                if (playerQuestionsAnswered >= questionsPerPlayer) {
-                    // Jugador terminó, turno de CPU
-                    isPlayerTurn = false;
-                    if (cpuQuestionsAnswered >= questionsPerPlayer) {
-                        endCPUGame();
-                        return;
-                    }
-                    setTimeout(sendCPUQuestion, 1000);
-                    return;
-                }
+            https.get(url, (res) => {
+                let data = '';
                 
-                currentQuestion = cpuQuestions[currentQuestionIndex];
-                hasAnswered = false;
-                timeLeft = 10;
-                
-                // Mostrar comodín solo en modo normal
-                if (gameMode === 'normal') {
-                    document.querySelector('.powerup-container').style.display = 'block';
-                    if (fiftyFiftyUsed) {
-                        document.getElementById('fiftyFiftyBtn').disabled = true;
-                        document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
-                    } else {
-                        document.getElementById('fiftyFiftyBtn').disabled = false;
-                        document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por partida)';
-                    }
-                } else {
-                    document.querySelector('.powerup-container').style.display = 'none';
-                }
-                
-                var category = getCategoryInfo(currentQuestion.question);
-                document.getElementById('categoryBadge').textContent = category.name;
-                document.getElementById('categoryBadge').className = 'category-badge ' + category.class;
-                
-                var questionsPerPlayer = gameMode === 'quick' ? 5 : 15;
-                document.getElementById('questionNumber').textContent = 'Pregunta ' + (playerQuestionsAnswered + 1) + ' de ' + questionsPerPlayer;
-                document.getElementById('questionText').textContent = currentQuestion.question;
-                document.getElementById('timer').textContent = timeLeft;
-                
-                var grid = document.getElementById('optionsGrid');
-                grid.innerHTML = '';
-                currentQuestion.options.forEach(function(option, index) {
-                    var btn = document.createElement('button');
-                    btn.className = 'option-btn';
-                    btn.textContent = option;
-                    btn.onclick = function() { submitCPUAnswer(index); };
-                    grid.appendChild(btn);
+                res.on('data', (chunk) => {
+                    data += chunk;
                 });
                 
-                clearInterval(timerInterval);
-                timerInterval = setInterval(function() {
-                    timeLeft--;
-                    document.getElementById('timer').textContent = timeLeft;
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        if (!hasAnswered) {
-                            submitCPUAnswer(-1); // No respondió
+                res.on('end', () => {
+                    try {
+                        const json = JSON.parse(data);
+                        if (json.responseData && json.responseData.translatedText) {
+                            resolve(json.responseData.translatedText);
+                        } else {
+                            resolve(text); // Si falla, devolver original
                         }
+                    } catch (e) {
+                        resolve(text);
                     }
-                }, 1000);
-            } else {
-                // Turno de la CPU
-                showCPUThinking();
-            }
-        }
-        
-        function submitCPUAnswer(answerIndex) {
-            if (hasAnswered) return;
-            hasAnswered = true;
-            clearInterval(timerInterval);
-            
-            var isCorrect = answerIndex === currentQuestion.correct;
-            
-            if (isCorrect) {
-                playerScore += timeLeft * 10;
-            }
-            
-            // Marcar respuesta seleccionada
-            var options = document.querySelectorAll('.option-btn');
-            if (answerIndex >= 0) {
-                options[answerIndex].classList.add(isCorrect ? 'correct' : 'wrong');
-            }
-            
-            playerQuestionsAnswered++;
-            currentQuestionIndex++;
-            
-            setTimeout(function() {
-                isPlayerTurn = false;
-                sendCPUQuestion();
-            }, 2000);
-        }
-        
-        function showCPUThinking() {
-            document.getElementById('questionText').textContent = '🤖 La CPU está pensando...';
-            document.getElementById('timer').textContent = '🤔';
-            document.getElementById('optionsGrid').innerHTML = '';
-            document.querySelector('.powerup-container').style.display = 'none';
-            
-            // CPU responde en 2-6 segundos
-            var thinkingTime = Math.random() * 4000 + 2000;
-            
-            setTimeout(function() {
-                processCPUAnswer();
-            }, thinkingTime);
-        }
-        
-        function processCPUAnswer() {
-            var question = cpuQuestions[currentQuestionIndex];
-            
-            // CPU acierta según dificultad
-            var accuracy = 0.6; // Normal por defecto
-            if (cpuDifficulty === 'easy') {
-                accuracy = 0.4;
-            } else if (cpuDifficulty === 'hard') {
-                accuracy = 0.8;
-            }
-            
-            var cpuCorrect = Math.random() < accuracy;
-            
-            // Tiempo aleatorio de respuesta (2-8 segundos)
-            var cpuTime = Math.floor(Math.random() * 7) + 2;
-            
-            if (cpuCorrect) {
-                cpuScore += cpuTime * 10;
-            }
-            
-            // Mostrar resultado
-            var difficultyEmoji = cpuDifficulty === 'easy' ? '🟢' : cpuDifficulty === 'hard' ? '🔴' : '🟡';
-            document.getElementById('questionText').textContent = difficultyEmoji + ' CPU respondió ' + (cpuCorrect ? 'correctamente ✓' : 'incorrectamente ✗');
-            
-            cpuQuestionsAnswered++;
-            currentQuestionIndex++;
-            
-            var questionsPerPlayer = gameMode === 'quick' ? 5 : 15;
-            
-            setTimeout(function() {
-                if (playerQuestionsAnswered >= questionsPerPlayer && cpuQuestionsAnswered >= questionsPerPlayer) {
-                    endCPUGame();
-                } else {
-                    isPlayerTurn = true;
-                    sendCPUQuestion();
-                }
-            }, 2000);
-        }
-        
-        function endCPUGame() {
-            var difficultyBadge = cpuDifficulty === 'easy' ? '🟢' : cpuDifficulty === 'hard' ? '🔴' : '🟡';
-            var difficultyText = cpuDifficulty === 'easy' ? 'Fácil' : cpuDifficulty === 'hard' ? 'Difícil' : 'Normal';
-            
-            var ranking = [
-                { name: playerName, score: playerScore },
-                { name: difficultyBadge + ' CPU (' + difficultyText + ')', score: cpuScore }
-            ].sort((a, b) => b.score - a.score);
-            
-            var html = '<div style="text-align: center;">';
-            html += '<h2 style="font-size: 32px; margin-bottom: 30px;">🏆 RANKING FINAL 🏆</h2>';
-            
-            var medals = ['🥇', '🥈'];
-            
-            ranking.forEach(function(p, index) {
-                var isMe = p.name === playerName;
-                var position = index + 1;
-                var medal = medals[index];
-                var style = '';
-                
-                if (position === 1) {
-                    style = 'background: linear-gradient(135deg, #FFD700, #FFA500); color: white;';
-                } else {
-                    style = 'background: linear-gradient(135deg, #C0C0C0, #808080); color: white;';
-                }
-                
-                html += '<div style="' + style + ' padding: 25px; margin: 15px 0; border-radius: 15px; font-size: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
-                html += '<div style="font-size: 36px; margin-bottom: 10px;">' + medal + '</div>';
-                html += '<strong style="font-size: 24px;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong><br>';
-                html += '<span style="font-size: 28px; font-weight: bold;">' + p.score + ' pts</span>';
-                html += '</div>';
-            });
-            
-            html += '</div>';
-            document.getElementById('finalScores').innerHTML = html;
-            showScreen('resultsScreen');
-            
-            // Guardar en historial
-            saveMatch({
-                won: ranking[0].name === playerName,
-                myScore: playerScore,
-                opponentName: difficultyBadge + ' CPU (' + difficultyText + ')',
-                opponentScore: cpuScore
-            });
-            
-            // Confetti si ganaste
-            if (ranking[0].name === playerName) {
-                createConfetti();
-            }
-            
-            cpuMode = false;
-        }
-        
-        // POWER-UP 50/50
-        function useFiftyFifty() {
-            if (fiftyFiftyUsed || hasAnswered) return;
-            
-            fiftyFiftyUsed = true;
-            document.getElementById('fiftyFiftyBtn').disabled = true;
-            document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
-            
-            var options = document.querySelectorAll('.option-btn');
-            var correctIndex = currentQuestion.correct;
-            var incorrectIndices = [];
-            
-            for (var i = 0; i < options.length; i++) {
-                if (i !== correctIndex) {
-                    incorrectIndices.push(i);
-                }
-            }
-            
-            // Eliminar 2 incorrectas aleatoriamente
-            var toRemove = [];
-            while (toRemove.length < 2 && incorrectIndices.length > 0) {
-                var randomIndex = Math.floor(Math.random() * incorrectIndices.length);
-                toRemove.push(incorrectIndices[randomIndex]);
-                incorrectIndices.splice(randomIndex, 1);
-            }
-            
-            toRemove.forEach(function(index) {
-                options[index].style.display = 'none';
-            });
-        }
-        
-        // ANIMACIÓN CONFETTI
-        function createConfetti() {
-            var colors = ['#FF6B6B', '#4ECDC4', '#FFD93D', '#6BCF7F', '#A78BFA'];
-            for (var i = 0; i < 100; i++) {
-                setTimeout(function() {
-                    var confetti = document.createElement('div');
-                    confetti.className = 'confetti';
-                    confetti.style.left = Math.random() * 100 + '%';
-                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
-                    document.body.appendChild(confetti);
-                    setTimeout(function() {
-                        confetti.remove();
-                    }, 3000);
-                }, i * 30);
-            }
-        }
-        
-        // CATEGORÍAS
-        function getCategoryInfo(question) {
-            var text = question.toLowerCase();
-            if (text.includes('capital') || text.includes('país') || text.includes('continente') || text.includes('océano') || text.includes('río')) {
-                return { name: '🌍 Geografía', class: 'cat-geografia' };
-            } else if (text.includes('planeta') || text.includes('animal') || text.includes('célula') || text.includes('átomo') || text.includes('elemento')) {
-                return { name: '🧪 Ciencia', class: 'cat-ciencia' };
-            } else if (text.includes('año') || text.includes('guerra') || text.includes('emperador') || text.includes('rey')) {
-                return { name: '📜 Historia', class: 'cat-historia' };
-            } else if (text.includes('deporte') || text.includes('jugadores') || text.includes('fútbol') || text.includes('olímpicos')) {
-                return { name: '⚽ Deportes', class: 'cat-deportes' };
-            } else if (text.includes('pintó') || text.includes('escribió') || text.includes('compuso') || text.includes('dirigió')) {
-                return { name: '🎨 Arte', class: 'cat-arte' };
-            } else if (text.includes('película') || text.includes('canta') || text.includes('actor') || text.includes('música')) {
-                return { name: '🎬 Entretenimiento', class: 'cat-entretenimiento' };
-            }
-            return { name: '💡 General', class: 'cat-general' };
-        }
-        
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(function(s) {
-                s.classList.remove('active');
-            });
-            document.getElementById(screenId).classList.add('active');
-        }
-        
-        function showError(message) {
-            document.getElementById('errorContainer').innerHTML = '<div class="error">' + message + '</div>';
-            setTimeout(function() {
-                document.getElementById('errorContainer').innerHTML = '';
-            }, 3000);
-        }
-        
-        function createRoom() {
-            playerName = document.getElementById('playerName').value.trim();
-            if (!playerName) {
-                showError('Por favor ingresa tu nombre');
-                return;
-            }
-            socket.emit('createRoom', { playerName: playerName, mode: gameMode });
-        }
-        
-        function showJoinScreen() {
-            showScreen('joinScreen');
-        }
-        
-        function joinRoom() {
-            playerName = document.getElementById('playerName2').value.trim();
-            var roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-            
-            console.log('🔍 Intentando unirse a sala:', roomCode);
-            console.log('📝 Longitud del código:', roomCode.length);
-            
-            if (!playerName || !roomCode) {
-                showError('Por favor completa todos los campos');
-                return;
-            }
-            socket.emit('joinRoom', { roomCode: roomCode, playerName: playerName });
-        }
-        
-        function markReady() {
-            socket.emit('playerReady', currentRoom);
-        }
-        
-        function submitAnswer(index) {
-            if (hasAnswered) return;
-            hasAnswered = true;
-            clearInterval(timerInterval);
-            
-            var options = document.querySelectorAll('.option-btn');
-            options[index].classList.add('selected');
-            
-            socket.emit('submitAnswer', {
-                roomCode: currentRoom,
-                answerIndex: index,
-                timeLeft: timeLeft
-            });
-        }
-        
-        // SOCKET EVENTS
-        socket.on('roomCreated', function(data) {
-            currentRoom = data.roomCode;
-            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
-            document.getElementById('playersList').innerHTML = '<div class="player">' + data.playerName + ' (Tú)</div>';
-            showScreen('waitingScreen');
-        });
-        
-        socket.on('roomError', function(message) {
-            if (message === 'Sala no encontrada') {
-                showError('❌ Sala no encontrada. Posibles causas:\n• El código expiró\n• El creador salió\n• Código incorrecto');
-            } else if (message === 'Sala llena') {
-                showError('❌ Esta sala ya tiene 2 jugadores');
-            } else {
-                showError(message);
-            }
-        });
-        
-        socket.on('playerJoined', function(data) {
-            currentRoom = data.roomCode;
-            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
-            var html = '';
-            data.players.forEach(function(p) {
-                var readyText = p.ready ? ' ✓' : '';
-                var className = p.ready ? 'player ready' : 'player';
-                html += '<div class="' + className + '">' + p.name + readyText + '</div>';
-            });
-            document.getElementById('playersList').innerHTML = html;
-            
-            // Actualizar contador de jugadores
-            var counterElement = document.getElementById('playerCount');
-            if (counterElement) {
-                counterElement.textContent = data.players.length;
-            }
-            
-            showScreen('waitingScreen');
-        });
-        
-        socket.on('playersUpdate', function(players) {
-            var html = '';
-            players.forEach(function(p) {
-                var readyText = p.ready ? ' ✓' : '';
-                var className = p.ready ? 'player ready' : 'player';
-                html += '<div class="' + className + '">' + p.name + readyText + '</div>';
-            });
-            document.getElementById('playersList').innerHTML = html;
-            
-            // Actualizar contador de jugadores
-            var counterElement = document.getElementById('playerCount');
-            if (counterElement) {
-                counterElement.textContent = players.length;
-            }
-        });
-        
-        socket.on('newQuestion', function(data) {
-            currentQuestion = data;
-            // fiftyFiftyUsed NO se resetea - solo 1 uso por partida
-            hasAnswered = false;
-            timeLeft = 10;
-            
-            // Ocultar comodín en modo rápido
-            var powerupContainer = document.querySelector('.powerup-container');
-            if (gameMode === 'quick') {
-                powerupContainer.style.display = 'none';
-            } else {
-                powerupContainer.style.display = 'block';
-                
-                // Actualizar el estado del botón según si ya fue usado
-                if (fiftyFiftyUsed) {
-                    document.getElementById('fiftyFiftyBtn').disabled = true;
-                    document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
-                } else {
-                    document.getElementById('fiftyFiftyBtn').disabled = false;
-                    document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por partida)';
-                }
-            }
-            
-            var category = getCategoryInfo(data.question);
-            document.getElementById('categoryBadge').textContent = category.name;
-            document.getElementById('categoryBadge').className = 'category-badge ' + category.class;
-            
-            document.getElementById('questionNumber').textContent = 'Pregunta ' + data.questionNumber + ' de ' + data.totalQuestions;
-            document.getElementById('questionText').textContent = data.question;
-            document.getElementById('timer').textContent = timeLeft;
-            
-            var grid = document.getElementById('optionsGrid');
-            grid.innerHTML = '';
-            data.options.forEach(function(option, index) {
-                var btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.textContent = option;
-                btn.onclick = function() { submitAnswer(index); };
-                grid.appendChild(btn);
-            });
-            
-            showScreen('gameScreen');
-            
-            clearInterval(timerInterval);
-            timerInterval = setInterval(function() {
-                timeLeft--;
-                document.getElementById('timer').textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    if (!hasAnswered) {
-                        hasAnswered = true;
-                        socket.emit('nextQuestion', currentRoom);
-                    }
-                }
-            }, 1000);
-        });
-        
-        socket.on('answerResult', function(data) {
-            var options = document.querySelectorAll('.option-btn');
-            
-            // Buscar la opción que el usuario seleccionó
-            for (var i = 0; i < options.length; i++) {
-                if (options[i].classList.contains('selected')) {
-                    // Solo colorear la que seleccionaste
-                    if (data.isCorrect) {
-                        options[i].classList.add('correct');
-                    } else {
-                        options[i].classList.add('wrong');
-                    }
-                    break;
-                }
-            }
-        });
-        
-        socket.on('waitingTurn', function(data) {
-            document.getElementById('otherPlayerName').textContent = data.currentPlayerName;
-            
-            // Mostrar tabla de puntuaciones si hay múltiples jugadores
-            if (data.allPlayers && data.allPlayers.length > 2) {
-                var scoresHtml = '<div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">';
-                scoresHtml += '<h3 style="margin-bottom: 10px;">📊 Puntuaciones actuales:</h3>';
-                
-                var sortedPlayers = [...data.allPlayers].sort((a, b) => b.score - a.score);
-                sortedPlayers.forEach(function(p) {
-                    var isMe = p.name === playerName;
-                    var isCurrent = p.name === data.currentPlayerName;
-                    var style = 'padding: 8px; margin: 5px 0; border-radius: 5px; ';
-                    
-                    if (isCurrent) {
-                        style += 'background: rgba(102, 126, 234, 0.3); border: 2px solid #667eea;';
-                    } else {
-                        style += 'background: rgba(255,255,255,0.05);';
-                    }
-                    
-                    scoresHtml += '<div style="' + style + '">';
-                    scoresHtml += p.name + (isMe ? ' (Tú)' : '') + (isCurrent ? ' 🎯' : '') + ': <strong>' + p.score + ' pts</strong>';
-                    scoresHtml += '</div>';
                 });
-                scoresHtml += '</div>';
-                
-                var waitingDiv = document.getElementById('otherPlayerName').parentElement;
-                var existingScores = waitingDiv.querySelector('.scores-table');
-                if (existingScores) {
-                    existingScores.remove();
-                }
-                var div = document.createElement('div');
-                div.className = 'scores-table';
-                div.innerHTML = scoresHtml;
-                waitingDiv.appendChild(div);
-            }
-            
-            showScreen('waitingTurnScreen');
-        });
-        
-        socket.on('gameOver', function(data) {
-            var html = '<div style="text-align: center;">';
-            html += '<h2 style="font-size: 32px; margin-bottom: 30px;">🏆 RANKING FINAL 🏆</h2>';
-            
-            // Usar el ranking ordenado del servidor
-            var ranking = data.ranking || data.players.sort((a, b) => b.score - a.score);
-            var medals = ['🥇', '🥈', '🥉', '4º'];
-            
-            ranking.forEach(function(p, index) {
-                var isMe = p.name === playerName;
-                var position = index + 1;
-                var medal = medals[index] || (position + 'º');
-                var style = '';
-                
-                if (position === 1) {
-                    style = 'background: linear-gradient(135deg, #FFD700, #FFA500); color: white;';
-                } else if (position === 2) {
-                    style = 'background: linear-gradient(135deg, #C0C0C0, #808080); color: white;';
-                } else if (position === 3) {
-                    style = 'background: linear-gradient(135deg, #CD7F32, #8B4513); color: white;';
-                } else {
-                    style = 'background: #f5f5f5;';
-                }
-                
-                html += '<div style="' + style + ' padding: 25px; margin: 15px 0; border-radius: 15px; font-size: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
-                html += '<div style="font-size: 36px; margin-bottom: 10px;">' + medal + '</div>';
-                html += '<strong style="font-size: 24px;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong><br>';
-                html += '<span style="font-size: 28px; font-weight: bold;">' + p.score + ' pts</span>';
-                html += '</div>';
-                
-                if (isMe) {
-                    // Guardar en historial
-                    var opponents = ranking.filter(pl => pl.name !== playerName);
-                    saveMatch({
-                        won: position === 1,
-                        myScore: p.score,
-                        opponentName: opponents.map(o => o.name).join(', '),
-                        opponentScore: opponents.map(o => o.score).join(', ')
-                    });
-                }
+            }).on('error', (e) => {
+                resolve(text);
             });
             
-            html += '</div>';
-            document.getElementById('finalScores').innerHTML = html;
-            showScreen('resultsScreen');
+            // Timeout de 5 segundos
+            setTimeout(() => {
+                resolve(text);
+            }, 5000);
+        });
+    } catch (error) {
+        return text;
+    }
+}
+
+// Función para traducir un lote de textos
+async function translateBatch(texts) {
+    const translated = [];
+    for (let text of texts) {
+        const result = await translateToSpanish(text);
+        translated.push(result);
+        // Pequeño delay para no saturar la API
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    return translated;
+}
+
+// Función para obtener preguntas de The Trivia API
+async function fetchQuestionsFromAPI(amount = 50) {
+    try {
+        const https = require('https');
+        
+        return new Promise((resolve, reject) => {
+            const url = `https://the-trivia-api.com/api/questions?limit=${amount}`;
             
-            // Confetti si ganaste (1er lugar)
-            if (data.winner === playerName) {
-                createConfetti();
+            https.get(url, (resp) => {
+                let data = '';
+                
+                resp.on('data', (chunk) => {
+                    data += chunk;
+                });
+                
+                resp.on('end', async () => {
+                    try {
+                        const questions = JSON.parse(data);
+                        
+                        if (Array.isArray(questions) && questions.length > 0) {
+                            console.log(`📥 Descargadas ${questions.length} preguntas de The Trivia API, traduciendo...`);
+                            
+                            // Procesar preguntas
+                            const formattedQuestions = [];
+                            
+                            for (let q of questions) {
+                                // Preparar textos para traducir
+                                const questionText = q.question;
+                                const allOptions = [...q.incorrectAnswers, q.correctAnswer];
+                                
+                                // Traducir pregunta y opciones
+                                const textsToTranslate = [questionText, ...allOptions];
+                                const translated = await translateBatch(textsToTranslate);
+                                
+                                const translatedQuestion = translated[0];
+                                const translatedOptions = translated.slice(1);
+                                
+                                // Mezclar opciones
+                                const shuffled = shuffleArray(translatedOptions);
+                                const correctIndex = shuffled.indexOf(translated[translated.length - 1]);
+                                
+                                formattedQuestions.push({
+                                    question: translatedQuestion,
+                                    options: shuffled,
+                                    correct: correctIndex,
+                                    category: q.category,
+                                    difficulty: q.difficulty
+                                });
+                            }
+                            
+                            console.log(`✅ ${formattedQuestions.length} preguntas traducidas al español`);
+                            resolve(formattedQuestions);
+                        } else {
+                            reject(new Error('API response error'));
+                        }
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            }).on('error', (err) => {
+                reject(err);
+            });
+        });
+    } catch (error) {
+        console.error('❌ Error al obtener preguntas de API:', error.message);
+        return [];
+    }
+}
+
+// Función para cargar preguntas locales de respaldo
+function loadLocalQuestions() {
+    try {
+        const localQuestions = JSON.parse(fs.readFileSync('./questions.json', 'utf8'));
+        console.log(`📁 Cargadas ${localQuestions.length} preguntas locales de respaldo`);
+        return localQuestions;
+    } catch (error) {
+        console.log('⚠️ No se encontró questions.json, usando preguntas mínimas');
+        return [
+            { question: "¿Capital de Francia?", options: ["Londres", "París", "Berlín", "Madrid"], correct: 1 },
+            { question: "¿Capital de España?", options: ["Barcelona", "Madrid", "Sevilla", "Valencia"], correct: 1 },
+            { question: "¿Capital de Italia?", options: ["Milán", "Roma", "Nápoles", "Florencia"], correct: 1 },
+            { question: "¿Planeta más grande?", options: ["Tierra", "Júpiter", "Marte", "Saturno"], correct: 1 },
+            { question: "¿Océano más grande?", options: ["Atlántico", "Pacífico", "Índico", "Ártico"], correct: 1 }
+        ];
+    }
+}
+
+// Inicializar preguntas al arrancar
+async function initializeQuestions() {
+    console.log('🔄 Inicializando sistema de preguntas con The Trivia API...');
+    
+    // Intentar cargar de la API
+    const apiQuestions = await fetchQuestionsFromAPI(50); // Empezar con 50 para que sea más rápido
+    
+    if (apiQuestions.length > 0) {
+        allQuestions = apiQuestions;
+        console.log(`✅ Sistema listo con ${allQuestions.length} preguntas traducidas de The Trivia API`);
+    } else {
+        // Usar preguntas locales como respaldo
+        allQuestions = loadLocalQuestions();
+        console.log(`📁 Sistema usando ${allQuestions.length} preguntas locales`);
+    }
+}
+
+// Recargar preguntas automáticamente cuando se agoten
+async function refillQuestionsIfNeeded() {
+    if (allQuestions.length < REFILL_THRESHOLD) {
+        console.log(`🔄 Recargando preguntas (quedan ${allQuestions.length})...`);
+        const newQuestions = await fetchQuestionsFromAPI(50);
+        if (newQuestions.length > 0) {
+            allQuestions.push(...newQuestions);
+            console.log(`✅ Agregadas ${newQuestions.length} preguntas nuevas. Total: ${allQuestions.length}`);
+        }
+    }
+}
+
+// Función para mezclar array (Fisher-Yates shuffle)
+function shuffleArray(array) {
+    const shuffled = [...array]; // Copia del array
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+// Función para seleccionar preguntas aleatorias SIN REPETIR
+function getRandomQuestions(count = 10) {
+    // Recargar si es necesario (sin esperar)
+    refillQuestionsIfNeeded();
+    
+    const shuffled = shuffleArray(allQuestions);
+    const selected = [];
+    const usedTexts = new Set(); // Para verificar duplicados por texto
+    
+    for (let question of shuffled) {
+        // Solo añadir si no hemos usado esta pregunta exacta
+        if (!usedTexts.has(question.question)) {
+            selected.push(question);
+            usedTexts.add(question.question);
+            
+            if (selected.length >= count) {
+                break;
             }
+        }
+    }
+    
+    return selected;
+}
+
+// Socket.IO eventos
+io.on('connection', (socket) => {
+    console.log('Usuario conectado:', socket.id);
+
+    socket.on('createRoom', (data) => {
+        const playerName = typeof data === 'string' ? data : data.playerName;
+        const mode = (typeof data === 'object' && data.mode) ? data.mode : 'normal';
+        const questionsPerPlayer = mode === 'quick' ? 5 : 15;
+        const maxPlayers = 4; // Máximo 4 jugadores
+        const totalQuestions = questionsPerPlayer * maxPlayers; // Preparar para 4 jugadores
+        
+        const roomCode = generateRoomCode();
+        rooms[roomCode] = {
+            players: [{
+                id: socket.id,
+                name: playerName,
+                ready: false,
+                score: 0,
+                questionsAnswered: 0
+            }],
+            currentQuestion: 0,
+            currentPlayerIndex: 0, // Índice del jugador que tiene el turno
+            started: false,
+            mode: mode,
+            questionsPerPlayer: questionsPerPlayer,
+            maxPlayers: maxPlayers,
+            questions: getRandomQuestions(totalQuestions)
+        };
+        socket.join(roomCode);
+        socket.emit('roomCreated', { roomCode, playerName });
+    });
+
+    socket.on('joinRoom', ({roomCode, playerName}) => {
+        // Limpiar código: quitar espacios y convertir a mayúsculas
+        const cleanRoomCode = roomCode.trim().toUpperCase();
+        
+        console.log('🔍 Intento de unión:', cleanRoomCode);
+        console.log('📚 Salas disponibles:', Object.keys(rooms));
+        
+        const room = rooms[cleanRoomCode];
+        if (!room) {
+            console.log('❌ Sala no encontrada:', cleanRoomCode);
+            socket.emit('roomError', 'Sala no encontrada');
+            return;
+        }
+        if (room.players.length >= room.maxPlayers) {
+            console.log('❌ Sala llena:', cleanRoomCode);
+            socket.emit('roomError', 'Sala llena (máximo 4 jugadores)');
+            return;
+        }
+        
+        console.log('✅ Jugador unido a sala:', cleanRoomCode);
+        
+        room.players.push({
+            id: socket.id,
+            name: playerName,
+            ready: false,
+            score: 0,
+            questionsAnswered: 0
+        });
+        socket.join(cleanRoomCode);
+        io.to(cleanRoomCode).emit('playerJoined', {
+            roomCode: cleanRoomCode,
+            players: room.players
+        });
+    });
+
+    socket.on('playerReady', (roomCode) => {
+        const room = rooms[roomCode];
+        if (!room) return;
+        
+        const player = room.players.find(p => p.id === socket.id);
+        if (player) player.ready = true;
+        
+        io.to(roomCode).emit('playersUpdate', room.players);
+        
+        // Empezar cuando hay al menos 2 jugadores y todos están listos
+        if (room.players.length >= 2 && room.players.every(p => p.ready)) {
+            room.started = true;
+            sendQuestion(roomCode);
+        }
+    });
+
+    socket.on('submitAnswer', ({roomCode, answerIndex, timeLeft}) => {
+        const room = rooms[roomCode];
+        if (!room) return;
+        
+        const player = room.players.find(p => p.id === socket.id);
+        if (!player) return;
+        
+        // Verificar que sea el turno de este jugador
+        if (room.players[room.currentPlayerIndex].id !== socket.id) return;
+        
+        // Marcar que este jugador ya respondió
+        player.hasAnswered = true;
+        player.questionsAnswered++;
+        
+        const question = room.questions[room.currentQuestion];
+        const isCorrect = answerIndex === question.correct;
+        
+        if (isCorrect) {
+            player.score += timeLeft * 10;
+        }
+        
+        socket.emit('answerResult', {
+            isCorrect,
+            correctAnswer: question.correct
         });
         
-        socket.on('playerLeft', function(players) {
-            if (players.length === 0) {
-                showError('El otro jugador se desconectó');
-                setTimeout(function() {
-                    location.reload();
-                }, 2000);
-            }
-        });
+        // Verificar si el juego terminó (todos los jugadores completaron sus preguntas)
+        if (room.players.every(p => p.questionsAnswered >= room.questionsPerPlayer)) {
+            // Fin del juego - Crear ranking
+            setTimeout(() => {
+                // Ordenar jugadores por puntuación (mayor a menor)
+                const ranking = [...room.players].sort((a, b) => b.score - a.score);
+                
+                io.to(roomCode).emit('gameOver', {
+                    players: room.players,
+                    ranking: ranking,
+                    winner: ranking[0].name
+                });
+                delete rooms[roomCode];
+            }, 2000);
+        } else {
+            // Continuar con siguiente turno
+            setTimeout(() => {
+                nextTurn(roomCode);
+            }, 2000);
+        }
+    });
+
+    socket.on('nextQuestion', (roomCode) => {
+        const room = rooms[roomCode];
+        if (!room) return;
         
-        socket.on('connect_error', function() {
-            showError('Error de conexión');
-        });
-    </script>
-</body>
-</html>
+        const currentPlayer = room.players[room.currentPlayerIndex];
+        
+        // Solo procesar si es del jugador correcto y no ha respondido
+        if (currentPlayer.id === socket.id && !currentPlayer.hasAnswered) {
+            currentPlayer.questionsAnswered++;
+            currentPlayer.hasAnswered = true;
+            
+            // Verificar si el juego terminó
+            if (room.players.every(p => p.questionsAnswered >= room.questionsPerPlayer)) {
+                // Fin del juego - enviar a AMBOS jugadores
+                const winner = room.players.reduce((max, p) => 
+                    p.score > max.score ? p : max
+                );
+                io.to(roomCode).emit('gameOver', {
+                    players: room.players,
+                    winner: winner.name
+                });
+                delete rooms[roomCode];
+            } else {
+                // Avanzar al siguiente turno
+                nextTurn(roomCode);
+            }
+        }
+    });
+    
+    function nextTurn(roomCode) {
+        const room = rooms[roomCode];
+        if (!room) return;
+        
+        // Resetear estado de respuesta del jugador actual
+        room.players[room.currentPlayerIndex].hasAnswered = false;
+        
+        // Cambiar de turno (rotar entre todos los jugadores)
+        room.currentPlayerIndex = (room.currentPlayerIndex + 1) % room.players.length;
+        room.currentQuestion++;
+        
+        // Resetear estado del siguiente jugador
+        room.players[room.currentPlayerIndex].hasAnswered = false;
+        
+        // Enviar siguiente pregunta
+        sendQuestion(roomCode);
+    }
+
+    socket.on('disconnect', () => {
+        for (let roomCode in rooms) {
+            const room = rooms[roomCode];
+            room.players = room.players.filter(p => p.id !== socket.id);
+            if (room.players.length === 0) {
+                delete rooms[roomCode];
+            } else {
+                io.to(roomCode).emit('playerLeft', room.players);
+            }
+        }
+    });
+    
+    socket.on('leaveRoom', (roomCode) => {
+        const room = rooms[roomCode];
+        if (!room) return;
+        
+        // Eliminar jugador de la sala
+        room.players = room.players.filter(p => p.id !== socket.id);
+        
+        // Si la sala está vacía, eliminarla
+        if (room.players.length === 0) {
+            delete rooms[roomCode];
+        } else {
+            // Notificar al otro jugador
+            io.to(roomCode).emit('playerLeft', room.players);
+        }
+    });
+});
+
+function sendQuestion(roomCode) {
+    const room = rooms[roomCode];
+    const question = room.questions[room.currentQuestion];
+    const currentPlayer = room.players[room.currentPlayerIndex];
+    
+    // Enviar pregunta solo al jugador actual
+    io.to(currentPlayer.id).emit('newQuestion', {
+        question: question.question,
+        options: question.options,
+        questionNumber: currentPlayer.questionsAnswered + 1,
+        totalQuestions: room.questionsPerPlayer
+    });
+    
+    // Enviar "esperando" a TODOS los demás jugadores
+    room.players.forEach((player, index) => {
+        if (index !== room.currentPlayerIndex) {
+            io.to(player.id).emit('waitingTurn', {
+                currentPlayerName: currentPlayer.name,
+                allPlayers: room.players
+            });
+        }
+    });
+}
+
+function generateRoomCode() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+// Inicializar y arrancar servidor
+(async () => {
+    await initializeQuestions();
+    
+    server.listen(PORT, () => {
+        console.log(`🚀 Servidor Trivial Kapuchi corriendo en puerto ${PORT}`);
+        console.log(`📚 Preguntas disponibles: ${allQuestions.length}`);
+    });
+})();
