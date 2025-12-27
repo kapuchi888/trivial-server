@@ -35,7 +35,7 @@ const rooms = {};
 
 // ===== SISTEMA DE PREGUNTAS CON OPEN TRIVIA DB Y TRADUCCIÓN =====
 let allQuestions = [];
-const CACHE_SIZE = 200; // Preguntas en caché inicial (BALANCE ÓPTIMO)
+const CACHE_SIZE = 300; // Preguntas en caché inicial (ÓPTIMO)
 const REFILL_THRESHOLD = 100; // Recargar cuando queden menos de 100
 
 // Función para traducir texto de inglés a español usando Google Translate
@@ -204,13 +204,13 @@ function loadLocalQuestions() {
 
 // Inicializar preguntas al arrancar
 async function initializeQuestions() {
-    console.log('🔄 Inicializando sistema con 200 preguntas (arranque rápido)...');
-    console.log('⏳ Esto tomará ~20-25 segundos...');
+    console.log('🔄 Inicializando sistema con 300 preguntas (balance perfecto)...');
+    console.log('⏳ Esto tomará ~30-35 segundos...');
     
-    // Cargar 200 preguntas en 4 lotes de 50
+    // Cargar 300 preguntas en 6 lotes de 50
     const allFetched = [];
-    for (let i = 0; i < 4; i++) {
-        console.log(`📥 Descargando lote ${i + 1}/4 (${allFetched.length} preguntas cargadas)...`);
+    for (let i = 0; i < 6; i++) {
+        console.log(`📥 Descargando lote ${i + 1}/6 (${allFetched.length} preguntas cargadas)...`);
         const batch = await fetchQuestionsFromAPI(50);
         if (batch.length > 0) {
             allFetched.push(...batch);
@@ -222,7 +222,7 @@ async function initializeQuestions() {
     if (allFetched.length > 0) {
         allQuestions = allFetched;
         console.log(`✅ Sistema listo con ${allQuestions.length} preguntas traducidas al español`);
-        console.log(`🎮 Suficiente para varias partidas sin repeticiones!`);
+        console.log(`🎮 Perfecto para sesiones largas sin repeticiones!`);
     } else {
         // Usar preguntas locales como respaldo
         allQuestions = loadLocalQuestions();
