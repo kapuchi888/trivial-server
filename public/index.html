@@ -8,7 +8,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe);
+            background: linear-gradient(-45deg, #FF0000, #00FF00, #FF0000, #00FF00);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
             min-height: 100vh;
@@ -59,19 +59,18 @@
             100% { background-position: 0% 50%; }
         }
         .container {
-            background: rgba(255, 255, 255, 0.98);
+            background: #00FF00;
             backdrop-filter: blur(20px);
             padding: 35px 30px;
             border-radius: 35px;
             max-width: 600px;
             width: 90%;
             position: relative;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35), 
-                        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+            box-shadow: 0 25px 80px rgba(255, 0, 0, 0.8);
             max-height: 95vh;
             overflow-y: auto;
             z-index: 1;
-            border: 3px solid rgba(255, 255, 255, 0.5);
+            border: 10px solid #FF0000;
         }
         
         /* Ocultar scrollbar pero mantener funcionalidad */
@@ -82,14 +81,12 @@
         
         h1 { 
             text-align: center; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 48px;
+            color: #FF0000 !important;
+            font-size: 60px;
             margin-bottom: 10px;
             font-weight: 900;
             letter-spacing: -2px;
-            text-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            text-shadow: 0 0 30px #00FF00, 0 0 60px #00FF00;
             animation: titlePulse 3s ease-in-out infinite;
         }
         
