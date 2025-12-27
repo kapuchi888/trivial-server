@@ -51,14 +51,14 @@
         .container {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(30px);
-            padding: 40px 35px;
+            padding: 25px 25px;
             border-radius: 30px;
             max-width: 600px;
             width: 90%;
             position: relative;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
                         0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-            max-height: 95vh;
+            max-height: 98vh;
             overflow-y: auto;
             z-index: 1;
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -221,19 +221,19 @@
         .player { padding: 10px; margin: 5px 0; background: white; border-radius: 5px; }
         .player.ready { background: #4CAF50; color: white; }
         .question-text {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
-            margin: 30px 0;
+            margin: 15px 0;
             text-align: center;
-            padding: 35px 30px;
+            padding: 25px 20px;
             background: rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3),
                         0 0 0 1px rgba(255, 255, 255, 0.2) inset;
             backdrop-filter: blur(10px);
             color: #ffffff;
-            line-height: 1.6;
-            min-height: 130px;
+            line-height: 1.5;
+            min-height: 90px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -254,65 +254,65 @@
         
         @media (max-width: 600px) {
             .question-text {
-                font-size: 19px;
-                padding: 25px 20px;
-                min-height: 110px;
+                font-size: 17px;
+                padding: 20px 15px;
+                min-height: 80px;
+                margin: 12px 0;
             }
         }
-        
         .timer {
-            width: 200px;
-            height: 200px;
-            font-size: 80px;
+            width: 140px;
+            height: 140px;
+            font-size: 64px;
             font-weight: 900;
             text-align: center;
             background: linear-gradient(135deg, #ff6b6b 0%, #ff0000 100%);
             color: #ffffff;
-            margin: 20px auto;
+            margin: 15px auto;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 60px rgba(255, 0, 0, 1),
-                        0 0 100px rgba(255, 0, 0, 0.7),
-                        0 15px 50px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 50px rgba(255, 0, 0, 1),
+                        0 0 80px rgba(255, 0, 0, 0.7),
+                        0 10px 40px rgba(0, 0, 0, 0.6);
             animation: timerMegaPulse 1s ease-in-out infinite;
             position: relative;
-            border: 8px solid rgba(255, 255, 255, 0.5);
+            border: 6px solid rgba(255, 255, 255, 0.5);
         }
         
         .timer::before {
             content: '';
             position: absolute;
-            width: 240px;
-            height: 240px;
+            width: 170px;
+            height: 170px;
             border-radius: 50%;
-            border: 6px solid rgba(255, 0, 0, 0.5);
+            border: 4px solid rgba(255, 0, 0, 0.5);
             animation: timerMegaRing 2s ease-out infinite;
         }
         
         .timer::after {
             content: '';
             position: absolute;
-            width: 280px;
-            height: 280px;
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
-            border: 4px solid rgba(255, 0, 0, 0.3);
+            border: 3px solid rgba(255, 0, 0, 0.3);
             animation: timerMegaRing 2.5s ease-out infinite;
         }
         
         @keyframes timerMegaPulse {
             0%, 100% { 
                 transform: scale(1);
-                box-shadow: 0 0 60px rgba(255, 0, 0, 1),
-                            0 0 100px rgba(255, 0, 0, 0.7),
-                            0 15px 50px rgba(0, 0, 0, 0.6);
+                box-shadow: 0 0 50px rgba(255, 0, 0, 1),
+                            0 0 80px rgba(255, 0, 0, 0.7),
+                            0 10px 40px rgba(0, 0, 0, 0.6);
             }
             50% { 
-                transform: scale(1.15);
-                box-shadow: 0 0 80px rgba(255, 0, 0, 1),
-                            0 0 120px rgba(255, 0, 0, 0.9),
-                            0 20px 60px rgba(0, 0, 0, 0.7);
+                transform: scale(1.12);
+                box-shadow: 0 0 70px rgba(255, 0, 0, 1),
+                            0 0 100px rgba(255, 0, 0, 0.9),
+                            0 15px 50px rgba(0, 0, 0, 0.7);
             }
         }
         
@@ -329,31 +329,32 @@
         
         @media (max-width: 600px) {
             .timer {
-                width: 160px;
-                height: 160px;
-                font-size: 64px;
-                border: 6px solid rgba(255, 255, 255, 0.5);
+                width: 110px;
+                height: 110px;
+                font-size: 48px;
+                margin: 10px auto;
+                border: 5px solid rgba(255, 255, 255, 0.5);
             }
             .timer::before {
-                width: 190px;
-                height: 190px;
+                width: 135px;
+                height: 135px;
             }
             .timer::after {
-                width: 220px;
-                height: 220px;
+                width: 160px;
+                height: 160px;
             }
         }
         .options-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 16px;
-            margin: 28px 0;
+            gap: 12px;
+            margin: 15px 0;
         }
         .option-btn {
-            padding: 22px 24px;
+            padding: 16px 20px;
             border: none;
-            border-radius: 16px;
-            font-size: 18px;
+            border-radius: 14px;
+            font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             background: rgba(255, 255, 255, 0.12);
@@ -362,7 +363,7 @@
             text-align: left;
             display: block;
             width: 100%;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -476,15 +477,15 @@
         .powerup-btn {
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
             color: #000;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-size: 15px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 13px;
             font-weight: 800;
             cursor: pointer;
             border: none;
-            margin: 10px 0;
+            margin: 8px 0;
             transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(255, 165, 0, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -842,8 +843,8 @@
         
         <!-- PANTALLA JUEGO -->
         <div id="gameScreen" class="screen">
-            <div id="categoryBadge" class="category-badge" style="text-align: center; margin: 10px 0;"></div>
-            <div id="questionNumber" style="text-align: center; color: rgba(255, 255, 255, 0.95); font-weight: 900; font-size: 22px; margin: 15px 0; text-shadow: 0 0 20px rgba(233, 69, 96, 0.8), 0 2px 10px rgba(0,0,0,0.5);"></div>
+            <div id="categoryBadge" class="category-badge" style="text-align: center; margin: 5px 0;"></div>
+            <div id="questionNumber" style="text-align: center; color: rgba(255, 255, 255, 0.95); font-weight: 900; font-size: 18px; margin: 8px 0; text-shadow: 0 0 20px rgba(233, 69, 96, 0.8), 0 2px 10px rgba(0,0,0,0.5);"></div>
             
             <!-- TIMER ARRIBA EN EL CENTRO -->
             <div id="timer" class="timer">15</div>
