@@ -1378,8 +1378,9 @@
             hasAnswered = true;
             clearInterval(timerInterval);
             
-            var options = document.querySelectorAll('.option-btn');
-            options[index].classList.add('selected');
+            // NO marcar como selected todavía - esperar resultado
+            // Guardar el índice para cuando llegue el resultado
+            window.selectedAnswerIndex = index;
             
             socket.emit('submitAnswer', {
                 roomCode: currentRoom,
@@ -1502,16 +1503,15 @@
         socket.on('answerResult', function(data) {
             var options = document.querySelectorAll('.option-btn');
             
-            // Buscar la opción que el usuario seleccionó
-            for (var i = 0; i < options.length; i++) {
-                if (options[i].classList.contains('selected')) {
-                    // Solo colorear la que seleccionaste
-                    if (data.isCorrect) {
-                        options[i].classList.add('correct');
-                    } else {
-                        options[i].classList.add('wrong');
-                    }
-                    break;
+            // Usar el índice guardado
+            var selectedIndex = window.selectedAnswerIndex;
+            if (selectedIndex !== undefined && options[selectedIndex]) {
+                // Agregar selected y correct/wrong AL MISMO TIEMPO
+                options[selectedIndex].classList.add('selected');
+                if (data.isCorrect) {
+                    options[selectedIndex].classList.add('correct');
+                } else {
+                    options[selectedIndex].classList.add('wrong');
                 }
             }
         });
@@ -1521,23 +1521,23 @@
             
             // Mostrar tabla de puntuaciones si hay múltiples jugadores
             if (data.allPlayers && data.allPlayers.length > 2) {
-                var scoresHtml = '<div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">';
-                scoresHtml += '<h3 style="margin-bottom: 10px;">📊 Puntuaciones actuales:</h3>';
+                var scoresHtml = '<div style="margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.15); border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">';
+                scoresHtml += '<h3 style="margin-bottom: 15px; color: #ffffff; font-size: 20px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">📊 Puntuaciones actuales:</h3>';
                 
                 var sortedPlayers = [...data.allPlayers].sort((a, b) => b.score - a.score);
                 sortedPlayers.forEach(function(p) {
                     var isMe = p.name === playerName;
                     var isCurrent = p.name === data.currentPlayerName;
-                    var style = 'padding: 8px; margin: 5px 0; border-radius: 5px; ';
+                    var style = 'padding: 12px 15px; margin: 10px 0; border-radius: 10px; font-size: 16px; ';
                     
                     if (isCurrent) {
-                        style += 'background: rgba(102, 126, 234, 0.3); border: 2px solid #667eea;';
+                        style += 'background: rgba(233, 69, 96, 0.4); border: 2px solid #e94560; color: #ffffff; font-weight: 700;';
                     } else {
-                        style += 'background: rgba(255,255,255,0.05);';
+                        style += 'background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.2);';
                     }
                     
                     scoresHtml += '<div style="' + style + '">';
-                    scoresHtml += p.name + (isMe ? ' (Tú)' : '') + (isCurrent ? ' 🎯' : '') + ': <strong>' + p.score + ' pts</strong>';
+                    scoresHtml += p.name + (isMe ? ' (Tú)' : '') + (isCurrent ? ' 🎯' : '') + ': <strong style="font-size: 18px;">' + p.score + ' pts</strong>';
                     scoresHtml += '</div>';
                 });
                 scoresHtml += '</div>';
