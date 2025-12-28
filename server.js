@@ -35,6 +35,7 @@ const rooms = {};
 
 // ===== SISTEMA DE PREGUNTAS CON OPEN TRIVIA DB Y TRADUCCIÓN =====
 let allQuestions = [];
+let usedQuestions = []; // Tracking de preguntas ya usadas
 const CACHE_SIZE = 300; // Preguntas en caché inicial (ÓPTIMO)
 const REFILL_THRESHOLD = 100; // Recargar cuando queden menos de 100
 
@@ -220,12 +221,13 @@ async function initializeQuestions() {
     }
     
     if (allFetched.length > 0) {
-        allQuestions = allFetched;
+        // Hacer shuffle UNA VEZ al cargar
+        allQuestions = shuffleArray(allFetched);
         console.log(`✅ Sistema listo con ${allQuestions.length} preguntas traducidas al español`);
         console.log(`🎮 Perfecto para sesiones largas sin repeticiones!`);
     } else {
         // Usar preguntas locales como respaldo
-        allQuestions = loadLocalQuestions();
+        allQuestions = shuffleArray(loadLocalQuestions());
         console.log(`📁 Sistema usando ${allQuestions.length} preguntas locales`);
     }
 }
@@ -245,7 +247,9 @@ async function refillQuestionsIfNeeded() {
         }
         
         if (allFetched.length > 0) {
-            allQuestions.push(...allFetched);
+            // Hacer shuffle de las nuevas preguntas y añadirlas
+            const shuffledNew = shuffleArray(allFetched);
+            allQuestions.push(...shuffledNew);
             console.log(`✅ Agregadas ${allFetched.length} preguntas nuevas. Total: ${allQuestions.length}`);
         }
     }
@@ -266,21 +270,17 @@ function getRandomQuestions(count = 10) {
     // Recargar si es necesario (sin esperar)
     refillQuestionsIfNeeded();
     
-    const shuffled = shuffleArray(allQuestions);
-    const selected = [];
-    const usedTexts = new Set(); // Para verificar duplicados por texto
-    
-    for (let question of shuffled) {
-        // Solo añadir si no hemos usado esta pregunta exacta
-        if (!usedTexts.has(question.question)) {
-            selected.push(question);
-            usedTexts.add(question.question);
-            
-            if (selected.length >= count) {
-                break;
-            }
-        }
+    // Si no hay suficientes preguntas, recargar inmediatamente
+    if (allQuestions.length < count) {
+        console.log(`⚠️ No hay suficientes preguntas (${allQuestions.length}), recargando...`);
+        // En este caso, resetear y usar las que hay
+        return allQuestions.slice(0, count);
     }
+    
+    // Tomar las primeras 'count' preguntas del array
+    const selected = allQuestions.splice(0, count);
+    
+    console.log(`📤 Enviadas ${selected.length} preguntas. Quedan ${allQuestions.length} en el pool`);
     
     return selected;
 }
