@@ -866,12 +866,12 @@
         
         <!-- PANTALLA ESPERANDO TURNO -->
         <div id="waitingTurnScreen" class="screen">
-            <h1>⏳ Esperando turno...</h1>
-            <p style="text-align: center; font-size: 20px; color: #667eea; margin: 20px 0;">
-                <strong id="otherPlayerName"></strong> está respondiendo su pregunta
+            <h1 style="color: #ffffff; text-shadow: 0 0 30px rgba(233, 69, 96, 0.8), 0 4px 15px rgba(0,0,0,0.6); font-size: 42px;">⏳ Esperando turno...</h1>
+            <p style="text-align: center; font-size: 22px; color: rgba(255, 255, 255, 0.95); margin: 25px 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 700;">
+                <strong id="otherPlayerName" style="color: #ffffff;"></strong> está respondiendo su pregunta
             </p>
-            <div style="text-align: center; margin: 30px 0;">
-                <div style="display: inline-block; width: 60px; height: 60px; border: 6px solid #f3f3f3; border-top: 6px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <div style="text-align: center; margin: 40px 0;">
+                <div style="display: inline-block; width: 100px; height: 100px; border: 8px solid rgba(255,255,255,0.2); border-top: 8px solid #e94560; border-radius: 50%; animation: spin 1s linear infinite;"></div>
             </div>
             <style>
                 @keyframes spin {
@@ -1233,10 +1233,10 @@
                     style = 'background: linear-gradient(135deg, #C0C0C0, #808080); color: white;';
                 }
                 
-                html += '<div style="' + style + ' padding: 25px; margin: 15px 0; border-radius: 15px; font-size: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
-                html += '<div style="font-size: 36px; margin-bottom: 10px;">' + medal + '</div>';
-                html += '<strong style="font-size: 24px;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong><br>';
-                html += '<span style="font-size: 28px; font-weight: bold;">' + p.score + ' pts</span>';
+                html += '<div style="' + style + ' padding: 30px 20px; margin: 20px auto; max-width: 400px; border-radius: 20px; font-size: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">';
+                html += '<div style="font-size: 48px; margin-bottom: 15px;">' + medal + '</div>';
+                html += '<strong style="font-size: 28px; display: block; margin-bottom: 10px;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong>';
+                html += '<span style="font-size: 36px; font-weight: 900;">' + p.score + ' pts</span>';
                 html += '</div>';
             });
             
@@ -1558,7 +1558,7 @@
         
         socket.on('gameOver', function(data) {
             var html = '<div style="text-align: center;">';
-            html += '<h2 style="font-size: 32px; margin-bottom: 30px;">🏆 RANKING FINAL 🏆</h2>';
+            html += '<h2 style="font-size: 32px; margin-bottom: 30px; color: #ffffff; text-shadow: 0 0 30px rgba(233, 69, 96, 0.8), 0 4px 15px rgba(0,0,0,0.6); font-weight: 900;">🏆 RANKING FINAL 🏆</h2>';
             
             // Usar el ranking ordenado del servidor
             var ranking = data.ranking || data.players.sort((a, b) => b.score - a.score);
@@ -1577,13 +1577,13 @@
                 } else if (position === 3) {
                     style = 'background: linear-gradient(135deg, #CD7F32, #8B4513); color: white;';
                 } else {
-                    style = 'background: #f5f5f5;';
+                    style = 'background: rgba(255,255,255,0.9); color: #333;';
                 }
                 
-                html += '<div style="' + style + ' padding: 25px; margin: 15px 0; border-radius: 15px; font-size: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
-                html += '<div style="font-size: 36px; margin-bottom: 10px;">' + medal + '</div>';
-                html += '<strong style="font-size: 24px;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong><br>';
-                html += '<span style="font-size: 28px; font-weight: bold;">' + p.score + ' pts</span>';
+                html += '<div style="' + style + ' padding: 30px 20px; margin: 20px auto; max-width: 400px; border-radius: 20px; font-size: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">';
+                html += '<div style="font-size: 48px; margin-bottom: 15px;">' + medal + '</div>';
+                html += '<strong style="font-size: 28px; display: block; margin-bottom: 10px;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong>';
+                html += '<span style="font-size: 36px; font-weight: 900;">' + p.score + ' pts</span>';
                 html += '</div>';
                 
                 if (isMe) {
