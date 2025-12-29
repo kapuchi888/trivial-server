@@ -1215,8 +1215,8 @@
                 { name: difficultyBadge + ' CPU (' + difficultyText + ')', score: cpuScore }
             ].sort((a, b) => b.score - a.score);
             
-            var html = '<div style="text-align: center;">';
-            html += '<h2 style="font-size: 32px; margin-bottom: 30px;">🏆 RANKING FINAL 🏆</h2>';
+            var html = '<div style="text-align: center; padding: 0 10px;">';
+            html += '<h2 style="font-size: 26px; margin-bottom: 20px; margin-top: 10px; color: #ffffff; text-shadow: 0 0 30px rgba(233, 69, 96, 0.8), 0 4px 15px rgba(0,0,0,0.6); font-weight: 900; line-height: 1.2;">🏆 RANKING FINAL 🏆</h2>';
             
             var medals = ['🥇', '🥈'];
             
@@ -1232,10 +1232,10 @@
                     style = 'background: linear-gradient(135deg, #C0C0C0, #808080); color: white;';
                 }
                 
-                html += '<div style="' + style + ' padding: 25px 15px; margin: 15px 10px; max-width: 95%; box-sizing: border-box; border-radius: 20px; font-size: 18px; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">';
-                html += '<div style="font-size: 42px; margin-bottom: 12px;">' + medal + '</div>';
-                html += '<strong style="font-size: 24px; display: block; margin-bottom: 8px; word-wrap: break-word;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong>';
-                html += '<span style="font-size: 32px; font-weight: 900;">' + p.score + ' pts</span>';
+                html += '<div style="' + style + ' padding: 20px 12px; margin: 12px 5px; max-width: 96%; box-sizing: border-box; border-radius: 18px; font-size: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.3);">';
+                html += '<div style="font-size: 36px; margin-bottom: 8px;">' + medal + '</div>';
+                html += '<strong style="font-size: 22px; display: block; margin-bottom: 6px; word-wrap: break-word; line-height: 1.2;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong>';
+                html += '<span style="font-size: 28px; font-weight: 900;">' + p.score + ' pts</span>';
                 html += '</div>';
             });
             
@@ -1556,8 +1556,8 @@
         });
         
         socket.on('gameOver', function(data) {
-            var html = '<div style="text-align: center;">';
-            html += '<h2 style="font-size: 32px; margin-bottom: 30px; color: #ffffff; text-shadow: 0 0 30px rgba(233, 69, 96, 0.8), 0 4px 15px rgba(0,0,0,0.6); font-weight: 900;">🏆 RANKING FINAL 🏆</h2>';
+            var html = '<div style="text-align: center; padding: 0 10px;">';
+            html += '<h2 style="font-size: 26px; margin-bottom: 20px; margin-top: 10px; color: #ffffff; text-shadow: 0 0 30px rgba(233, 69, 96, 0.8), 0 4px 15px rgba(0,0,0,0.6); font-weight: 900; line-height: 1.2;">🏆 RANKING FINAL 🏆</h2>';
             
             // Usar el ranking ordenado del servidor
             var ranking = data.ranking || data.players.sort((a, b) => b.score - a.score);
@@ -1579,10 +1579,10 @@
                     style = 'background: rgba(255,255,255,0.9); color: #333;';
                 }
                 
-                html += '<div style="' + style + ' padding: 25px 15px; margin: 15px 10px; max-width: 95%; box-sizing: border-box; border-radius: 20px; font-size: 18px; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">';
-                html += '<div style="font-size: 42px; margin-bottom: 12px;">' + medal + '</div>';
-                html += '<strong style="font-size: 24px; display: block; margin-bottom: 8px; word-wrap: break-word;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong>';
-                html += '<span style="font-size: 32px; font-weight: 900;">' + p.score + ' pts</span>';
+                html += '<div style="' + style + ' padding: 20px 12px; margin: 12px 5px; max-width: 96%; box-sizing: border-box; border-radius: 18px; font-size: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.3);">';
+                html += '<div style="font-size: 36px; margin-bottom: 8px;">' + medal + '</div>';
+                html += '<strong style="font-size: 22px; display: block; margin-bottom: 6px; word-wrap: break-word; line-height: 1.2;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong>';
+                html += '<span style="font-size: 28px; font-weight: 900;">' + p.score + ' pts</span>';
                 html += '</div>';
                 
                 if (isMe) {
