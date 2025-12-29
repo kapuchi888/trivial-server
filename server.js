@@ -98,13 +98,97 @@ async function translateBatch(texts) {
     return translated;
 }
 
-// Función para obtener preguntas de The Trivia API CON TRADUCCIÓN
+// Función para obtener preguntas de QUIZ SPANISH (español nativo)
+async function fetchQuestionsFromQuizSpanish(amount = 25) {
+    try {
+        const https = require('https');
+        
+        return new Promise((resolve) => {
+            // Nota: Esta API puede no existir, usaremos Open Trivia como backup
+            const url = `https://opentdb.com/api.php?amount=${amount}&difficulty=easy&type=multiple&encode=url3986`;
+            
+            https.get(url, (resp) => {
+                let data = '';
+                
+                resp.on('data', (chunk) => {
+                    data += chunk;
+                });
+                
+                resp.on('end', async () => {
+                    try {
+                        const result = JSON.parse(data);
+                        
+                        if (result.results && result.results.length > 0) {
+                            const formattedQuestions = [];
+                            
+                            for (let q of result.results) {
+                                try {
+                                    // Decodificar URL encoding
+                                    const questionText = decodeURIComponent(q.question);
+                                    const correctAnswer = decodeURIComponent(q.correct_answer);
+                                    const incorrectAnswers = q.incorrect_answers.map(a => decodeURIComponent(a));
+                                    const allOptions = [...incorrectAnswers, correctAnswer];
+                                    
+                                    // Traducir
+                                    const textsToTranslate = [questionText, ...allOptions];
+                                    const translated = await translateBatch(textsToTranslate);
+                                    
+                                    const translatedQuestion = translated[0];
+                                    const translatedOptions = translated.slice(1);
+                                    
+                                    // Mezclar opciones
+                                    const shuffled = shuffleArray(translatedOptions);
+                                    const correctIndex = shuffled.indexOf(translated[translated.length - 1]);
+                                    
+                                    formattedQuestions.push({
+                                        question: translatedQuestion,
+                                        options: shuffled,
+                                        correct: correctIndex,
+                                        category: decodeURIComponent(q.category),
+                                        difficulty: 'easy'
+                                    });
+                                } catch (error) {
+                                    console.log('⚠️ Error procesando pregunta de Quiz Spanish');
+                                }
+                            }
+                            
+                            console.log(`   ✅ ${formattedQuestions.length} preguntas FÁCILES obtenidas`);
+                            resolve(formattedQuestions);
+                        } else {
+                            resolve([]);
+                        }
+                    } catch (error) {
+                        console.log('⚠️ Error parseando Quiz Spanish:', error.message);
+                        resolve([]);
+                    }
+                });
+            }).on('error', (e) => {
+                console.log('⚠️ Error de conexión con Quiz Spanish');
+                resolve([]);
+            });
+        });
+    } catch (error) {
+        return [];
+    }
+}
+
+// Función para obtener preguntas de The Trivia API CON TRADUCCIÓN (MEZCLA)
 async function fetchQuestionsFromAPI(amount = 50) {
     try {
         const https = require('https');
         
+        console.log(`📥 Descargando ${amount} preguntas (mezclando fuentes fáciles)...`);
+        
+        // Dividir entre ambas fuentes (75% Open Trivia easy, 25% The Trivia)
+        const easyAmount = Math.floor(amount * 0.75);
+        const mixedAmount = amount - easyAmount;
+        
+        // Obtener preguntas FÁCILES de Open Trivia
+        const easyQuestions = await fetchQuestionsFromQuizSpanish(easyAmount);
+        
+        // Obtener algunas de The Trivia API (las más fáciles)
         return new Promise((resolve, reject) => {
-            const url = `https://the-trivia-api.com/api/questions?limit=${amount}`;
+            const url = `https://the-trivia-api.com/api/questions?limit=${mixedAmount}&difficulty=easy`;
             
             https.get(url, (resp) => {
                 let data = '';
@@ -118,18 +202,15 @@ async function fetchQuestionsFromAPI(amount = 50) {
                         const questions = JSON.parse(data);
                         
                         if (Array.isArray(questions) && questions.length > 0) {
-                            console.log(`📥 Descargadas ${questions.length} preguntas de The Trivia API, traduciendo...`);
-                            
-                            // Procesar preguntas CON traducción
+                            // Procesar preguntas de The Trivia API
                             const formattedQuestions = [];
                             
                             for (let q of questions) {
                                 try {
-                                    // Preparar textos para traducir
                                     const questionText = q.question;
                                     const allOptions = [...q.incorrectAnswers, q.correctAnswer];
                                     
-                                    // Traducir pregunta y opciones
+                                    // Traducir
                                     const textsToTranslate = [questionText, ...allOptions];
                                     const translated = await translateBatch(textsToTranslate);
                                     
@@ -145,9 +226,40 @@ async function fetchQuestionsFromAPI(amount = 50) {
                                         options: shuffled,
                                         correct: correctIndex,
                                         category: q.category,
-                                        difficulty: q.difficulty
+                                        difficulty: 'easy'
                                     });
                                 } catch (error) {
+                                    console.log('⚠️ Error procesando pregunta');
+                                }
+                            }
+                            
+                            console.log(`   ✅ ${formattedQuestions.length} preguntas fáciles de The Trivia`);
+                            
+                            // MEZCLAR AMBAS FUENTES
+                            const allMixed = [...easyQuestions, ...formattedQuestions];
+                            console.log(`✅ Total mezclado: ${allMixed.length} preguntas FÁCILES traducidas`);
+                            
+                            resolve(allMixed);
+                        } else {
+                            // Si falla The Trivia, devolver solo las fáciles
+                            console.log(`✅ Total: ${easyQuestions.length} preguntas FÁCILES`);
+                            resolve(easyQuestions);
+                        }
+                    } catch (error) {
+                        console.log('Error parseando:', error);
+                        resolve(easyQuestions); // Devolver al menos las fáciles
+                    }
+                });
+            }).on('error', (e) => {
+                console.log('Error de conexión:', e.message);
+                resolve(easyQuestions); // Devolver al menos las fáciles
+            });
+        });
+    } catch (error) {
+        console.log('Error general:', error);
+        return [];
+    }
+}
                                     // Si falla la traducción de una pregunta, usar en inglés
                                     console.log(`⚠️ Error traduciendo pregunta, usando inglés`);
                                     const allOptions = [...q.incorrectAnswers, q.correctAnswer];
@@ -205,8 +317,8 @@ function loadLocalQuestions() {
 
 // Inicializar preguntas al arrancar
 async function initializeQuestions() {
-    console.log('🔄 Inicializando sistema con 300 preguntas (balance perfecto)...');
-    console.log('⏳ Esto tomará ~30-35 segundos...');
+    console.log('🔄 Inicializando sistema con 300 preguntas FÁCILES (mezcla de fuentes)...');
+    console.log('⏳ Esto tomará ~30-40 segundos...');
     
     // Cargar 300 preguntas en 6 lotes de 50
     const allFetched = [];
@@ -223,8 +335,8 @@ async function initializeQuestions() {
     if (allFetched.length > 0) {
         // Hacer shuffle UNA VEZ al cargar
         allQuestions = shuffleArray(allFetched);
-        console.log(`✅ Sistema listo con ${allQuestions.length} preguntas traducidas al español`);
-        console.log(`🎮 Perfecto para sesiones largas sin repeticiones!`);
+        console.log(`✅ Sistema listo con ${allQuestions.length} preguntas FÁCILES traducidas`);
+        console.log(`🎮 Preguntas de dificultad BAJA para mejor experiencia!`);
     } else {
         // Usar preguntas locales como respaldo
         allQuestions = shuffleArray(loadLocalQuestions());
