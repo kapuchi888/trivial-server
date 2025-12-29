@@ -1,675 +1,4952 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const path = require('path');
-const fs = require('fs');
-
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-});
-
-const PORT = process.env.PORT || 3000;
-
-// Servir archivos estáticos desde la carpeta 'public'
-app.use(express.static('public'));
-
-// Ruta principal
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/public/index.html');
-});
-
-// API para obtener preguntas aleatorias (modo CPU)
-app.get('/api/questions', (req, res) => {
-    const count = parseInt(req.query.count) || 10;
-    const questions = getRandomQuestions(count);
-    res.json(questions);
-});
-
-// Variables del servidor
-const rooms = {};
-
-// ===== SISTEMA DE PREGUNTAS CON MEZCLA ESPAÑOL + TRADUCIDAS =====
-let allQuestions = [];
-let spanishQuestions = []; // Preguntas en español nativo
-let usedQuestions = []; // Tracking de preguntas ya usadas
-const CACHE_SIZE = 300; // Preguntas en caché inicial (ÓPTIMO)
-const REFILL_THRESHOLD = 100; // Recargar cuando queden menos de 100
-
-// Cargar preguntas en español desde archivo local
-function loadSpanishQuestions() {
-    try {
-        const questionsPath = path.join(__dirname, 'questions_espana.jason');
-        if (fs.existsSync(questionsPath)) {
-            const data = fs.readFileSync(questionsPath, 'utf8');
-            const questions = JSON.parse(data);
-            
-            // Formatear preguntas al formato del servidor
-            const formatted = questions.map(q => {
-                const allOptions = [...q.incorrect_answers, q.correct_answer];
-                const shuffled = shuffleArray(allOptions);
-                const correctIndex = shuffled.indexOf(q.correct_answer);
-                
-                return {
-                    question: q.question,
-                    options: shuffled,
-                    correct: correctIndex,
-                    category: q.category,
-                    difficulty: q.difficulty || 'easy'
-                };
-            });
-            
-            console.log(`✅ Cargadas ${formatted.length} preguntas en ESPAÑOL NATIVO desde archivo`);
-            return formatted;
-        } else {
-            console.log('⚠️ Archivo questions_espana.jason no encontrado');
-            return [];
-        }
-    } catch (error) {
-        console.log('⚠️ Error cargando preguntas españolas:', error.message);
-        return [];
-    }
-}
-
-// Función para traducir texto de inglés a español usando Google Translate
-async function translateToSpanish(text) {
-    try {
-        const https = require('https');
-        
-        return new Promise((resolve) => {
-            // Usar Google Translate API no oficial (más confiable)
-            const encodedText = encodeURIComponent(text);
-            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=es&dt=t&q=${encodedText}`;
-            
-            https.get(url, (res) => {
-                let data = '';
-                
-                res.on('data', (chunk) => {
-                    data += chunk;
-                });
-                
-                res.on('end', () => {
-                    try {
-                        const parsed = JSON.parse(data);
-                        // Google Translate devuelve formato: [[[traducción, original, ...]]]
-                        if (parsed && parsed[0] && parsed[0][0] && parsed[0][0][0]) {
-                            const translated = parsed[0].map(item => item[0]).join('');
-                            resolve(translated);
-                        } else {
-                            resolve(text); // Si falla, devolver original
-                        }
-                    } catch (e) {
-                        console.log(`⚠️ Error traduciendo: ${text.substring(0, 30)}...`);
-                        resolve(text);
-                    }
-                });
-            }).on('error', (e) => {
-                console.log(`⚠️ Error de conexión traduciendo`);
-                resolve(text);
-            });
-            
-            // Timeout de 3 segundos
-            setTimeout(() => {
-                resolve(text);
-            }, 3000);
-        });
-    } catch (error) {
-        return text;
-    }
-}
-
-// Función para traducir un lote de textos
-async function translateBatch(texts) {
-    const translated = [];
-    for (let text of texts) {
-        const result = await translateToSpanish(text);
-        translated.push(result);
-        // Pequeño delay para no saturar (Google es más rápido)
-        await new Promise(resolve => setTimeout(resolve, 50));
-    }
-    return translated;
-}
-
-// Función para obtener preguntas de QUIZ SPANISH (español nativo)
-async function fetchQuestionsFromQuizSpanish(amount = 25) {
-    try {
-        const https = require('https');
-        
-        return new Promise((resolve) => {
-            // Nota: Esta API puede no existir, usaremos Open Trivia como backup
-            const url = `https://opentdb.com/api.php?amount=${amount}&difficulty=easy&type=multiple&encode=url3986`;
-            
-            https.get(url, (resp) => {
-                let data = '';
-                
-                resp.on('data', (chunk) => {
-                    data += chunk;
-                });
-                
-                resp.on('end', async () => {
-                    try {
-                        const result = JSON.parse(data);
-                        
-                        if (result.results && result.results.length > 0) {
-                            const formattedQuestions = [];
-                            
-                            for (let q of result.results) {
-                                try {
-                                    // Decodificar URL encoding
-                                    const questionText = decodeURIComponent(q.question);
-                                    const correctAnswer = decodeURIComponent(q.correct_answer);
-                                    const incorrectAnswers = q.incorrect_answers.map(a => decodeURIComponent(a));
-                                    const allOptions = [...incorrectAnswers, correctAnswer];
-                                    
-                                    // Traducir
-                                    const textsToTranslate = [questionText, ...allOptions];
-                                    const translated = await translateBatch(textsToTranslate);
-                                    
-                                    const translatedQuestion = translated[0];
-                                    const translatedOptions = translated.slice(1);
-                                    
-                                    // Mezclar opciones
-                                    const shuffled = shuffleArray(translatedOptions);
-                                    const correctIndex = shuffled.indexOf(translated[translated.length - 1]);
-                                    
-                                    formattedQuestions.push({
-                                        question: translatedQuestion,
-                                        options: shuffled,
-                                        correct: correctIndex,
-                                        category: decodeURIComponent(q.category),
-                                        difficulty: 'easy'
-                                    });
-                                } catch (error) {
-                                    console.log('⚠️ Error procesando pregunta de Quiz Spanish');
-                                }
-                            }
-                            
-                            console.log(`   ✅ ${formattedQuestions.length} preguntas FÁCILES obtenidas`);
-                            resolve(formattedQuestions);
-                        } else {
-                            resolve([]);
-                        }
-                    } catch (error) {
-                        console.log('⚠️ Error parseando Quiz Spanish:', error.message);
-                        resolve([]);
-                    }
-                });
-            }).on('error', (e) => {
-                console.log('⚠️ Error de conexión con Quiz Spanish');
-                resolve([]);
-            });
-        });
-    } catch (error) {
-        return [];
-    }
-}
-
-// Función para obtener preguntas de The Trivia API CON TRADUCCIÓN (MEZCLA)
-async function fetchQuestionsFromAPI(amount = 50) {
-    try {
-        const https = require('https');
-        
-        console.log(`📥 Descargando ${amount} preguntas (mezclando fuentes fáciles)...`);
-        
-        // Dividir entre ambas fuentes (75% Open Trivia easy, 25% The Trivia)
-        const easyAmount = Math.floor(amount * 0.75);
-        const mixedAmount = amount - easyAmount;
-        
-        // Obtener preguntas FÁCILES de Open Trivia
-        const easyQuestions = await fetchQuestionsFromQuizSpanish(easyAmount);
-        
-        // Obtener algunas de The Trivia API (las más fáciles)
-        return new Promise((resolve, reject) => {
-            const url = `https://the-trivia-api.com/api/questions?limit=${mixedAmount}&difficulty=easy`;
-            
-            https.get(url, (resp) => {
-                let data = '';
-                
-                resp.on('data', (chunk) => {
-                    data += chunk;
-                });
-                
-                resp.on('end', async () => {
-                    try {
-                        const questions = JSON.parse(data);
-                        
-                        if (Array.isArray(questions) && questions.length > 0) {
-                            // Procesar preguntas de The Trivia API
-                            const formattedQuestions = [];
-                            
-                            for (let q of questions) {
-                                try {
-                                    const questionText = q.question;
-                                    const allOptions = [...q.incorrectAnswers, q.correctAnswer];
-                                    
-                                    // Traducir
-                                    const textsToTranslate = [questionText, ...allOptions];
-                                    const translated = await translateBatch(textsToTranslate);
-                                    
-                                    const translatedQuestion = translated[0];
-                                    const translatedOptions = translated.slice(1);
-                                    
-                                    // Mezclar opciones
-                                    const shuffled = shuffleArray(translatedOptions);
-                                    const correctIndex = shuffled.indexOf(translated[translated.length - 1]);
-                                    
-                                    formattedQuestions.push({
-                                        question: translatedQuestion,
-                                        options: shuffled,
-                                        correct: correctIndex,
-                                        category: q.category,
-                                        difficulty: 'easy'
-                                    });
-                                } catch (error) {
-                                    console.log('⚠️ Error procesando pregunta');
-                                }
-                            }
-                            
-                            console.log(`   ✅ ${formattedQuestions.length} preguntas fáciles de The Trivia`);
-                            
-                            // MEZCLAR AMBAS FUENTES
-                            const allMixed = [...easyQuestions, ...formattedQuestions];
-                            console.log(`✅ Total mezclado: ${allMixed.length} preguntas FÁCILES traducidas`);
-                            
-                            resolve(allMixed);
-                        } else {
-                            // Si falla The Trivia, devolver solo las fáciles
-                            console.log(`✅ Total: ${easyQuestions.length} preguntas FÁCILES`);
-                            resolve(easyQuestions);
-                        }
-                    } catch (error) {
-                        console.log('Error parseando:', error);
-                        resolve(easyQuestions); // Devolver al menos las fáciles
-                    }
-                });
-            }).on('error', (e) => {
-                console.log('Error de conexión:', e.message);
-                resolve(easyQuestions); // Devolver al menos las fáciles
-            });
-        });
-    } catch (error) {
-        console.log('Error general:', error);
-        return [];
-    }
-}
-
-// Función para cargar preguntas locales de respaldo
-function loadLocalQuestions() {
-    try {
-        const localQuestions = JSON.parse(fs.readFileSync('./questions.json', 'utf8'));
-        console.log(`📁 Cargadas ${localQuestions.length} preguntas locales de respaldo`);
-        return localQuestions;
-    } catch (error) {
-        console.log('⚠️ No se encontró questions.json, usando preguntas mínimas');
-        return [
-            { question: "¿Capital de Francia?", options: ["Londres", "París", "Berlín", "Madrid"], correct: 1 },
-            { question: "¿Capital de España?", options: ["Barcelona", "Madrid", "Sevilla", "Valencia"], correct: 1 },
-            { question: "¿Capital de Italia?", options: ["Milán", "Roma", "Nápoles", "Florencia"], correct: 1 },
-            { question: "¿Planeta más grande?", options: ["Tierra", "Júpiter", "Marte", "Saturno"], correct: 1 },
-            { question: "¿Océano más grande?", options: ["Atlántico", "Pacífico", "Índico", "Ártico"], correct: 1 }
-        ];
-    }
-}
-
-// Inicializar preguntas al arrancar
-async function initializeQuestions() {
-    console.log('🔄 Inicializando sistema con 300 preguntas (ESPAÑOL + Traducidas)...');
-    console.log('⏳ Esto tomará ~30-40 segundos...');
-    
-    // Cargar preguntas en español del archivo
-    spanishQuestions = loadSpanishQuestions();
-    
-    // Calcular cuántas preguntas de cada fuente
-    const spanishCount = Math.min(spanishQuestions.length, 120); // 40% español (120/300)
-    const apiCount = 180; // 60% de APIs (180/300)
-    
-    console.log(`📚 Usando ${spanishCount} preguntas en ESPAÑOL NATIVO`);
-    console.log(`🌐 Descargando ${apiCount} preguntas FÁCILES traducidas...`);
-    
-    // Tomar preguntas españolas
-    const selectedSpanish = shuffleArray([...spanishQuestions]).slice(0, spanishCount);
-    
-    // Descargar preguntas de APIs (fáciles)
-    const allFetched = [];
-    const batches = Math.ceil(apiCount / 50); // Lotes de 50
-    for (let i = 0; i < batches; i++) {
-        console.log(`📥 Descargando lote ${i + 1}/${batches} de APIs...`);
-        const batch = await fetchQuestionsFromAPI(50);
-        if (batch.length > 0) {
-            allFetched.push(...batch);
-        }
-        // Pequeña pausa entre lotes
-        await new Promise(resolve => setTimeout(resolve, 200));
-    }
-    
-    // MEZCLAR ambas fuentes
-    const mixedQuestions = [...selectedSpanish, ...allFetched.slice(0, apiCount)];
-    
-    if (mixedQuestions.length > 0) {
-        // Hacer shuffle UNA VEZ al cargar
-        allQuestions = shuffleArray(mixedQuestions);
-        console.log(`✅ Sistema listo con ${allQuestions.length} preguntas totales`);
-        console.log(`   🇪🇸 ${spanishCount} en español nativo (40%)`);
-        console.log(`   🌐 ${allFetched.length} traducidas fáciles (60%)`);
-        console.log(`🎮 ¡Preguntas FÁCILES para mejor experiencia!`);
-    } else {
-        // Usar solo españolas como respaldo
-        allQuestions = shuffleArray(spanishQuestions);
-        console.log(`📁 Sistema usando ${allQuestions.length} preguntas españolas`);
-    }
-}
-
-// Recargar preguntas automáticamente cuando se agoten
-async function refillQuestionsIfNeeded() {
-    if (allQuestions.length < REFILL_THRESHOLD) {
-        console.log(`🔄 Recargando preguntas (quedan ${allQuestions.length})...`);
-        
-        // Mezcla: 40% español + 60% APIs (de 100 preguntas)
-        const spanishRefill = 40;
-        const apiRefill = 60;
-        
-        // Tomar más preguntas españolas del pool
-        const availableSpanish = spanishQuestions.filter(sq => 
-            !allQuestions.some(aq => aq.question === sq.question)
-        );
-        const selectedSpanish = shuffleArray(availableSpanish).slice(0, spanishRefill);
-        
-        // Descargar de APIs
-        const allFetched = [];
-        const batches = Math.ceil(apiRefill / 50);
-        for (let i = 0; i < batches; i++) {
-            const batch = await fetchQuestionsFromAPI(50);
-            if (batch.length > 0) {
-                allFetched.push(...batch);
-            }
-        }
-        
-        // Mezclar y añadir
-        const newQuestions = [...selectedSpanish, ...allFetched.slice(0, apiRefill)];
-        
-        if (newQuestions.length > 0) {
-            const shuffledNew = shuffleArray(newQuestions);
-            allQuestions.push(...shuffledNew);
-            console.log(`✅ Agregadas ${newQuestions.length} preguntas (${selectedSpanish.length} español + ${allFetched.slice(0, apiRefill).length} API). Total: ${allQuestions.length}`);
-        }
-    }
-}
-
-// Función para mezclar array (Fisher-Yates shuffle)
-function shuffleArray(array) {
-    const shuffled = [...array]; // Copia del array
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-}
-
-// Función para seleccionar preguntas aleatorias SIN REPETIR
-function getRandomQuestions(count = 10) {
-    // Recargar si es necesario (sin esperar)
-    refillQuestionsIfNeeded();
-    
-    // Si no hay suficientes preguntas, recargar inmediatamente
-    if (allQuestions.length < count) {
-        console.log(`⚠️ No hay suficientes preguntas (${allQuestions.length}), recargando...`);
-        // En este caso, resetear y usar las que hay
-        return allQuestions.slice(0, count);
-    }
-    
-    // Tomar las primeras 'count' preguntas del array
-    const selected = allQuestions.splice(0, count);
-    
-    console.log(`📤 Enviadas ${selected.length} preguntas. Quedan ${allQuestions.length} en el pool`);
-    
-    return selected;
-}
-
-// Socket.IO eventos
-io.on('connection', (socket) => {
-    console.log('Usuario conectado:', socket.id);
-
-    socket.on('createRoom', (data) => {
-        const playerName = typeof data === 'string' ? data : data.playerName;
-        const mode = (typeof data === 'object' && data.mode) ? data.mode : 'normal';
-        const questionsPerPlayer = mode === 'quick' ? 5 : 15;
-        const maxPlayers = 4; // Máximo 4 jugadores
-        const totalQuestions = questionsPerPlayer * maxPlayers; // Preparar para 4 jugadores
-        
-        const roomCode = generateRoomCode();
-        rooms[roomCode] = {
-            players: [{
-                id: socket.id,
-                name: playerName,
-                ready: false,
-                score: 0,
-                questionsAnswered: 0
-            }],
-            currentQuestion: 0,
-            currentPlayerIndex: 0, // Índice del jugador que tiene el turno
-            started: false,
-            mode: mode,
-            questionsPerPlayer: questionsPerPlayer,
-            maxPlayers: maxPlayers,
-            questions: getRandomQuestions(totalQuestions)
-        };
-        socket.join(roomCode);
-        socket.emit('roomCreated', { roomCode, playerName });
-    });
-
-    socket.on('joinRoom', ({roomCode, playerName}) => {
-        // Limpiar código: quitar espacios y convertir a mayúsculas
-        const cleanRoomCode = roomCode.trim().toUpperCase();
-        
-        console.log('🔍 Intento de unión:', cleanRoomCode);
-        console.log('📚 Salas disponibles:', Object.keys(rooms));
-        
-        const room = rooms[cleanRoomCode];
-        if (!room) {
-            console.log('❌ Sala no encontrada:', cleanRoomCode);
-            socket.emit('roomError', 'Sala no encontrada');
-            return;
-        }
-        if (room.players.length >= room.maxPlayers) {
-            console.log('❌ Sala llena:', cleanRoomCode);
-            socket.emit('roomError', 'Sala llena (máximo 4 jugadores)');
-            return;
-        }
-        
-        console.log('✅ Jugador unido a sala:', cleanRoomCode);
-        
-        room.players.push({
-            id: socket.id,
-            name: playerName,
-            ready: false,
-            score: 0,
-            questionsAnswered: 0
-        });
-        socket.join(cleanRoomCode);
-        io.to(cleanRoomCode).emit('playerJoined', {
-            roomCode: cleanRoomCode,
-            players: room.players
-        });
-    });
-
-    socket.on('playerReady', (roomCode) => {
-        const room = rooms[roomCode];
-        if (!room) return;
-        
-        const player = room.players.find(p => p.id === socket.id);
-        if (player) player.ready = true;
-        
-        io.to(roomCode).emit('playersUpdate', room.players);
-        
-        // Empezar cuando hay al menos 2 jugadores y todos están listos
-        if (room.players.length >= 2 && room.players.every(p => p.ready)) {
-            room.started = true;
-            sendQuestion(roomCode);
-        }
-    });
-
-    socket.on('submitAnswer', ({roomCode, answerIndex, timeLeft}) => {
-        const room = rooms[roomCode];
-        if (!room) return;
-        
-        const player = room.players.find(p => p.id === socket.id);
-        if (!player) return;
-        
-        // Verificar que sea el turno de este jugador
-        if (room.players[room.currentPlayerIndex].id !== socket.id) return;
-        
-        // Marcar que este jugador ya respondió
-        player.hasAnswered = true;
-        player.questionsAnswered++;
-        
-        const question = room.questions[room.currentQuestion];
-        const isCorrect = answerIndex === question.correct;
-        
-        if (isCorrect) {
-            player.score += timeLeft * 10;
-        }
-        
-        socket.emit('answerResult', {
-            isCorrect,
-            correctAnswer: question.correct
-        });
-        
-        // Verificar si el juego terminó (todos los jugadores completaron sus preguntas)
-        if (room.players.every(p => p.questionsAnswered >= room.questionsPerPlayer)) {
-            // Fin del juego - Crear ranking
-            setTimeout(() => {
-                // Ordenar jugadores por puntuación (mayor a menor)
-                const ranking = [...room.players].sort((a, b) => b.score - a.score);
-                
-                io.to(roomCode).emit('gameOver', {
-                    players: room.players,
-                    ranking: ranking,
-                    winner: ranking[0].name
-                });
-                delete rooms[roomCode];
-            }, 2000);
-        } else {
-            // Continuar con siguiente turno
-            setTimeout(() => {
-                nextTurn(roomCode);
-            }, 2000);
-        }
-    });
-
-    socket.on('nextQuestion', (roomCode) => {
-        const room = rooms[roomCode];
-        if (!room) return;
-        
-        const currentPlayer = room.players[room.currentPlayerIndex];
-        
-        // Solo procesar si es del jugador correcto y no ha respondido
-        if (currentPlayer.id === socket.id && !currentPlayer.hasAnswered) {
-            currentPlayer.questionsAnswered++;
-            currentPlayer.hasAnswered = true;
-            
-            // Verificar si el juego terminó
-            if (room.players.every(p => p.questionsAnswered >= room.questionsPerPlayer)) {
-                // Fin del juego - enviar a AMBOS jugadores
-                const winner = room.players.reduce((max, p) => 
-                    p.score > max.score ? p : max
-                );
-                io.to(roomCode).emit('gameOver', {
-                    players: room.players,
-                    winner: winner.name
-                });
-                delete rooms[roomCode];
-            } else {
-                // Avanzar al siguiente turno
-                nextTurn(roomCode);
-            }
-        }
-    });
-    
-    function nextTurn(roomCode) {
-        const room = rooms[roomCode];
-        if (!room) return;
-        
-        // Resetear estado de respuesta del jugador actual
-        room.players[room.currentPlayerIndex].hasAnswered = false;
-        
-        // Cambiar de turno (rotar entre todos los jugadores)
-        room.currentPlayerIndex = (room.currentPlayerIndex + 1) % room.players.length;
-        room.currentQuestion++;
-        
-        // Resetear estado del siguiente jugador
-        room.players[room.currentPlayerIndex].hasAnswered = false;
-        
-        // Enviar siguiente pregunta
-        sendQuestion(roomCode);
-    }
-
-    socket.on('disconnect', () => {
-        for (let roomCode in rooms) {
-            const room = rooms[roomCode];
-            room.players = room.players.filter(p => p.id !== socket.id);
-            if (room.players.length === 0) {
-                delete rooms[roomCode];
-            } else {
-                io.to(roomCode).emit('playerLeft', room.players);
-            }
-        }
-    });
-    
-    socket.on('leaveRoom', (roomCode) => {
-        const room = rooms[roomCode];
-        if (!room) return;
-        
-        // Eliminar jugador de la sala
-        room.players = room.players.filter(p => p.id !== socket.id);
-        
-        // Si la sala está vacía, eliminarla
-        if (room.players.length === 0) {
-            delete rooms[roomCode];
-        } else {
-            // Notificar al otro jugador
-            io.to(roomCode).emit('playerLeft', room.players);
-        }
-    });
-});
-
-function sendQuestion(roomCode) {
-    const room = rooms[roomCode];
-    const question = room.questions[room.currentQuestion];
-    const currentPlayer = room.players[room.currentPlayerIndex];
-    
-    // Enviar pregunta solo al jugador actual
-    io.to(currentPlayer.id).emit('newQuestion', {
-        question: question.question,
-        options: question.options,
-        questionNumber: currentPlayer.questionsAnswered + 1,
-        totalQuestions: room.questionsPerPlayer
-    });
-    
-    // Enviar "esperando" a TODOS los demás jugadores
-    room.players.forEach((player, index) => {
-        if (index !== room.currentPlayerIndex) {
-            io.to(player.id).emit('waitingTurn', {
-                currentPlayerName: currentPlayer.name,
-                allPlayers: room.players
-            });
-        }
-    });
-}
-
-function generateRoomCode() {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
-
-// Inicializar y arrancar servidor
-(async () => {
-    await initializeQuestions();
-    
-    server.listen(PORT, () => {
-        console.log(`🚀 Servidor Trivial Kapuchi corriendo en puerto ${PORT}`);
-        console.log(`📚 Preguntas disponibles: ${allQuestions.length}`);
-    });
-})();
+[
+  {
+    "question": "¿Cuál es la capital de España?",
+    "correct_answer": "Madrid",
+    "incorrect_answers": [
+      "Barcelona",
+      "Sevilla",
+      "Valencia"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántas comunidades autónomas tiene España?",
+    "correct_answer": "17",
+    "incorrect_answers": [
+      "15",
+      "19",
+      "20"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad española se encuentra la Alhambra?",
+    "correct_answer": "Granada",
+    "incorrect_answers": [
+      "Córdoba",
+      "Sevilla",
+      "Toledo"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el río más largo de España?",
+    "correct_answer": "Tajo",
+    "incorrect_answers": [
+      "Ebro",
+      "Duero",
+      "Guadalquivir"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué comunidad autónoma tiene capital en Barcelona?",
+    "correct_answer": "Cataluña",
+    "incorrect_answers": [
+      "Aragón",
+      "Valencia",
+      "Baleares"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad está la Sagrada Familia?",
+    "correct_answer": "Barcelona",
+    "incorrect_answers": [
+      "Madrid",
+      "Valencia",
+      "Bilbao"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Andalucía?",
+    "correct_answer": "Sevilla",
+    "incorrect_answers": [
+      "Málaga",
+      "Granada",
+      "Córdoba"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué isla española es la más grande?",
+    "correct_answer": "Mallorca",
+    "incorrect_answers": [
+      "Tenerife",
+      "Gran Canaria",
+      "Ibiza"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el pico más alto de España?",
+    "correct_answer": "Teide",
+    "incorrect_answers": [
+      "Mulhacén",
+      "Aneto",
+      "Almanzor"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué comunidad está Santiago de Compostela?",
+    "correct_answer": "Galicia",
+    "incorrect_answers": [
+      "Asturias",
+      "Cantabria",
+      "Castilla y León"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital del País Vasco?",
+    "correct_answer": "Vitoria",
+    "incorrect_answers": [
+      "Bilbao",
+      "San Sebastián",
+      "Pamplona"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué ciudad se celebran las Fallas?",
+    "correct_answer": "Valencia",
+    "incorrect_answers": [
+      "Alicante",
+      "Murcia",
+      "Barcelona"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Galicia?",
+    "correct_answer": "Santiago de Compostela",
+    "incorrect_answers": [
+      "A Coruña",
+      "Vigo",
+      "Ourense"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué comunidad autónoma está Pamplona?",
+    "correct_answer": "Navarra",
+    "incorrect_answers": [
+      "La Rioja",
+      "Aragón",
+      "País Vasco"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué mar baña la costa este de España?",
+    "correct_answer": "Mediterráneo",
+    "incorrect_answers": [
+      "Atlántico",
+      "Cantábrico",
+      "Adriático"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Aragón?",
+    "correct_answer": "Zaragoza",
+    "incorrect_answers": [
+      "Huesca",
+      "Teruel",
+      "Lleida"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad está el acueducto romano más famoso de España?",
+    "correct_answer": "Segovia",
+    "incorrect_answers": [
+      "Toledo",
+      "Ávila",
+      "Salamanca"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Cataluña?",
+    "correct_answer": "Barcelona",
+    "incorrect_answers": [
+      "Girona",
+      "Tarragona",
+      "Lleida"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué comunidad autónoma están las Islas Canarias?",
+    "correct_answer": "Canarias",
+    "incorrect_answers": [
+      "Baleares",
+      "Andalucía",
+      "Murcia"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Asturias?",
+    "correct_answer": "Oviedo",
+    "incorrect_answers": [
+      "Gijón",
+      "Avilés",
+      "Santander"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué plato típico español lleva arroz, azafrán y mariscos?",
+    "correct_answer": "Paella",
+    "incorrect_answers": [
+      "Fabada",
+      "Gazpacho",
+      "Tortilla"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad está el museo del Prado?",
+    "correct_answer": "Madrid",
+    "incorrect_answers": [
+      "Barcelona",
+      "Sevilla",
+      "Valencia"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Castilla y León?",
+    "correct_answer": "Valladolid",
+    "incorrect_answers": [
+      "León",
+      "Burgos",
+      "Salamanca"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué comunidad está Toledo?",
+    "correct_answer": "Castilla-La Mancha",
+    "incorrect_answers": [
+      "Castilla y León",
+      "Madrid",
+      "Extremadura"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de la Comunidad Valenciana?",
+    "correct_answer": "Valencia",
+    "incorrect_answers": [
+      "Alicante",
+      "Castellón",
+      "Murcia"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad nació Picasso?",
+    "correct_answer": "Málaga",
+    "incorrect_answers": [
+      "Barcelona",
+      "Madrid",
+      "Sevilla"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántas provincias tiene España?",
+    "correct_answer": "50",
+    "incorrect_answers": [
+      "47",
+      "52",
+      "45"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué ciudad se encuentra la Giralda?",
+    "correct_answer": "Sevilla",
+    "incorrect_answers": [
+      "Granada",
+      "Córdoba",
+      "Málaga"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el idioma cooficial en Cataluña además del español?",
+    "correct_answer": "Catalán",
+    "incorrect_answers": [
+      "Gallego",
+      "Euskera",
+      "Valenciano"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué comunidad autónoma está Málaga?",
+    "correct_answer": "Andalucía",
+    "incorrect_answers": [
+      "Murcia",
+      "Valencia",
+      "Extremadura"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Murcia?",
+    "correct_answer": "Murcia",
+    "incorrect_answers": [
+      "Cartagena",
+      "Lorca",
+      "Alicante"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad se celebra la Semana Santa más famosa de España?",
+    "correct_answer": "Sevilla",
+    "incorrect_answers": [
+      "Málaga",
+      "Granada",
+      "Córdoba"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Extremadura?",
+    "correct_answer": "Mérida",
+    "incorrect_answers": [
+      "Badajoz",
+      "Cáceres",
+      "Plasencia"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué comunidad está Bilbao?",
+    "correct_answer": "País Vasco",
+    "incorrect_answers": [
+      "Navarra",
+      "Cantabria",
+      "La Rioja"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la bebida alcohólica típica de España hecha con vino tinto y frutas?",
+    "correct_answer": "Sangría",
+    "incorrect_answers": [
+      "Tinto de verano",
+      "Calimocho",
+      "Rebujito"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad está el parque Güell?",
+    "correct_answer": "Barcelona",
+    "incorrect_answers": [
+      "Madrid",
+      "Valencia",
+      "Bilbao"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Cantabria?",
+    "correct_answer": "Santander",
+    "incorrect_answers": [
+      "Torrelavega",
+      "Oviedo",
+      "Bilbao"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué comunidad autónoma está la ciudad de Córdoba?",
+    "correct_answer": "Andalucía",
+    "incorrect_answers": [
+      "Castilla-La Mancha",
+      "Extremadura",
+      "Murcia"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de La Rioja?",
+    "correct_answer": "Logroño",
+    "incorrect_answers": [
+      "Calahorra",
+      "Haro",
+      "Pamplona"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué isla canaria está el Teide?",
+    "correct_answer": "Tenerife",
+    "incorrect_answers": [
+      "Gran Canaria",
+      "Lanzarote",
+      "La Palma"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la moneda oficial de España?",
+    "correct_answer": "Euro",
+    "incorrect_answers": [
+      "Peseta",
+      "Dólar",
+      "Libra"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad está el museo Guggenheim?",
+    "correct_answer": "Bilbao",
+    "incorrect_answers": [
+      "Madrid",
+      "Barcelona",
+      "San Sebastián"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Castilla-La Mancha?",
+    "correct_answer": "Toledo",
+    "incorrect_answers": [
+      "Albacete",
+      "Ciudad Real",
+      "Cuenca"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué comunidad autónoma está Salamanca?",
+    "correct_answer": "Castilla y León",
+    "incorrect_answers": [
+      "Castilla-La Mancha",
+      "Extremadura",
+      "Madrid"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el deporte más popular en España?",
+    "correct_answer": "Fútbol",
+    "incorrect_answers": [
+      "Baloncesto",
+      "Tenis",
+      "Ciclismo"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad se encuentra la Mezquita-Catedral?",
+    "correct_answer": "Córdoba",
+    "incorrect_answers": [
+      "Sevilla",
+      "Granada",
+      "Toledo"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de las Islas Baleares?",
+    "correct_answer": "Palma de Mallorca",
+    "incorrect_answers": [
+      "Ibiza",
+      "Menorca",
+      "Mahón"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué comunidad está la ciudad de Alicante?",
+    "correct_answer": "Comunidad Valenciana",
+    "incorrect_answers": [
+      "Murcia",
+      "Andalucía",
+      "Cataluña"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué animal es el símbolo de España?",
+    "correct_answer": "Toro",
+    "incorrect_answers": [
+      "León",
+      "Águila",
+      "Caballo"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año ingresó España en la Unión Europea?",
+    "correct_answer": "1986",
+    "incorrect_answers": [
+      "1982",
+      "1990",
+      "1975"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es la capital de Francia?",
+    "correct_answer": "París",
+    "incorrect_answers": [
+      "Londres",
+      "Berlín",
+      "Roma"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el país más grande del mundo?",
+    "correct_answer": "Rusia",
+    "incorrect_answers": [
+      "Canadá",
+      "China",
+      "Estados Unidos"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué continente está Egipto?",
+    "correct_answer": "África",
+    "incorrect_answers": [
+      "Asia",
+      "Europa",
+      "Oceanía"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Italia?",
+    "correct_answer": "Roma",
+    "incorrect_answers": [
+      "Milán",
+      "Nápoles",
+      "Venecia"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué océano está entre Europa y América?",
+    "correct_answer": "Atlántico",
+    "incorrect_answers": [
+      "Pacífico",
+      "Índico",
+      "Ártico"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Alemania?",
+    "correct_answer": "Berlín",
+    "incorrect_answers": [
+      "Múnich",
+      "Hamburgo",
+      "Fráncfort"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué continente está Brasil?",
+    "correct_answer": "América del Sur",
+    "incorrect_answers": [
+      "América del Norte",
+      "África",
+      "Europa"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital del Reino Unido?",
+    "correct_answer": "Londres",
+    "incorrect_answers": [
+      "Edimburgo",
+      "Mánchester",
+      "Liverpool"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué país tiene forma de bota?",
+    "correct_answer": "Italia",
+    "incorrect_answers": [
+      "Grecia",
+      "España",
+      "Portugal"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el río más largo del mundo?",
+    "correct_answer": "Amazonas",
+    "incorrect_answers": [
+      "Nilo",
+      "Yangtsé",
+      "Misisipi"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué continente está China?",
+    "correct_answer": "Asia",
+    "incorrect_answers": [
+      "Europa",
+      "África",
+      "Oceanía"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Portugal?",
+    "correct_answer": "Lisboa",
+    "incorrect_answers": [
+      "Oporto",
+      "Faro",
+      "Braga"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué país es más grande: México o Argentina?",
+    "correct_answer": "Argentina",
+    "incorrect_answers": [
+      "México",
+      "Son iguales",
+      "Colombia"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Grecia?",
+    "correct_answer": "Atenas",
+    "incorrect_answers": [
+      "Tesalónica",
+      "Creta",
+      "Esparta"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué continente está Australia?",
+    "correct_answer": "Oceanía",
+    "incorrect_answers": [
+      "Asia",
+      "África",
+      "América"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos continentes hay en el mundo?",
+    "correct_answer": "7",
+    "incorrect_answers": [
+      "5",
+      "6",
+      "8"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Japón?",
+    "correct_answer": "Tokio",
+    "incorrect_answers": [
+      "Osaka",
+      "Kioto",
+      "Yokohama"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué país tiene más población del mundo?",
+    "correct_answer": "India",
+    "incorrect_answers": [
+      "China",
+      "Estados Unidos",
+      "Indonesia"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Rusia?",
+    "correct_answer": "Moscú",
+    "incorrect_answers": [
+      "San Petersburgo",
+      "Kiev",
+      "Minsk"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué continente está la India?",
+    "correct_answer": "Asia",
+    "incorrect_answers": [
+      "África",
+      "Europa",
+      "Oceanía"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la montaña más alta del mundo?",
+    "correct_answer": "Everest",
+    "incorrect_answers": [
+      "K2",
+      "Kilimanjaro",
+      "Mont Blanc"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Argentina?",
+    "correct_answer": "Buenos Aires",
+    "incorrect_answers": [
+      "Córdoba",
+      "Rosario",
+      "Mendoza"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué país está entre España y Francia?",
+    "correct_answer": "Andorra",
+    "incorrect_answers": [
+      "Mónaco",
+      "Luxemburgo",
+      "Liechtenstein"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es la capital de México?",
+    "correct_answer": "Ciudad de México",
+    "incorrect_answers": [
+      "Guadalajara",
+      "Monterrey",
+      "Cancún"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué continente está Noruega?",
+    "correct_answer": "Europa",
+    "incorrect_answers": [
+      "Asia",
+      "América",
+      "África"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el país más pequeño del mundo?",
+    "correct_answer": "Vaticano",
+    "incorrect_answers": [
+      "Mónaco",
+      "San Marino",
+      "Liechtenstein"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Canadá?",
+    "correct_answer": "Ottawa",
+    "incorrect_answers": [
+      "Toronto",
+      "Montreal",
+      "Vancouver"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué país tiene forma de larga faja?",
+    "correct_answer": "Chile",
+    "incorrect_answers": [
+      "Perú",
+      "Argentina",
+      "Uruguay"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Egipto?",
+    "correct_answer": "El Cairo",
+    "incorrect_answers": [
+      "Alejandría",
+      "Luxor",
+      "Asuán"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué continente está Turquía?",
+    "correct_answer": "Asia y Europa",
+    "incorrect_answers": [
+      "Solo Asia",
+      "Solo Europa",
+      "África"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es la capital de Holanda (Países Bajos)?",
+    "correct_answer": "Ámsterdam",
+    "incorrect_answers": [
+      "Rotterdam",
+      "La Haya",
+      "Utrecht"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué océano está al este de África?",
+    "correct_answer": "Índico",
+    "incorrect_answers": [
+      "Atlántico",
+      "Pacífico",
+      "Ártico"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Suecia?",
+    "correct_answer": "Estocolmo",
+    "incorrect_answers": [
+      "Oslo",
+      "Copenhague",
+      "Helsinki"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año descubrió Cristóbal Colón América?",
+    "correct_answer": "1492",
+    "incorrect_answers": [
+      "1485",
+      "1500",
+      "1520"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién pintó la Mona Lisa?",
+    "correct_answer": "Leonardo da Vinci",
+    "incorrect_answers": [
+      "Miguel Ángel",
+      "Rafael",
+      "Donatello"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año cayó el Muro de Berlín?",
+    "correct_answer": "1989",
+    "incorrect_answers": [
+      "1985",
+      "1991",
+      "1987"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fue el primer presidente de Estados Unidos?",
+    "correct_answer": "George Washington",
+    "incorrect_answers": [
+      "Abraham Lincoln",
+      "Thomas Jefferson",
+      "John Adams"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año comenzó la Segunda Guerra Mundial?",
+    "correct_answer": "1939",
+    "incorrect_answers": [
+      "1940",
+      "1941",
+      "1938"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién escribió Don Quijote de la Mancha?",
+    "correct_answer": "Miguel de Cervantes",
+    "incorrect_answers": [
+      "Lope de Vega",
+      "Quevedo",
+      "Góngora"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año llegó el hombre a la Luna?",
+    "correct_answer": "1969",
+    "incorrect_answers": [
+      "1965",
+      "1972",
+      "1968"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fue Cleopatra?",
+    "correct_answer": "Reina de Egipto",
+    "incorrect_answers": [
+      "Emperatriz romana",
+      "Reina de Grecia",
+      "Faraón"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué siglo vivió Leonardo da Vinci?",
+    "correct_answer": "XV-XVI",
+    "incorrect_answers": [
+      "XIV-XV",
+      "XVI-XVII",
+      "XIII-XIV"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién descubrió la penicilina?",
+    "correct_answer": "Alexander Fleming",
+    "incorrect_answers": [
+      "Louis Pasteur",
+      "Marie Curie",
+      "Isaac Newton"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año terminó la Segunda Guerra Mundial?",
+    "correct_answer": "1945",
+    "incorrect_answers": [
+      "1944",
+      "1946",
+      "1943"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fue Napoleón Bonaparte?",
+    "correct_answer": "Emperador de Francia",
+    "incorrect_answers": [
+      "Rey de España",
+      "Zar de Rusia",
+      "Káiser alemán"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año cayó el Imperio Romano de Occidente?",
+    "correct_answer": "476",
+    "incorrect_answers": [
+      "410",
+      "500",
+      "525"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién inventó la imprenta?",
+    "correct_answer": "Johannes Gutenberg",
+    "incorrect_answers": [
+      "Leonardo da Vinci",
+      "Galileo Galilei",
+      "Isaac Newton"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año se proclamó la Primera República Española?",
+    "correct_answer": "1873",
+    "incorrect_answers": [
+      "1868",
+      "1880",
+      "1900"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién fue el líder de la Revolución Cubana?",
+    "correct_answer": "Fidel Castro",
+    "incorrect_answers": [
+      "Che Guevara",
+      "Raúl Castro",
+      "Camilo Cienfuegos"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año comenzó la Primera Guerra Mundial?",
+    "correct_answer": "1914",
+    "incorrect_answers": [
+      "1910",
+      "1918",
+      "1912"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fue el primer emperador romano?",
+    "correct_answer": "Augusto",
+    "incorrect_answers": [
+      "Julio César",
+      "Nerón",
+      "Calígula"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué país nació Adolf Hitler?",
+    "correct_answer": "Austria",
+    "incorrect_answers": [
+      "Alemania",
+      "Polonia",
+      "Checoslovaquia"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién pintó La última cena?",
+    "correct_answer": "Leonardo da Vinci",
+    "incorrect_answers": [
+      "Miguel Ángel",
+      "Rafael",
+      "Caravaggio"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año se independizó Estados Unidos?",
+    "correct_answer": "1776",
+    "incorrect_answers": [
+      "1783",
+      "1765",
+      "1790"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fue Simón Bolívar?",
+    "correct_answer": "Libertador de América",
+    "incorrect_answers": [
+      "Rey de España",
+      "Conquistador",
+      "Papa"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué siglo fue la Revolución Francesa?",
+    "correct_answer": "XVIII",
+    "incorrect_answers": [
+      "XVII",
+      "XIX",
+      "XVI"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fue Juana de Arco?",
+    "correct_answer": "Heroína francesa",
+    "incorrect_answers": [
+      "Reina de Francia",
+      "Santa española",
+      "Emperatriz"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año se fundó la ONU?",
+    "correct_answer": "1945",
+    "incorrect_answers": [
+      "1939",
+      "1950",
+      "1918"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién escribió Romeo y Julieta?",
+    "correct_answer": "William Shakespeare",
+    "incorrect_answers": [
+      "Charles Dickens",
+      "Oscar Wilde",
+      "Jane Austen"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año cayó la Unión Soviética?",
+    "correct_answer": "1991",
+    "incorrect_answers": [
+      "1989",
+      "1993",
+      "1985"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fue Martin Luther King?",
+    "correct_answer": "Activista por los derechos civiles",
+    "incorrect_answers": [
+      "Presidente de EE.UU.",
+      "Científico",
+      "Músico"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año se hundió el Titanic?",
+    "correct_answer": "1912",
+    "incorrect_answers": [
+      "1910",
+      "1914",
+      "1920"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fue Isaac Newton?",
+    "correct_answer": "Científico inglés",
+    "incorrect_answers": [
+      "Pintor",
+      "Escritor",
+      "Músico"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el equipo con más Champions League ganadas?",
+    "correct_answer": "Real Madrid",
+    "incorrect_answers": [
+      "Barcelona",
+      "AC Milan",
+      "Bayern Múnich"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos jugadores hay en un equipo de fútbol en el campo?",
+    "correct_answer": "11",
+    "incorrect_answers": [
+      "10",
+      "12",
+      "9"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué deporte destaca Rafael Nadal?",
+    "correct_answer": "Tenis",
+    "incorrect_answers": [
+      "Fútbol",
+      "Baloncesto",
+      "Golf"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cada cuántos años se celebran los Juegos Olímpicos?",
+    "correct_answer": "4 años",
+    "incorrect_answers": [
+      "2 años",
+      "3 años",
+      "5 años"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos Grand Slam hay en el tenis?",
+    "correct_answer": "4",
+    "incorrect_answers": [
+      "3",
+      "5",
+      "6"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué país es Lionel Messi?",
+    "correct_answer": "Argentina",
+    "incorrect_answers": [
+      "Brasil",
+      "Uruguay",
+      "España"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué deporte se utiliza una raqueta?",
+    "correct_answer": "Tenis",
+    "incorrect_answers": [
+      "Fútbol",
+      "Baloncesto",
+      "Natación"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos puntos vale una canasta de tres en baloncesto?",
+    "correct_answer": "3",
+    "incorrect_answers": [
+      "2",
+      "4",
+      "5"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad se jugó el Mundial de Fútbol 2010?",
+    "correct_answer": "Sudáfrica",
+    "incorrect_answers": [
+      "Brasil",
+      "Alemania",
+      "Rusia"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos sets gana quien vence en tenis masculino en Grand Slam?",
+    "correct_answer": "3",
+    "incorrect_answers": [
+      "2",
+      "4",
+      "5"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué color es el jersey del líder del Tour de Francia?",
+    "correct_answer": "Amarillo",
+    "incorrect_answers": [
+      "Verde",
+      "Rojo",
+      "Azul"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué deporte destaca Pau Gasol?",
+    "correct_answer": "Baloncesto",
+    "incorrect_answers": [
+      "Fútbol",
+      "Tenis",
+      "Natación"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos jugadores hay en un equipo de baloncesto en la pista?",
+    "correct_answer": "5",
+    "incorrect_answers": [
+      "6",
+      "7",
+      "4"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué selección ganó el Mundial de Fútbol 2018?",
+    "correct_answer": "Francia",
+    "incorrect_answers": [
+      "Croacia",
+      "Alemania",
+      "Brasil"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué deporte se utiliza un balón ovalado?",
+    "correct_answer": "Rugby",
+    "incorrect_answers": [
+      "Fútbol",
+      "Baloncesto",
+      "Voleibol"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuánto dura un partido de fútbol?",
+    "correct_answer": "90 minutos",
+    "incorrect_answers": [
+      "80 minutos",
+      "100 minutos",
+      "120 minutos"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué país es Cristiano Ronaldo?",
+    "correct_answer": "Portugal",
+    "incorrect_answers": [
+      "España",
+      "Brasil",
+      "Argentina"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué deporte compite Fernando Alonso?",
+    "correct_answer": "Fórmula 1",
+    "incorrect_answers": [
+      "MotoGP",
+      "Rally",
+      "NASCAR"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos anillos olímpicos hay?",
+    "correct_answer": "5",
+    "incorrect_answers": [
+      "4",
+      "6",
+      "7"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué país ha ganado más Mundiales de Fútbol?",
+    "correct_answer": "Brasil",
+    "incorrect_answers": [
+      "Alemania",
+      "Argentina",
+      "Italia"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué deporte se usa un bate y una pelota?",
+    "correct_answer": "Béisbol",
+    "incorrect_answers": [
+      "Fútbol",
+      "Tenis",
+      "Baloncesto"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos Mundiales de Fútbol ha ganado España?",
+    "correct_answer": "1",
+    "incorrect_answers": [
+      "2",
+      "0",
+      "3"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año ganó España el Mundial de Fútbol?",
+    "correct_answer": "2010",
+    "incorrect_answers": [
+      "2008",
+      "2012",
+      "2006"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué nacionalidad es Novak Djokovic?",
+    "correct_answer": "Serbia",
+    "incorrect_answers": [
+      "Croacia",
+      "Rusia",
+      "Suiza"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos puntos vale un ensayo en rugby?",
+    "correct_answer": "5",
+    "incorrect_answers": [
+      "3",
+      "7",
+      "4"
+    ],
+    "category": "Deportes",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué deporte destaca Tiger Woods?",
+    "correct_answer": "Golf",
+    "incorrect_answers": [
+      "Tenis",
+      "Boxeo",
+      "Atletismo"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué nadador español ganó 5 medallas olímpicas?",
+    "correct_answer": "Mireia Belmonte",
+    "incorrect_answers": [
+      "David Cal",
+      "Saúl Craviotto",
+      "Marcus Cooper"
+    ],
+    "category": "Deportes",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuántos equipos juegan en La Liga española?",
+    "correct_answer": "20",
+    "incorrect_answers": [
+      "18",
+      "22",
+      "24"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año se fundó el FC Barcelona?",
+    "correct_answer": "1899",
+    "incorrect_answers": [
+      "1900",
+      "1910",
+      "1890"
+    ],
+    "category": "Deportes",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es el estadio del Real Madrid?",
+    "correct_answer": "Santiago Bernabéu",
+    "incorrect_answers": [
+      "Camp Nou",
+      "Wanda Metropolitano",
+      "Mestalla"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién dirigió la película Titanic?",
+    "correct_answer": "James Cameron",
+    "incorrect_answers": [
+      "Steven Spielberg",
+      "Martin Scorsese",
+      "Christopher Nolan"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué actor interpreta a Jack Sparrow?",
+    "correct_answer": "Johnny Depp",
+    "incorrect_answers": [
+      "Brad Pitt",
+      "Tom Cruise",
+      "Leonardo DiCaprio"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántas películas hay de Harry Potter?",
+    "correct_answer": "8",
+    "incorrect_answers": [
+      "7",
+      "9",
+      "10"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué cantante es conocido como el Rey del Pop?",
+    "correct_answer": "Michael Jackson",
+    "incorrect_answers": [
+      "Elvis Presley",
+      "Prince",
+      "Freddie Mercury"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año se estrenó la primera película de Star Wars?",
+    "correct_answer": "1977",
+    "incorrect_answers": [
+      "1980",
+      "1975",
+      "1983"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién canta la canción Despacito?",
+    "correct_answer": "Luis Fonsi",
+    "incorrect_answers": [
+      "Daddy Yankee",
+      "J Balvin",
+      "Maluma"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué película ganó el Oscar a Mejor Película en 2020?",
+    "correct_answer": "Parásitos",
+    "incorrect_answers": [
+      "1917",
+      "Joker",
+      "Érase una vez en Hollywood"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién es el creador de Los Simpson?",
+    "correct_answer": "Matt Groening",
+    "incorrect_answers": [
+      "Seth MacFarlane",
+      "Trey Parker",
+      "Mike Judge"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cómo se llama el protagonista de Forrest Gump?",
+    "correct_answer": "Tom Hanks",
+    "incorrect_answers": [
+      "Brad Pitt",
+      "Morgan Freeman",
+      "Matt Damon"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué banda británica cantaba Yellow Submarine?",
+    "correct_answer": "The Beatles",
+    "incorrect_answers": [
+      "The Rolling Stones",
+      "The Who",
+      "Pink Floyd"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año murió Freddie Mercury?",
+    "correct_answer": "1991",
+    "incorrect_answers": [
+      "1989",
+      "1993",
+      "1987"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién interpretó a Iron Man en las películas de Marvel?",
+    "correct_answer": "Robert Downey Jr.",
+    "incorrect_answers": [
+      "Chris Evans",
+      "Chris Hemsworth",
+      "Mark Ruffalo"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cómo se llama el dragon de Mulan?",
+    "correct_answer": "Mushu",
+    "incorrect_answers": [
+      "Shenlong",
+      "Draco",
+      "Falkor"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué película animada trata sobre emociones?",
+    "correct_answer": "Del Revés (Inside Out)",
+    "incorrect_answers": [
+      "Toy Story",
+      "Frozen",
+      "Buscando a Nemo"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién es el villano en El Rey León?",
+    "correct_answer": "Scar",
+    "incorrect_answers": [
+      "Mufasa",
+      "Simba",
+      "Timón"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué actor interpreta a Spider-Man en las últimas películas?",
+    "correct_answer": "Tom Holland",
+    "incorrect_answers": [
+      "Tobey Maguire",
+      "Andrew Garfield",
+      "Jake Gyllenhaal"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cómo se llama el ratón más famoso de Disney?",
+    "correct_answer": "Mickey Mouse",
+    "incorrect_answers": [
+      "Jerry",
+      "Stuart Little",
+      "Ratatouille"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién cantaba Bohemian Rhapsody?",
+    "correct_answer": "Queen",
+    "incorrect_answers": [
+      "The Beatles",
+      "Led Zeppelin",
+      "AC/DC"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué saga aparece Gandalf?",
+    "correct_answer": "El Señor de los Anillos",
+    "incorrect_answers": [
+      "Harry Potter",
+      "Juego de Tronos",
+      "Narnia"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién dirigió Pulp Fiction?",
+    "correct_answer": "Quentin Tarantino",
+    "incorrect_answers": [
+      "Martin Scorsese",
+      "Steven Spielberg",
+      "Francis Ford Coppola"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cómo se llama el perro de Charlie Brown?",
+    "correct_answer": "Snoopy",
+    "incorrect_answers": [
+      "Pluto",
+      "Goofy",
+      "Scooby Doo"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué cantante española es conocida como La Voz?",
+    "correct_answer": "Rosalía",
+    "incorrect_answers": [
+      "Aitana",
+      "Shakira",
+      "Alejandro Sanz"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año se estrenó la serie Friends?",
+    "correct_answer": "1994",
+    "incorrect_answers": [
+      "1990",
+      "1998",
+      "2000"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién es el protagonista de Breaking Bad?",
+    "correct_answer": "Walter White",
+    "incorrect_answers": [
+      "Jesse Pinkman",
+      "Hank Schrader",
+      "Saul Goodman"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué película de Pixar trata sobre un chef rata?",
+    "correct_answer": "Ratatouille",
+    "incorrect_answers": [
+      "Toy Story",
+      "Monsters Inc",
+      "Cars"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién cantaba Imagine?",
+    "correct_answer": "John Lennon",
+    "incorrect_answers": [
+      "Paul McCartney",
+      "Bob Dylan",
+      "Elvis Presley"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cómo se llama el protagonista de Matrix?",
+    "correct_answer": "Neo",
+    "incorrect_answers": [
+      "Morfeo",
+      "Trinity",
+      "Smith"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué serie trata sobre dragones y el Trono de Hierro?",
+    "correct_answer": "Juego de Tronos",
+    "incorrect_answers": [
+      "Vikingos",
+      "The Witcher",
+      "El Señor de los Anillos"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién es el director de la saga de El Señor de los Anillos?",
+    "correct_answer": "Peter Jackson",
+    "incorrect_answers": [
+      "Christopher Nolan",
+      "James Cameron",
+      "Steven Spielberg"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué cantante español es conocido por Corazón Partío?",
+    "correct_answer": "Alejandro Sanz",
+    "incorrect_answers": [
+      "Joaquín Sabina",
+      "Enrique Iglesias",
+      "David Bisbal"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad transcurre la serie La Casa de Papel?",
+    "correct_answer": "Madrid",
+    "incorrect_answers": [
+      "Barcelona",
+      "Sevilla",
+      "Valencia"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién interpretó a Joker en The Dark Knight?",
+    "correct_answer": "Heath Ledger",
+    "incorrect_answers": [
+      "Joaquin Phoenix",
+      "Jack Nicholson",
+      "Jared Leto"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cómo se llama el hijo de Homer Simpson?",
+    "correct_answer": "Bart",
+    "incorrect_answers": [
+      "Lisa",
+      "Maggie",
+      "Ralph"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué película ganó más Oscars en la historia?",
+    "correct_answer": "Titanic",
+    "incorrect_answers": [
+      "Ben-Hur",
+      "El Señor de los Anillos",
+      "La La Land"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién es el villano en Avengers: Infinity War?",
+    "correct_answer": "Thanos",
+    "incorrect_answers": [
+      "Loki",
+      "Ultron",
+      "Killmonger"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué serie aparece Sheldon Cooper?",
+    "correct_answer": "The Big Bang Theory",
+    "incorrect_answers": [
+      "Friends",
+      "How I Met Your Mother",
+      "Seinfeld"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué banda de rock cantaba Stairway to Heaven?",
+    "correct_answer": "Led Zeppelin",
+    "incorrect_answers": [
+      "The Rolling Stones",
+      "Pink Floyd",
+      "The Who"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién es la princesa de Aladdin?",
+    "correct_answer": "Jasmine",
+    "incorrect_answers": [
+      "Ariel",
+      "Bella",
+      "Cenicienta"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué película aparece el personaje Hannibal Lecter?",
+    "correct_answer": "El Silencio de los Corderos",
+    "incorrect_answers": [
+      "Seven",
+      "Psicosis",
+      "El Resplandor"
+    ],
+    "category": "Entretenimiento",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el ingrediente principal del gazpacho?",
+    "correct_answer": "Tomate",
+    "incorrect_answers": [
+      "Pimiento",
+      "Pepino",
+      "Cebolla"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué región española es típica la fabada?",
+    "correct_answer": "Asturias",
+    "incorrect_answers": [
+      "Galicia",
+      "Cantabria",
+      "País Vasco"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué tipo de carne se usa en el jamón ibérico?",
+    "correct_answer": "Cerdo",
+    "incorrect_answers": [
+      "Vaca",
+      "Cordero",
+      "Pollo"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el postre típico de Santiago de Compostela?",
+    "correct_answer": "Tarta de Santiago",
+    "incorrect_answers": [
+      "Flan",
+      "Arroz con leche",
+      "Crema catalana"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué bebida española lleva vino tinto, gaseosa y limón?",
+    "correct_answer": "Tinto de verano",
+    "incorrect_answers": [
+      "Sangría",
+      "Calimocho",
+      "Rebujito"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué ciudad es típico el cochinillo asado?",
+    "correct_answer": "Segovia",
+    "incorrect_answers": [
+      "Toledo",
+      "Ávila",
+      "Salamanca"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué fruto seco es típico en el turrón?",
+    "correct_answer": "Almendra",
+    "incorrect_answers": [
+      "Nuez",
+      "Avellana",
+      "Pistacho"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué región es la tortilla de patatas con cebolla?",
+    "correct_answer": "Toda España",
+    "incorrect_answers": [
+      "Madrid",
+      "País Vasco",
+      "Andalucía"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué mariscos lleva tradicionalmente la paella valenciana?",
+    "correct_answer": "Ninguno, lleva pollo y conejo",
+    "incorrect_answers": [
+      "Gambas",
+      "Mejillones",
+      "Almejas"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es el queso español más famoso de La Mancha?",
+    "correct_answer": "Manchego",
+    "incorrect_answers": [
+      "Cabrales",
+      "Mahón",
+      "Idiazábal"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué región es típico el pulpo a la gallega?",
+    "correct_answer": "Galicia",
+    "incorrect_answers": [
+      "Asturias",
+      "Cantabria",
+      "País Vasco"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué ingrediente NO lleva una auténtica paella valenciana?",
+    "correct_answer": "Chorizo",
+    "incorrect_answers": [
+      "Garrofón",
+      "Pollo",
+      "Judía verde"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es el dulce típico de Navidad en España?",
+    "correct_answer": "Turrón",
+    "incorrect_answers": [
+      "Roscón",
+      "Polvorón",
+      "Mantecado"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué están hechas las migas extremeñas?",
+    "correct_answer": "Pan",
+    "incorrect_answers": [
+      "Patata",
+      "Harina",
+      "Arroz"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué tipo de queso es el Cabrales?",
+    "correct_answer": "Azul",
+    "incorrect_answers": [
+      "Tierno",
+      "Curado",
+      "Semicurado"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es la bebida típica de Jerez?",
+    "correct_answer": "Vino de Jerez (Sherry)",
+    "incorrect_answers": [
+      "Sidra",
+      "Cava",
+      "Tinto"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué región es típico el calçot?",
+    "correct_answer": "Cataluña",
+    "incorrect_answers": [
+      "Valencia",
+      "Aragón",
+      "Baleares"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué carne se usa en el cocido madrileño?",
+    "correct_answer": "Varias (ternera, cerdo, pollo)",
+    "incorrect_answers": [
+      "Solo ternera",
+      "Solo cerdo",
+      "Solo pollo"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el ingrediente principal de la crema catalana?",
+    "correct_answer": "Leche",
+    "incorrect_answers": [
+      "Nata",
+      "Huevo",
+      "Azúcar"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué ciudad es típica la ensaimada?",
+    "correct_answer": "Mallorca",
+    "incorrect_answers": [
+      "Barcelona",
+      "Valencia",
+      "Ibiza"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuándo se celebra el Día de Reyes en España?",
+    "correct_answer": "6 de enero",
+    "incorrect_answers": [
+      "5 de enero",
+      "25 de diciembre",
+      "1 de enero"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué se celebra el 12 de octubre en España?",
+    "correct_answer": "Fiesta Nacional",
+    "incorrect_answers": [
+      "Día de Reyes",
+      "Navidad",
+      "Semana Santa"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad se celebra la Feria de Abril?",
+    "correct_answer": "Sevilla",
+    "incorrect_answers": [
+      "Málaga",
+      "Granada",
+      "Córdoba"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el baile típico de Andalucía?",
+    "correct_answer": "Flamenco",
+    "incorrect_answers": [
+      "Jota",
+      "Sardana",
+      "Muñeira"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué mes se celebran las Fallas de Valencia?",
+    "correct_answer": "Marzo",
+    "incorrect_answers": [
+      "Abril",
+      "Mayo",
+      "Junio"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué se come tradicionalmente el Día de Reyes?",
+    "correct_answer": "Roscón de Reyes",
+    "incorrect_answers": [
+      "Turrón",
+      "Polvorones",
+      "Mazapán"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el instrumento musical típico de Galicia?",
+    "correct_answer": "Gaita",
+    "incorrect_answers": [
+      "Guitarra",
+      "Castañuelas",
+      "Bandurria"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad se corre el encierro de San Fermín?",
+    "correct_answer": "Pamplona",
+    "incorrect_answers": [
+      "Logroño",
+      "Vitoria",
+      "Bilbao"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué se quema en las Fallas de Valencia?",
+    "correct_answer": "Ninots (monumentos)",
+    "incorrect_answers": [
+      "Muñecos",
+      "Juguetes",
+      "Castillos"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el baile típico de Cataluña?",
+    "correct_answer": "Sardana",
+    "incorrect_answers": [
+      "Flamenco",
+      "Jota",
+      "Sevillanas"
+    ],
+    "category": "Cultura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué fecha se celebra San Fermín?",
+    "correct_answer": "7 de julio",
+    "incorrect_answers": [
+      "14 de julio",
+      "21 de julio",
+      "1 de agosto"
+    ],
+    "category": "Cultura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué se celebra en Semana Santa en España?",
+    "correct_answer": "Pasión de Cristo",
+    "incorrect_answers": [
+      "Navidad",
+      "Día de Reyes",
+      "Corpus Christi"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el traje tradicional de las mujeres en las ferias andaluzas?",
+    "correct_answer": "Traje de flamenca",
+    "incorrect_answers": [
+      "Mantilla",
+      "Chal",
+      "Falda de volantes"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué se celebra el 1 de noviembre en España?",
+    "correct_answer": "Día de Todos los Santos",
+    "incorrect_answers": [
+      "Halloween",
+      "Día de Difuntos",
+      "Día de los Muertos"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el baile típico de Aragón?",
+    "correct_answer": "Jota",
+    "incorrect_answers": [
+      "Flamenco",
+      "Sardana",
+      "Muñeira"
+    ],
+    "category": "Cultura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué ciudad se celebra la Tomatina?",
+    "correct_answer": "Buñol (Valencia)",
+    "incorrect_answers": [
+      "Valencia",
+      "Alicante",
+      "Castellón"
+    ],
+    "category": "Cultura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué es La Patum?",
+    "correct_answer": "Fiesta de Berga (Cataluña)",
+    "incorrect_answers": [
+      "Baile",
+      "Comida",
+      "Juego"
+    ],
+    "category": "Cultura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuándo se celebra el Día de la Constitución en España?",
+    "correct_answer": "6 de diciembre",
+    "incorrect_answers": [
+      "12 de octubre",
+      "1 de mayo",
+      "15 de agosto"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué son las castañuelas?",
+    "correct_answer": "Instrumento musical",
+    "incorrect_answers": [
+      "Comida",
+      "Baile",
+      "Juego"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué región se baila la muñeira?",
+    "correct_answer": "Galicia",
+    "incorrect_answers": [
+      "Asturias",
+      "Cantabria",
+      "País Vasco"
+    ],
+    "category": "Cultura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuántos planetas tiene el sistema solar?",
+    "correct_answer": "8",
+    "incorrect_answers": [
+      "7",
+      "9",
+      "10"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el planeta más cercano al Sol?",
+    "correct_answer": "Mercurio",
+    "incorrect_answers": [
+      "Venus",
+      "Tierra",
+      "Marte"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué gas respiramos principalmente?",
+    "correct_answer": "Nitrógeno",
+    "incorrect_answers": [
+      "Oxígeno",
+      "Dióxido de carbono",
+      "Hidrógeno"
+    ],
+    "category": "Ciencia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es el órgano más grande del cuerpo humano?",
+    "correct_answer": "La piel",
+    "incorrect_answers": [
+      "El hígado",
+      "El cerebro",
+      "El corazón"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos huesos tiene un adulto humano?",
+    "correct_answer": "206",
+    "incorrect_answers": [
+      "205",
+      "210",
+      "200"
+    ],
+    "category": "Ciencia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿A qué velocidad viaja la luz?",
+    "correct_answer": "300.000 km/s",
+    "incorrect_answers": [
+      "150.000 km/s",
+      "500.000 km/s",
+      "1.000.000 km/s"
+    ],
+    "category": "Ciencia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué científico desarrolló la teoría de la relatividad?",
+    "correct_answer": "Albert Einstein",
+    "incorrect_answers": [
+      "Isaac Newton",
+      "Stephen Hawking",
+      "Galileo Galilei"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el metal más abundante en la corteza terrestre?",
+    "correct_answer": "Aluminio",
+    "incorrect_answers": [
+      "Hierro",
+      "Cobre",
+      "Oro"
+    ],
+    "category": "Ciencia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuántos continentes hay?",
+    "correct_answer": "7",
+    "incorrect_answers": [
+      "5",
+      "6",
+      "8"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué animal es el más rápido del mundo?",
+    "correct_answer": "Halcón peregrino",
+    "incorrect_answers": [
+      "Guepardo",
+      "Águila",
+      "León"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el animal más grande del mundo?",
+    "correct_answer": "Ballena azul",
+    "incorrect_answers": [
+      "Elefante",
+      "Jirafa",
+      "Tiburón blanco"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué planeta es conocido como el planeta rojo?",
+    "correct_answer": "Marte",
+    "incorrect_answers": [
+      "Venus",
+      "Júpiter",
+      "Saturno"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el océano más grande?",
+    "correct_answer": "Pacífico",
+    "incorrect_answers": [
+      "Atlántico",
+      "Índico",
+      "Ártico"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué es el ADN?",
+    "correct_answer": "Ácido desoxirribonucleico",
+    "incorrect_answers": [
+      "Ácido ribonucleico",
+      "Proteína",
+      "Enzima"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos días tarda la Tierra en dar la vuelta al Sol?",
+    "correct_answer": "365",
+    "incorrect_answers": [
+      "360",
+      "366",
+      "364"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué temperatura tiene el punto de ebullición del agua?",
+    "correct_answer": "100°C",
+    "incorrect_answers": [
+      "90°C",
+      "110°C",
+      "120°C"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos cromosomas tiene un humano?",
+    "correct_answer": "46",
+    "incorrect_answers": [
+      "44",
+      "48",
+      "50"
+    ],
+    "category": "Ciencia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué es la fotosíntesis?",
+    "correct_answer": "Proceso de las plantas para crear alimento",
+    "incorrect_answers": [
+      "Respiración",
+      "Digestión",
+      "Reproducción"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el animal terrestre más grande?",
+    "correct_answer": "Elefante africano",
+    "incorrect_answers": [
+      "Rinoceronte",
+      "Hipopótamo",
+      "Jirafa"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué gas producen las plantas?",
+    "correct_answer": "Oxígeno",
+    "incorrect_answers": [
+      "Nitrógeno",
+      "Dióxido de carbono",
+      "Hidrógeno"
+    ],
+    "category": "Ciencia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la moneda anterior al euro en España?",
+    "correct_answer": "Peseta",
+    "incorrect_answers": [
+      "Franco",
+      "Dólar",
+      "Libra"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año murió Franco?",
+    "correct_answer": "1975",
+    "incorrect_answers": [
+      "1970",
+      "1980",
+      "1965"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién es el actual rey de España?",
+    "correct_answer": "Felipe VI",
+    "incorrect_answers": [
+      "Juan Carlos I",
+      "Felipe V",
+      "Carlos III"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad española nació Picasso?",
+    "correct_answer": "Málaga",
+    "incorrect_answers": [
+      "Barcelona",
+      "Madrid",
+      "Sevilla"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el aeropuerto más grande de España?",
+    "correct_answer": "Madrid-Barajas",
+    "incorrect_answers": [
+      "Barcelona-El Prat",
+      "Málaga",
+      "Valencia"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué región está la ciudad de San Sebastián?",
+    "correct_answer": "País Vasco",
+    "incorrect_answers": [
+      "Navarra",
+      "Cantabria",
+      "La Rioja"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el volcán activo de España?",
+    "correct_answer": "Teide",
+    "incorrect_answers": [
+      "Mulhacén",
+      "Aneto",
+      "Peñalara"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué ciudad española se llama 'la ciudad de las tres culturas'?",
+    "correct_answer": "Toledo",
+    "incorrect_answers": [
+      "Córdoba",
+      "Granada",
+      "Sevilla"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué comunidad está Mérida?",
+    "correct_answer": "Extremadura",
+    "incorrect_answers": [
+      "Castilla-La Mancha",
+      "Andalucía",
+      "Castilla y León"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el río que pasa por Sevilla?",
+    "correct_answer": "Guadalquivir",
+    "incorrect_answers": [
+      "Tajo",
+      "Ebro",
+      "Duero"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad está el Palacio Real de España?",
+    "correct_answer": "Madrid",
+    "incorrect_answers": [
+      "Barcelona",
+      "Sevilla",
+      "Toledo"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántas provincias tiene Andalucía?",
+    "correct_answer": "8",
+    "incorrect_answers": [
+      "7",
+      "9",
+      "6"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué estrecho separa España de África?",
+    "correct_answer": "Gibraltar",
+    "incorrect_answers": [
+      "Bósforo",
+      "Magallanes",
+      "Dover"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad está la Ciudad de las Artes y las Ciencias?",
+    "correct_answer": "Valencia",
+    "incorrect_answers": [
+      "Barcelona",
+      "Madrid",
+      "Bilbao"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Navarra?",
+    "correct_answer": "Pamplona",
+    "incorrect_answers": [
+      "Tudela",
+      "Estella",
+      "Logroño"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué comunidad está Alicante?",
+    "correct_answer": "Comunidad Valenciana",
+    "incorrect_answers": [
+      "Murcia",
+      "Cataluña",
+      "Andalucía"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué ciudad es conocida como 'la perla del Cantábrico'?",
+    "correct_answer": "San Sebastián",
+    "incorrect_answers": [
+      "Santander",
+      "Gijón",
+      "Bilbao"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué año se aprobó la Constitución española actual?",
+    "correct_answer": "1978",
+    "incorrect_answers": [
+      "1975",
+      "1980",
+      "1982"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el parque nacional más antiguo de España?",
+    "correct_answer": "Picos de Europa",
+    "incorrect_answers": [
+      "Doñana",
+      "Ordesa",
+      "Teide"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué ciudad española tiene un acueducto romano muy famoso?",
+    "correct_answer": "Segovia",
+    "incorrect_answers": [
+      "Toledo",
+      "Ávila",
+      "Tarragona"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuánto es 7 x 8?",
+    "correct_answer": "56",
+    "incorrect_answers": [
+      "54",
+      "58",
+      "52"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuánto es 100 - 37?",
+    "correct_answer": "63",
+    "incorrect_answers": [
+      "67",
+      "73",
+      "57"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos lados tiene un triángulo?",
+    "correct_answer": "3",
+    "incorrect_answers": [
+      "4",
+      "5",
+      "6"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuánto es 12 x 12?",
+    "correct_answer": "144",
+    "incorrect_answers": [
+      "120",
+      "132",
+      "156"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos grados tiene un ángulo recto?",
+    "correct_answer": "90",
+    "incorrect_answers": [
+      "45",
+      "180",
+      "60"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuánto es la mitad de 50?",
+    "correct_answer": "25",
+    "incorrect_answers": [
+      "20",
+      "30",
+      "15"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos minutos hay en una hora?",
+    "correct_answer": "60",
+    "incorrect_answers": [
+      "50",
+      "100",
+      "70"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuánto es 15 + 27?",
+    "correct_answer": "42",
+    "incorrect_answers": [
+      "40",
+      "45",
+      "38"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos lados tiene un hexágono?",
+    "correct_answer": "6",
+    "incorrect_answers": [
+      "5",
+      "7",
+      "8"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuánto es 20% de 100?",
+    "correct_answer": "20",
+    "incorrect_answers": [
+      "10",
+      "25",
+      "30"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos centímetros hay en un metro?",
+    "correct_answer": "100",
+    "incorrect_answers": [
+      "10",
+      "1000",
+      "50"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuánto es 9 x 9?",
+    "correct_answer": "81",
+    "incorrect_answers": [
+      "72",
+      "90",
+      "63"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos días tiene un año bisiesto?",
+    "correct_answer": "366",
+    "incorrect_answers": [
+      "365",
+      "364",
+      "367"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuánto es el doble de 15?",
+    "correct_answer": "30",
+    "incorrect_answers": [
+      "25",
+      "35",
+      "20"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos segundos hay en un minuto?",
+    "correct_answer": "60",
+    "incorrect_answers": [
+      "100",
+      "50",
+      "70"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuánto es 8 x 7?",
+    "correct_answer": "56",
+    "incorrect_answers": [
+      "48",
+      "64",
+      "54"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos meses tienen 31 días?",
+    "correct_answer": "7",
+    "incorrect_answers": [
+      "6",
+      "8",
+      "5"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuánto es 50 dividido entre 5?",
+    "correct_answer": "10",
+    "incorrect_answers": [
+      "5",
+      "15",
+      "8"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos grados tiene un círculo completo?",
+    "correct_answer": "360",
+    "incorrect_answers": [
+      "180",
+      "90",
+      "270"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuánto es 6 x 6?",
+    "correct_answer": "36",
+    "incorrect_answers": [
+      "30",
+      "42",
+      "32"
+    ],
+    "category": "Matemáticas",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién escribió Don Quijote?",
+    "correct_answer": "Miguel de Cervantes",
+    "incorrect_answers": [
+      "Lope de Vega",
+      "Quevedo",
+      "Góngora"
+    ],
+    "category": "Literatura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién escribió Cien años de soledad?",
+    "correct_answer": "Gabriel García Márquez",
+    "incorrect_answers": [
+      "Mario Vargas Llosa",
+      "Julio Cortázar",
+      "Pablo Neruda"
+    ],
+    "category": "Literatura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué país es el poeta Pablo Neruda?",
+    "correct_answer": "Chile",
+    "incorrect_answers": [
+      "México",
+      "Argentina",
+      "Colombia"
+    ],
+    "category": "Literatura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién escribió Romeo y Julieta?",
+    "correct_answer": "William Shakespeare",
+    "incorrect_answers": [
+      "Charles Dickens",
+      "Oscar Wilde",
+      "Jane Austen"
+    ],
+    "category": "Literatura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién escribió La Casa de Bernarda Alba?",
+    "correct_answer": "Federico García Lorca",
+    "incorrect_answers": [
+      "Miguel de Unamuno",
+      "Antonio Machado",
+      "Ramón del Valle-Inclán"
+    ],
+    "category": "Literatura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién escribió El Principito?",
+    "correct_answer": "Antoine de Saint-Exupéry",
+    "incorrect_answers": [
+      "Jules Verne",
+      "Victor Hugo",
+      "Albert Camus"
+    ],
+    "category": "Literatura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué trata Don Quijote?",
+    "correct_answer": "Un caballero que lucha contra molinos",
+    "incorrect_answers": [
+      "Un pirata",
+      "Un rey",
+      "Un ladrón"
+    ],
+    "category": "Literatura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién escribió Platero y yo?",
+    "correct_answer": "Juan Ramón Jiménez",
+    "incorrect_answers": [
+      "Antonio Machado",
+      "Federico García Lorca",
+      "Rafael Alberti"
+    ],
+    "category": "Literatura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién escribió La Celestina?",
+    "correct_answer": "Fernando de Rojas",
+    "incorrect_answers": [
+      "Miguel de Cervantes",
+      "Lope de Vega",
+      "Calderón de la Barca"
+    ],
+    "category": "Literatura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué poeta español es de la Generación del 27?",
+    "correct_answer": "Federico García Lorca",
+    "incorrect_answers": [
+      "Antonio Machado",
+      "Gustavo Adolfo Bécquer",
+      "José de Espronceda"
+    ],
+    "category": "Literatura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué significa WWW?",
+    "correct_answer": "World Wide Web",
+    "incorrect_answers": [
+      "World Web Wide",
+      "Web World Wide",
+      "Wide World Web"
+    ],
+    "category": "Tecnología",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fundó Microsoft?",
+    "correct_answer": "Bill Gates",
+    "incorrect_answers": [
+      "Steve Jobs",
+      "Mark Zuckerberg",
+      "Elon Musk"
+    ],
+    "category": "Tecnología",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fundó Apple?",
+    "correct_answer": "Steve Jobs",
+    "incorrect_answers": [
+      "Bill Gates",
+      "Mark Zuckerberg",
+      "Jeff Bezos"
+    ],
+    "category": "Tecnología",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué es un USB?",
+    "correct_answer": "Puerto de conexión",
+    "incorrect_answers": [
+      "Programa",
+      "Virus",
+      "Navegador"
+    ],
+    "category": "Tecnología",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa CPU?",
+    "correct_answer": "Unidad Central de Procesamiento",
+    "incorrect_answers": [
+      "Central Programa Unit",
+      "Computer Personal Unit",
+      "Central Power Unit"
+    ],
+    "category": "Tecnología",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué red social tiene un pájaro azul como logo?",
+    "correct_answer": "Twitter (X)",
+    "incorrect_answers": [
+      "Facebook",
+      "Instagram",
+      "TikTok"
+    ],
+    "category": "Tecnología",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué empresa creó el iPhone?",
+    "correct_answer": "Apple",
+    "incorrect_answers": [
+      "Samsung",
+      "Huawei",
+      "Nokia"
+    ],
+    "category": "Tecnología",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa RAM?",
+    "correct_answer": "Memoria de Acceso Aleatorio",
+    "incorrect_answers": [
+      "Memoria Rom",
+      "Red de Acceso",
+      "Registro de Memoria"
+    ],
+    "category": "Tecnología",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién es el director español de 'Todo sobre mi madre'?",
+    "correct_answer": "Pedro Almodóvar",
+    "incorrect_answers": [
+      "Alejandro Amenábar",
+      "Fernando Trueba",
+      "Carlos Saura"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué actor español ganó un Oscar por 'No es país para viejos'?",
+    "correct_answer": "Javier Bardem",
+    "incorrect_answers": [
+      "Antonio Banderas",
+      "Penélope Cruz",
+      "Pedro Pascal"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién dirigió la película 'El laberinto del fauno'?",
+    "correct_answer": "Guillermo del Toro",
+    "incorrect_answers": [
+      "Pedro Almodóvar",
+      "Alejandro Amenábar",
+      "Juan Antonio Bayona"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué actriz española ganó un Oscar por 'Vicky Cristina Barcelona'?",
+    "correct_answer": "Penélope Cruz",
+    "incorrect_answers": [
+      "Carmen Maura",
+      "Victoria Abril",
+      "Aitana Sánchez-Gijón"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién es el protagonista español de 'Los otros'?",
+    "correct_answer": "Nicole Kidman",
+    "incorrect_answers": [
+      "Penélope Cruz",
+      "Maribel Verdú",
+      "Victoria Abril"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué película española ganó el Oscar a Mejor Película Extranjera en 2000?",
+    "correct_answer": "Todo sobre mi madre",
+    "incorrect_answers": [
+      "Mar adentro",
+      "Belle Époque",
+      "Los otros"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién dirigió 'Mar adentro'?",
+    "correct_answer": "Alejandro Amenábar",
+    "incorrect_answers": [
+      "Pedro Almodóvar",
+      "Fernando Trueba",
+      "Carlos Saura"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué actor español protagonizó 'El Cid'?",
+    "correct_answer": "Charlton Heston",
+    "incorrect_answers": [
+      "Anthony Quinn",
+      "Fernando Rey",
+      "Paco Rabal"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién es el director de 'El espíritu de la colmena'?",
+    "correct_answer": "Víctor Erice",
+    "incorrect_answers": [
+      "Luis Buñuel",
+      "Carlos Saura",
+      "Juan Antonio Bardem"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué película de Pedro Almodóvar ganó el Oscar?",
+    "correct_answer": "Todo sobre mi madre",
+    "incorrect_answers": [
+      "Volver",
+      "Hable con ella",
+      "Mujeres al borde de un ataque de nervios"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién protagonizó 'Alatriste'?",
+    "correct_answer": "Viggo Mortensen",
+    "incorrect_answers": [
+      "Antonio Banderas",
+      "Javier Bardem",
+      "Eduard Fernández"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actor español trabajó en 'The Mandalorian'?",
+    "correct_answer": "Pedro Pascal",
+    "incorrect_answers": [
+      "Antonio Banderas",
+      "Javier Bardem",
+      "Óscar Isaac"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién dirigió 'Belle Époque'?",
+    "correct_answer": "Fernando Trueba",
+    "incorrect_answers": [
+      "Pedro Almodóvar",
+      "José Luis Garci",
+      "Carlos Saura"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué película española protagonizó Ana Torrent de niña?",
+    "correct_answer": "El espíritu de la colmena",
+    "incorrect_answers": [
+      "Cría cuervos",
+      "El sur",
+      "Todas son correctas"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién es el protagonista de 'Dolor y gloria'?",
+    "correct_answer": "Antonio Banderas",
+    "incorrect_answers": [
+      "Javier Bardem",
+      "Eduard Fernández",
+      "Alberto San Juan"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué director español hizo 'Viridiana'?",
+    "correct_answer": "Luis Buñuel",
+    "incorrect_answers": [
+      "Carlos Saura",
+      "Juan Antonio Bardem",
+      "Luis García Berlanga"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién protagonizó 'Jamón, jamón'?",
+    "correct_answer": "Penélope Cruz y Javier Bardem",
+    "incorrect_answers": [
+      "Victoria Abril",
+      "Carmen Maura",
+      "Antonio Banderas"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué película española dirigió J.A. Bayona?",
+    "correct_answer": "El orfanato",
+    "incorrect_answers": [
+      "REC",
+      "Los otros",
+      "El espinazo del diablo"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién dirigió 'El verdugo'?",
+    "correct_answer": "Luis García Berlanga",
+    "incorrect_answers": [
+      "Luis Buñuel",
+      "Carlos Saura",
+      "Juan Antonio Bardem"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actriz española protagonizó 'Volver'?",
+    "correct_answer": "Penélope Cruz",
+    "incorrect_answers": [
+      "Carmen Maura",
+      "Victoria Abril",
+      "Blanca Suárez"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién dirigió la película 'Tesis'?",
+    "correct_answer": "Alejandro Amenábar",
+    "incorrect_answers": [
+      "Pedro Almodóvar",
+      "Jaume Balagueró",
+      "Álex de la Iglesia"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actor español protagonizó 'Biutiful'?",
+    "correct_answer": "Javier Bardem",
+    "incorrect_answers": [
+      "Eduard Fernández",
+      "Luis Tosar",
+      "Alberto Ammann"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién dirigió 'Abre los ojos'?",
+    "correct_answer": "Alejandro Amenábar",
+    "incorrect_answers": [
+      "Pedro Almodóvar",
+      "Álex de la Iglesia",
+      "Fernando León de Aranoa"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué película española fue remake americana como 'Vanilla Sky'?",
+    "correct_answer": "Abre los ojos",
+    "incorrect_answers": [
+      "Los otros",
+      "Tesis",
+      "Ágora"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién es el protagonista de 'Celda 211'?",
+    "correct_answer": "Luis Tosar",
+    "incorrect_answers": [
+      "Javier Bardem",
+      "Eduard Fernández",
+      "Alberto Ammann"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué cantante español es conocido por 'La Flaca'?",
+    "correct_answer": "Jarabe de Palo",
+    "incorrect_answers": [
+      "Joaquín Sabina",
+      "Alejandro Sanz",
+      "Pablo Alborán"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué ciudad es el grupo Héroes del Silencio?",
+    "correct_answer": "Zaragoza",
+    "incorrect_answers": [
+      "Madrid",
+      "Barcelona",
+      "Valencia"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién canta 'Vivir mi vida'?",
+    "correct_answer": "Marc Anthony",
+    "incorrect_answers": [
+      "Alejandro Sanz",
+      "David Bisbal",
+      "Pablo Alborán"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué banda española tiene la canción 'El sitio de mi recreo'?",
+    "correct_answer": "Antonio Vega",
+    "incorrect_answers": [
+      "Mecano",
+      "Hombres G",
+      "Duncan Dhu"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién es el cantante de Jarabe de Palo?",
+    "correct_answer": "Pau Donés",
+    "incorrect_answers": [
+      "Enrique Bunbury",
+      "Andrés Calamaro",
+      "Fito Páez"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué grupo español cantaba 'Devuélveme a mi chica'?",
+    "correct_answer": "Hombres G",
+    "incorrect_answers": [
+      "Mecano",
+      "La Oreja de Van Gogh",
+      "Duncan Dhu"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué país es Rosalía?",
+    "correct_answer": "España",
+    "incorrect_answers": [
+      "México",
+      "Argentina",
+      "Colombia"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién canta 'Corazón Partío'?",
+    "correct_answer": "Alejandro Sanz",
+    "incorrect_answers": [
+      "Joaquín Sabina",
+      "Pablo Alborán",
+      "David Bisbal"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué grupo español tiene la canción 'Hijo de la Luna'?",
+    "correct_answer": "Mecano",
+    "incorrect_answers": [
+      "Hombres G",
+      "Duncan Dhu",
+      "La Oreja de Van Gogh"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién es el vocalista de Héroes del Silencio?",
+    "correct_answer": "Enrique Bunbury",
+    "incorrect_answers": [
+      "Miguel Ríos",
+      "Andrés Calamaro",
+      "Fito Páez"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué cantante español tiene el álbum 'El tren de los momentos'?",
+    "correct_answer": "Alejandro Sanz",
+    "incorrect_answers": [
+      "Joaquín Sabina",
+      "Pablo Alborán",
+      "Malú"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De qué ciudad es Rosalía?",
+    "correct_answer": "Barcelona",
+    "incorrect_answers": [
+      "Madrid",
+      "Sevilla",
+      "Valencia"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién canta 'Ave María' en flamenco?",
+    "correct_answer": "David Bisbal",
+    "incorrect_answers": [
+      "Alejandro Sanz",
+      "Pablo Alborán",
+      "Antonio Orozco"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué grupo español tiene la canción 'Rosas'?",
+    "correct_answer": "La Oreja de Van Gogh",
+    "incorrect_answers": [
+      "Mecano",
+      "Hombres G",
+      "Duncan Dhu"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién es conocido como 'El Cigala'?",
+    "correct_answer": "Diego El Cigala",
+    "incorrect_answers": [
+      "Camarón de la Isla",
+      "Paco de Lucía",
+      "Tomatito"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué cantante español colaboró con Shakira en 'La Tortura'?",
+    "correct_answer": "Alejandro Sanz",
+    "incorrect_answers": [
+      "Juanes",
+      "David Bisbal",
+      "Pablo Alborán"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fue el guitarrista flamenco más famoso del mundo?",
+    "correct_answer": "Paco de Lucía",
+    "incorrect_answers": [
+      "Vicente Amigo",
+      "Tomatito",
+      "Manolo Sanlúcar"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué ciudad es el cantante Pablo Alborán?",
+    "correct_answer": "Málaga",
+    "incorrect_answers": [
+      "Sevilla",
+      "Granada",
+      "Cádiz"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién canta 'Entre dos tierras'?",
+    "correct_answer": "Héroes del Silencio",
+    "incorrect_answers": [
+      "Extremoduro",
+      "Barricada",
+      "Reincidentes"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué cantaor flamenco era 'La leyenda del tiempo'?",
+    "correct_answer": "Camarón de la Isla",
+    "incorrect_answers": [
+      "Enrique Morente",
+      "Diego El Cigala",
+      "José Mercé"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién canta 'Solamente tú'?",
+    "correct_answer": "Pablo Alborán",
+    "incorrect_answers": [
+      "Alejandro Sanz",
+      "David Bisbal",
+      "Antonio Orozco"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué grupo español tiene la canción 'Barco a Venus'?",
+    "correct_answer": "Mecano",
+    "incorrect_answers": [
+      "Hombres G",
+      "La Oreja de Van Gogh",
+      "Duncan Dhu"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién es el cantante de Estopa?",
+    "correct_answer": "David y José Muñoz",
+    "incorrect_answers": [
+      "Manolo García",
+      "Quique González",
+      "Álex Ubago"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De qué ciudad son los hermanos de Estopa?",
+    "correct_answer": "Cornellà (Barcelona)",
+    "incorrect_answers": [
+      "Madrid",
+      "Sevilla",
+      "Valencia"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién canta 'Y, ¿si fuera ella?'?",
+    "correct_answer": "Alejandro Sanz",
+    "incorrect_answers": [
+      "Pablo Alborán",
+      "David Bisbal",
+      "Antonio Orozco"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Albacete?",
+    "correct_answer": "Albacete",
+    "incorrect_answers": [
+      "Cuenca",
+      "Ciudad Real",
+      "Guadalajara"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué provincia está Marbella?",
+    "correct_answer": "Málaga",
+    "incorrect_answers": [
+      "Cádiz",
+      "Almería",
+      "Granada"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Teruel?",
+    "correct_answer": "Teruel",
+    "incorrect_answers": [
+      "Huesca",
+      "Zaragoza",
+      "Soria"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué provincia está Tarragona?",
+    "correct_answer": "Tarragona",
+    "incorrect_answers": [
+      "Barcelona",
+      "Girona",
+      "Lleida"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Cuenca?",
+    "correct_answer": "Cuenca",
+    "incorrect_answers": [
+      "Albacete",
+      "Guadalajara",
+      "Toledo"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué provincia está Cartagena?",
+    "correct_answer": "Murcia",
+    "incorrect_answers": [
+      "Alicante",
+      "Almería",
+      "Valencia"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Ávila?",
+    "correct_answer": "Ávila",
+    "incorrect_answers": [
+      "Segovia",
+      "Salamanca",
+      "Valladolid"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué provincia está Benidorm?",
+    "correct_answer": "Alicante",
+    "incorrect_answers": [
+      "Valencia",
+      "Murcia",
+      "Castellón"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Soria?",
+    "correct_answer": "Soria",
+    "incorrect_answers": [
+      "Burgos",
+      "Segovia",
+      "Palencia"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué provincia está Jerez de la Frontera?",
+    "correct_answer": "Cádiz",
+    "incorrect_answers": [
+      "Sevilla",
+      "Huelva",
+      "Málaga"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Guadalajara?",
+    "correct_answer": "Guadalajara",
+    "incorrect_answers": [
+      "Cuenca",
+      "Toledo",
+      "Albacete"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué provincia está Elche?",
+    "correct_answer": "Alicante",
+    "incorrect_answers": [
+      "Valencia",
+      "Murcia",
+      "Castellón"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Palencia?",
+    "correct_answer": "Palencia",
+    "incorrect_answers": [
+      "Valladolid",
+      "Burgos",
+      "León"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué provincia está Ronda?",
+    "correct_answer": "Málaga",
+    "incorrect_answers": [
+      "Cádiz",
+      "Sevilla",
+      "Granada"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Zamora?",
+    "correct_answer": "Zamora",
+    "incorrect_answers": [
+      "Salamanca",
+      "León",
+      "Valladolid"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué provincia está Gijón?",
+    "correct_answer": "Asturias",
+    "incorrect_answers": [
+      "Cantabria",
+      "Galicia",
+      "León"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Ourense?",
+    "correct_answer": "Ourense",
+    "incorrect_answers": [
+      "Pontevedra",
+      "Lugo",
+      "A Coruña"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué provincia está Vigo?",
+    "correct_answer": "Pontevedra",
+    "incorrect_answers": [
+      "A Coruña",
+      "Ourense",
+      "Lugo"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Lugo?",
+    "correct_answer": "Lugo",
+    "incorrect_answers": [
+      "Ourense",
+      "Pontevedra",
+      "A Coruña"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué provincia está Santander?",
+    "correct_answer": "Cantabria",
+    "incorrect_answers": [
+      "Asturias",
+      "Vizcaya",
+      "Guipúzcoa"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Badajoz?",
+    "correct_answer": "Badajoz",
+    "incorrect_answers": [
+      "Cáceres",
+      "Mérida",
+      "Plasencia"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué provincia está Cáceres?",
+    "correct_answer": "Cáceres",
+    "incorrect_answers": [
+      "Badajoz",
+      "Salamanca",
+      "Toledo"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Huelva?",
+    "correct_answer": "Huelva",
+    "incorrect_answers": [
+      "Cádiz",
+      "Sevilla",
+      "Badajoz"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué provincia está Almería?",
+    "correct_answer": "Almería",
+    "incorrect_answers": [
+      "Murcia",
+      "Granada",
+      "Málaga"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Jaén?",
+    "correct_answer": "Jaén",
+    "incorrect_answers": [
+      "Granada",
+      "Córdoba",
+      "Almería"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos Grand Slams ha ganado Rafael Nadal?",
+    "correct_answer": "22",
+    "incorrect_answers": [
+      "20",
+      "21",
+      "23"
+    ],
+    "category": "Deportes",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué equipo jugó Andrés Iniesta?",
+    "correct_answer": "FC Barcelona",
+    "incorrect_answers": [
+      "Real Madrid",
+      "Atlético de Madrid",
+      "Valencia"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué tenista español ganó 5 Masters de Madrid?",
+    "correct_answer": "Rafael Nadal",
+    "incorrect_answers": [
+      "Carlos Alcaraz",
+      "David Ferrer",
+      "Feliciano López"
+    ],
+    "category": "Deportes",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué deporte destaca Carolina Marín?",
+    "correct_answer": "Bádminton",
+    "incorrect_answers": [
+      "Tenis",
+      "Voleibol",
+      "Esgrima"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántas veces ganó el Mundial de MotoGP Marc Márquez?",
+    "correct_answer": "8",
+    "incorrect_answers": [
+      "6",
+      "7",
+      "9"
+    ],
+    "category": "Deportes",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué portero español jugó en el Real Madrid?",
+    "correct_answer": "Iker Casillas",
+    "incorrect_answers": [
+      "Víctor Valdés",
+      "Pepe Reina",
+      "David de Gea"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año ganó España el Mundial de Fútbol?",
+    "correct_answer": "2010",
+    "incorrect_answers": [
+      "2008",
+      "2012",
+      "2014"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué ciclista español ganó 5 Tours de Francia?",
+    "correct_answer": "Miguel Indurain",
+    "incorrect_answers": [
+      "Alberto Contador",
+      "Carlos Sastre",
+      "Alejandro Valverde"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué equipo jugó Xavi Hernández?",
+    "correct_answer": "FC Barcelona",
+    "incorrect_answers": [
+      "Real Madrid",
+      "Atlético",
+      "Sevilla"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué nadador español ganó 5 medallas olímpicas?",
+    "correct_answer": "Mireia Belmonte",
+    "incorrect_answers": [
+      "David Cal",
+      "Saúl Craviotto",
+      "Marcus Cooper"
+    ],
+    "category": "Deportes",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué posición jugaba Sergio Ramos?",
+    "correct_answer": "Defensa",
+    "incorrect_answers": [
+      "Centrocampista",
+      "Delantero",
+      "Portero"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué tenista español ganó Wimbledon en 2008 y 2010?",
+    "correct_answer": "Rafael Nadal",
+    "incorrect_answers": [
+      "Carlos Moyá",
+      "Juan Carlos Ferrero",
+      "David Ferrer"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué deporte destacó Pau Gasol?",
+    "correct_answer": "Baloncesto",
+    "incorrect_answers": [
+      "Fútbol",
+      "Tenis",
+      "Balonmano"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué piloto español ganó dos Mundiales de F1?",
+    "correct_answer": "Fernando Alonso",
+    "incorrect_answers": [
+      "Carlos Sainz",
+      "Pedro de la Rosa",
+      "Jaime Alguersuari"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué equipo jugó David Villa?",
+    "correct_answer": "FC Barcelona y Valencia",
+    "incorrect_answers": [
+      "Real Madrid",
+      "Atlético",
+      "Sevilla"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué golfista español ganó dos Masters de Augusta?",
+    "correct_answer": "José María Olazábal",
+    "incorrect_answers": [
+      "Sergio García",
+      "Miguel Ángel Jiménez",
+      "Jon Rahm"
+    ],
+    "category": "Deportes",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué deporte destaca Javier Gómez Noya?",
+    "correct_answer": "Triatlón",
+    "incorrect_answers": [
+      "Ciclismo",
+      "Natación",
+      "Atletismo"
+    ],
+    "category": "Deportes",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué futbolista español es conocido como 'El Niño'?",
+    "correct_answer": "Fernando Torres",
+    "incorrect_answers": [
+      "David Villa",
+      "Raúl",
+      "Diego Costa"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántas Eurocopas ha ganado España?",
+    "correct_answer": "3",
+    "incorrect_answers": [
+      "2",
+      "4",
+      "1"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué piloto español ganó el Dakar en motos?",
+    "correct_answer": "Marc Coma",
+    "incorrect_answers": [
+      "Carlos Sainz",
+      "Nani Roma",
+      "Isidre Esteve"
+    ],
+    "category": "Deportes",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué año ganó España la Eurocopa por primera vez?",
+    "correct_answer": "1964",
+    "incorrect_answers": [
+      "1968",
+      "1972",
+      "1960"
+    ],
+    "category": "Deportes",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué jugador español es el máximo goleador del Barcelona?",
+    "correct_answer": "Lionel Messi",
+    "incorrect_answers": [
+      "César Rodríguez",
+      "Luis Suárez",
+      "Kubala"
+    ],
+    "category": "Deportes",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué equipo debutó Iker Casillas?",
+    "correct_answer": "Real Madrid",
+    "incorrect_answers": [
+      "Atlético",
+      "FC Barcelona",
+      "Valencia"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué jugador español marcó el gol del Mundial 2010?",
+    "correct_answer": "Andrés Iniesta",
+    "incorrect_answers": [
+      "David Villa",
+      "Fernando Torres",
+      "Xavi Hernández"
+    ],
+    "category": "Deportes",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos Balones de Oro ha ganado un español?",
+    "correct_answer": "1 (Luis Suárez 1960)",
+    "incorrect_answers": [
+      "0",
+      "2",
+      "3"
+    ],
+    "category": "Deportes",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué animal es el símbolo del WWF?",
+    "correct_answer": "Oso panda",
+    "incorrect_answers": [
+      "Tigre",
+      "Elefante",
+      "Ballena"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el ave nacional de España?",
+    "correct_answer": "Águila imperial",
+    "incorrect_answers": [
+      "Cigüeña",
+      "Buitre",
+      "Halcón"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué animal pone los huevos más grandes?",
+    "correct_answer": "Avestruz",
+    "incorrect_answers": [
+      "Pingüino",
+      "Cocodrilo",
+      "Tortuga"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos corazones tiene un pulpo?",
+    "correct_answer": "3",
+    "incorrect_answers": [
+      "1",
+      "2",
+      "4"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué animal puede dormir de pie?",
+    "correct_answer": "Caballo",
+    "incorrect_answers": [
+      "Vaca",
+      "Oveja",
+      "Todos"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el mamífero más pequeño del mundo?",
+    "correct_answer": "Musaraña etrusca",
+    "incorrect_answers": [
+      "Ratón",
+      "Murciélago",
+      "Comadreja"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué animal tiene la lengua azul?",
+    "correct_answer": "Jirafa",
+    "incorrect_answers": [
+      "Elefante",
+      "Oso",
+      "Perro"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos dientes tiene un humano adulto?",
+    "correct_answer": "32",
+    "incorrect_answers": [
+      "28",
+      "30",
+      "34"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué animal puede regenerar su cola?",
+    "correct_answer": "Lagartija",
+    "incorrect_answers": [
+      "Serpiente",
+      "Rana",
+      "Tortuga"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el ave más rápida volando?",
+    "correct_answer": "Halcón peregrino",
+    "incorrect_answers": [
+      "Águila",
+      "Gavilán",
+      "Milano"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué animal puede cambiar de color?",
+    "correct_answer": "Camaleón",
+    "incorrect_answers": [
+      "Iguana",
+      "Salamandra",
+      "Gecko"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántas patas tiene una araña?",
+    "correct_answer": "8",
+    "incorrect_answers": [
+      "6",
+      "10",
+      "12"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué mamífero puede volar?",
+    "correct_answer": "Murciélago",
+    "incorrect_answers": [
+      "Ardilla voladora",
+      "Pez volador",
+      "Calamar volador"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el felino más grande?",
+    "correct_answer": "Tigre",
+    "incorrect_answers": [
+      "León",
+      "Jaguar",
+      "Leopardo"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué animal tiene la presión sanguínea más alta?",
+    "correct_answer": "Jirafa",
+    "incorrect_answers": [
+      "Elefante",
+      "Ballena",
+      "Rinoceronte"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuántos estómagos tiene una vaca?",
+    "correct_answer": "4",
+    "incorrect_answers": [
+      "2",
+      "3",
+      "5"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué animal puede vivir más de 100 años?",
+    "correct_answer": "Tortuga",
+    "incorrect_answers": [
+      "Elefante",
+      "Ballena",
+      "Todos"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el pez más grande?",
+    "correct_answer": "Tiburón ballena",
+    "incorrect_answers": [
+      "Gran tiburón blanco",
+      "Pez espada",
+      "Atún"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué animal tiene rayas únicas como huellas dactilares?",
+    "correct_answer": "Cebra",
+    "incorrect_answers": [
+      "Tigre",
+      "Leopardo",
+      "Guepardo"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos huesos tiene una jirafa en el cuello?",
+    "correct_answer": "7",
+    "incorrect_answers": [
+      "10",
+      "15",
+      "20"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué insecto produce miel?",
+    "correct_answer": "Abeja",
+    "incorrect_answers": [
+      "Avispa",
+      "Hormiga",
+      "Mariposa"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el animal más lento del mundo?",
+    "correct_answer": "Perezoso",
+    "incorrect_answers": [
+      "Tortuga",
+      "Caracol",
+      "Koala"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué animal duerme más horas al día?",
+    "correct_answer": "Koala",
+    "incorrect_answers": [
+      "Perezoso",
+      "Gato",
+      "Oso"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuántos años puede vivir un loro?",
+    "correct_answer": "80 años",
+    "incorrect_answers": [
+      "40 años",
+      "60 años",
+      "100 años"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué mamífero pone huevos?",
+    "correct_answer": "Ornitorrinco",
+    "incorrect_answers": [
+      "Canguro",
+      "Koala",
+      "Wombat"
+    ],
+    "category": "Naturaleza",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué significa 'estar en Babia'?",
+    "correct_answer": "Estar distraído",
+    "incorrect_answers": [
+      "Estar enfadado",
+      "Estar contento",
+      "Estar cansado"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué significa 'tirar la toalla'?",
+    "correct_answer": "Rendirse",
+    "incorrect_answers": [
+      "Empezar",
+      "Continuar",
+      "Ganar"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'pan comido'?",
+    "correct_answer": "Muy fácil",
+    "incorrect_answers": [
+      "Muy difícil",
+      "Imposible",
+      "Delicioso"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'estar sin blanca'?",
+    "correct_answer": "No tener dinero",
+    "incorrect_answers": [
+      "Estar limpio",
+      "Estar pálido",
+      "Estar solo"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'meter la pata'?",
+    "correct_answer": "Equivocarse",
+    "incorrect_answers": [
+      "Acertar",
+      "Correr",
+      "Bailar"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'costar un ojo de la cara'?",
+    "correct_answer": "Ser muy caro",
+    "incorrect_answers": [
+      "Ser barato",
+      "Ser feo",
+      "Ser bonito"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'estar como una cabra'?",
+    "correct_answer": "Estar loco",
+    "incorrect_answers": [
+      "Estar sano",
+      "Estar enfermo",
+      "Estar fuerte"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'dar calabazas'?",
+    "correct_answer": "Rechazar",
+    "incorrect_answers": [
+      "Aceptar",
+      "Regalar",
+      "Cocinar"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué significa 'tomar el pelo'?",
+    "correct_answer": "Burlarse",
+    "incorrect_answers": [
+      "Peinar",
+      "Acariciar",
+      "Ayudar"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'estar pez'?",
+    "correct_answer": "No saber nada",
+    "incorrect_answers": [
+      "Nadar bien",
+      "Pescar",
+      "Estar mojado"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué significa 'ponerse las pilas'?",
+    "correct_answer": "Esforzarse",
+    "incorrect_answers": [
+      "Descansar",
+      "Dormir",
+      "Comer"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'quedarse de piedra'?",
+    "correct_answer": "Sorprenderse",
+    "incorrect_answers": [
+      "Caerse",
+      "Endurecerse",
+      "Paralizarse"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'irse por las ramas'?",
+    "correct_answer": "Desviarse del tema",
+    "incorrect_answers": [
+      "Subir a un árbol",
+      "Huir",
+      "Perderse"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué significa 'estar hasta las narices'?",
+    "correct_answer": "Estar harto",
+    "incorrect_answers": [
+      "Estar resfriado",
+      "Estar lleno",
+      "Estar feliz"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'hacer la vista gorda'?",
+    "correct_answer": "Ignorar algo",
+    "incorrect_answers": [
+      "Ver mal",
+      "Engordar",
+      "Cerrar los ojos"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué significa 'ser un gallina'?",
+    "correct_answer": "Ser cobarde",
+    "incorrect_answers": [
+      "Ser valiente",
+      "Ser ave",
+      "Ser granjero"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'dar en el clavo'?",
+    "correct_answer": "Acertar",
+    "incorrect_answers": [
+      "Equivocarse",
+      "Golpear",
+      "Construir"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'estar en las nubes'?",
+    "correct_answer": "Estar distraído",
+    "incorrect_answers": [
+      "Volar",
+      "Estar feliz",
+      "Estar alto"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'no tener pelos en la lengua'?",
+    "correct_answer": "Hablar claro",
+    "incorrect_answers": [
+      "Estar callado",
+      "Tener barba",
+      "Ser educado"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué significa 'dormir a pierna suelta'?",
+    "correct_answer": "Dormir profundamente",
+    "incorrect_answers": [
+      "Tener insomnio",
+      "Soñar",
+      "Roncar"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'estar en la luna de Valencia'?",
+    "correct_answer": "Estar distraído",
+    "incorrect_answers": [
+      "Estar en Valencia",
+      "Mirar la luna",
+      "Estar de viaje"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué significa 'buscarle tres pies al gato'?",
+    "correct_answer": "Complicar las cosas",
+    "incorrect_answers": [
+      "Buscar un gato",
+      "Ser veterinario",
+      "Simplificar"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué significa 'estar de mala leche'?",
+    "correct_answer": "Estar de mal humor",
+    "incorrect_answers": [
+      "Tener alergia",
+      "Estar enfermo",
+      "Estar contento"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'tener mala pata'?",
+    "correct_answer": "Tener mala suerte",
+    "incorrect_answers": [
+      "Cojear",
+      "Estar herido",
+      "Tener suerte"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué significa 'estar mosqueado'?",
+    "correct_answer": "Estar enfadado",
+    "incorrect_answers": [
+      "Tener moscas",
+      "Estar contento",
+      "Estar cansado"
+    ],
+    "category": "Lenguaje",
+    "difficulty": "easy"
+  }
+]
