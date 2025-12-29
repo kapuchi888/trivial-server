@@ -33,11 +33,47 @@ app.get('/api/questions', (req, res) => {
 // Variables del servidor
 const rooms = {};
 
-// ===== SISTEMA DE PREGUNTAS CON OPEN TRIVIA DB Y TRADUCCIÓN =====
+// ===== SISTEMA DE PREGUNTAS CON MEZCLA ESPAÑOL + TRADUCIDAS =====
 let allQuestions = [];
+let spanishQuestions = []; // Preguntas en español nativo
 let usedQuestions = []; // Tracking de preguntas ya usadas
 const CACHE_SIZE = 300; // Preguntas en caché inicial (ÓPTIMO)
 const REFILL_THRESHOLD = 100; // Recargar cuando queden menos de 100
+
+// Cargar preguntas en español desde archivo local
+function loadSpanishQuestions() {
+    try {
+        const questionsPath = path.join(__dirname, 'questions_espana.json');
+        if (fs.existsSync(questionsPath)) {
+            const data = fs.readFileSync(questionsPath, 'utf8');
+            const questions = JSON.parse(data);
+            
+            // Formatear preguntas al formato del servidor
+            const formatted = questions.map(q => {
+                const allOptions = [...q.incorrect_answers, q.correct_answer];
+                const shuffled = shuffleArray(allOptions);
+                const correctIndex = shuffled.indexOf(q.correct_answer);
+                
+                return {
+                    question: q.question,
+                    options: shuffled,
+                    correct: correctIndex,
+                    category: q.category,
+                    difficulty: q.difficulty || 'easy'
+                };
+            });
+            
+            console.log(`✅ Cargadas ${formatted.length} preguntas en ESPAÑOL NATIVO desde archivo`);
+            return formatted;
+        } else {
+            console.log('⚠️ Archivo questions_espana.json no encontrado');
+            return [];
+        }
+    } catch (error) {
+        console.log('⚠️ Error cargando preguntas españolas:', error.message);
+        return [];
+    }
+}
 
 // Función para traducir texto de inglés a español usando Google Translate
 async function translateToSpanish(text) {
@@ -317,13 +353,27 @@ function loadLocalQuestions() {
 
 // Inicializar preguntas al arrancar
 async function initializeQuestions() {
-    console.log('🔄 Inicializando sistema con 300 preguntas FÁCILES (mezcla de fuentes)...');
+    console.log('🔄 Inicializando sistema con 300 preguntas (ESPAÑOL + Traducidas)...');
     console.log('⏳ Esto tomará ~30-40 segundos...');
     
-    // Cargar 300 preguntas en 6 lotes de 50
+    // Cargar preguntas en español del archivo
+    spanishQuestions = loadSpanishQuestions();
+    
+    // Calcular cuántas preguntas de cada fuente
+    const spanishCount = Math.min(spanishQuestions.length, 120); // 40% español (120/300)
+    const apiCount = 180; // 60% de APIs (180/300)
+    
+    console.log(`📚 Usando ${spanishCount} preguntas en ESPAÑOL NATIVO`);
+    console.log(`🌐 Descargando ${apiCount} preguntas FÁCILES traducidas...`);
+    
+    // Tomar preguntas españolas
+    const selectedSpanish = shuffleArray([...spanishQuestions]).slice(0, spanishCount);
+    
+    // Descargar preguntas de APIs (fáciles)
     const allFetched = [];
-    for (let i = 0; i < 6; i++) {
-        console.log(`📥 Descargando lote ${i + 1}/6 (${allFetched.length} preguntas cargadas)...`);
+    const batches = Math.ceil(apiCount / 50); // Lotes de 50
+    for (let i = 0; i < batches; i++) {
+        console.log(`📥 Descargando lote ${i + 1}/${batches} de APIs...`);
         const batch = await fetchQuestionsFromAPI(50);
         if (batch.length > 0) {
             allFetched.push(...batch);
@@ -332,15 +382,20 @@ async function initializeQuestions() {
         await new Promise(resolve => setTimeout(resolve, 200));
     }
     
-    if (allFetched.length > 0) {
+    // MEZCLAR ambas fuentes
+    const mixedQuestions = [...selectedSpanish, ...allFetched.slice(0, apiCount)];
+    
+    if (mixedQuestions.length > 0) {
         // Hacer shuffle UNA VEZ al cargar
-        allQuestions = shuffleArray(allFetched);
-        console.log(`✅ Sistema listo con ${allQuestions.length} preguntas FÁCILES traducidas`);
-        console.log(`🎮 Preguntas de dificultad BAJA para mejor experiencia!`);
+        allQuestions = shuffleArray(mixedQuestions);
+        console.log(`✅ Sistema listo con ${allQuestions.length} preguntas totales`);
+        console.log(`   🇪🇸 ${spanishCount} en español nativo (40%)`);
+        console.log(`   🌐 ${allFetched.length} traducidas fáciles (60%)`);
+        console.log(`🎮 ¡Preguntas FÁCILES para mejor experiencia!`);
     } else {
-        // Usar preguntas locales como respaldo
-        allQuestions = shuffleArray(loadLocalQuestions());
-        console.log(`📁 Sistema usando ${allQuestions.length} preguntas locales`);
+        // Usar solo españolas como respaldo
+        allQuestions = shuffleArray(spanishQuestions);
+        console.log(`📁 Sistema usando ${allQuestions.length} preguntas españolas`);
     }
 }
 
@@ -349,20 +404,33 @@ async function refillQuestionsIfNeeded() {
     if (allQuestions.length < REFILL_THRESHOLD) {
         console.log(`🔄 Recargando preguntas (quedan ${allQuestions.length})...`);
         
-        // Descargar 100 preguntas en 2 lotes de 50
+        // Mezcla: 40% español + 60% APIs (de 100 preguntas)
+        const spanishRefill = 40;
+        const apiRefill = 60;
+        
+        // Tomar más preguntas españolas del pool
+        const availableSpanish = spanishQuestions.filter(sq => 
+            !allQuestions.some(aq => aq.question === sq.question)
+        );
+        const selectedSpanish = shuffleArray(availableSpanish).slice(0, spanishRefill);
+        
+        // Descargar de APIs
         const allFetched = [];
-        for (let i = 0; i < 2; i++) {
+        const batches = Math.ceil(apiRefill / 50);
+        for (let i = 0; i < batches; i++) {
             const batch = await fetchQuestionsFromAPI(50);
             if (batch.length > 0) {
                 allFetched.push(...batch);
             }
         }
         
-        if (allFetched.length > 0) {
-            // Hacer shuffle de las nuevas preguntas y añadirlas
-            const shuffledNew = shuffleArray(allFetched);
+        // Mezclar y añadir
+        const newQuestions = [...selectedSpanish, ...allFetched.slice(0, apiRefill)];
+        
+        if (newQuestions.length > 0) {
+            const shuffledNew = shuffleArray(newQuestions);
             allQuestions.push(...shuffledNew);
-            console.log(`✅ Agregadas ${allFetched.length} preguntas nuevas. Total: ${allQuestions.length}`);
+            console.log(`✅ Agregadas ${newQuestions.length} preguntas (${selectedSpanish.length} español + ${allFetched.slice(0, apiRefill).length} API). Total: ${allQuestions.length}`);
         }
     }
 }
