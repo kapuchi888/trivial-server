@@ -809,23 +809,7 @@
             </p>
             <button class="history-btn" onclick="toggleHistory()">📊 Ver Historial</button>
             
-            <h3 style="text-align: center; margin: 25px 0 15px 0; color: rgba(255, 255, 255, 0.95); font-size: 20px; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.3);">
-                Selecciona el modo
-            </h3>
-            <div class="mode-selector">
-                <div class="mode-btn selected" onclick="selectMode('normal')">
-                    <div class="mode-icon">⚡</div>
-                    <div class="mode-name">Normal</div>
-                    <div class="mode-desc">15 preguntas</div>
-                </div>
-                <div class="mode-btn" onclick="selectMode('quick')">
-                    <div class="mode-icon">🚀</div>
-                    <div class="mode-name">Rápido</div>
-                    <div class="mode-desc">5 preguntas</div>
-                </div>
-            </div>
-            
-            <input type="text" id="playerName" placeholder="✨ Escribe tu nombre" maxlength="20">
+            <input type="text" id="playerName" placeholder="✨ Escribe tu nombre" maxlength="20" style="margin-top: 30px;">
             <button class="btn-primary" onclick="createRoom()">
                 <span style="position: relative; z-index: 1;">🌐 Multijugador Online</span>
             </button>
@@ -1045,9 +1029,10 @@
         // SISTEMA DE HISTORIAL
         function saveMatch(result) {
             var matches = JSON.parse(localStorage.getItem('trivialHistory') || '[]');
+            var modeText = totalRounds > 1 ? `${totalRounds} rondas × ${questionsPerRound}` : `${questionsPerRound} preguntas`;
             matches.unshift({
                 date: new Date().toLocaleString('es-ES'),
-                mode: gameMode === 'quick' ? 'Rápido' : 'Normal',
+                mode: modeText,
                 result: result.won ? 'Victoria' : 'Derrota',
                 score: result.myScore,
                 opponent: result.opponentName,
