@@ -7698,5 +7698,3305 @@
     ],
     "category": "Matemáticas",
     "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién dirigió 'Volver' con Penélope Cruz?",
+    "correct_answer": "Pedro Almodóvar",
+    "incorrect_answers": [
+      "Alejandro Amenábar",
+      "Fernando Trueba",
+      "José Luis Garci"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué película española ganó el Óscar en 2000?",
+    "correct_answer": "Todo sobre mi madre",
+    "incorrect_answers": [
+      "Mar adentro",
+      "Belle Époque",
+      "Volver"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién dirigió 'Los otros' con Nicole Kidman?",
+    "correct_answer": "Alejandro Amenábar",
+    "incorrect_answers": [
+      "Pedro Almodóvar",
+      "Alex de la Iglesia",
+      "J.A. Bayona"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actor español ganó el Óscar por 'No es país para viejos'?",
+    "correct_answer": "Javier Bardem",
+    "incorrect_answers": [
+      "Antonio Banderas",
+      "Benicio del Toro",
+      "Penélope Cruz"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién dirigió 'El laberinto del fauno'?",
+    "correct_answer": "Guillermo del Toro",
+    "incorrect_answers": [
+      "Alejandro Amenábar",
+      "Pedro Almodóvar",
+      "J.A. Bayona"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué película española sale Antonio Banderas como Zorro?",
+    "correct_answer": "La máscara del Zorro",
+    "incorrect_answers": [
+      "El Zorro",
+      "Desperado",
+      "Los cuatro mosqueteros"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué director español hizo 'Belle Époque'?",
+    "correct_answer": "Fernando Trueba",
+    "incorrect_answers": [
+      "Pedro Almodóvar",
+      "José Luis Garci",
+      "Fernando León"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué película española ganó la Palma de Oro en Cannes en 1999?",
+    "correct_answer": "Todo sobre mi madre",
+    "incorrect_answers": [
+      "Hable con ella",
+      "Volver",
+      "Los amantes pasajeros"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué director español hizo 'Torrente'?",
+    "correct_answer": "Santiago Segura",
+    "incorrect_answers": [
+      "Alex de la Iglesia",
+      "Jaume Balagueró",
+      "Álex de la Iglesia"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántas películas de Torrente se han hecho?",
+    "correct_answer": "5",
+    "incorrect_answers": [
+      "3",
+      "4",
+      "6"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién dirigió 'Ocho apellidos vascos'?",
+    "correct_answer": "Emilio Martínez-Lázaro",
+    "incorrect_answers": [
+      "Santiago Segura",
+      "Fernando León",
+      "Nacho Vigalondo"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actor protagoniza 'Ocho apellidos vascos'?",
+    "correct_answer": "Dani Rovira",
+    "incorrect_answers": [
+      "Karra Elejalde",
+      "Alberto López",
+      "Carlos Areces"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad transcurre 'Vicky Cristina Barcelona'?",
+    "correct_answer": "Barcelona",
+    "incorrect_answers": [
+      "Madrid",
+      "Sevilla",
+      "Valencia"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién dirigió 'Vicky Cristina Barcelona'?",
+    "correct_answer": "Woody Allen",
+    "incorrect_answers": [
+      "Pedro Almodóvar",
+      "Alejandro Amenábar",
+      "Ridley Scott"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué actriz española ganó el Óscar por 'Vicky Cristina Barcelona'?",
+    "correct_answer": "Penélope Cruz",
+    "incorrect_answers": [
+      "Carmen Maura",
+      "Victoria Abril",
+      "Rossy de Palma"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién dirigió 'REC'?",
+    "correct_answer": "Jaume Balagueró y Paco Plaza",
+    "incorrect_answers": [
+      "Alejandro Amenábar",
+      "J.A. Bayona",
+      "Alex de la Iglesia"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué género es la película 'REC'?",
+    "correct_answer": "Terror",
+    "incorrect_answers": [
+      "Comedia",
+      "Drama",
+      "Acción"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién protagonizó 'Mar adentro'?",
+    "correct_answer": "Javier Bardem",
+    "incorrect_answers": [
+      "Antonio Banderas",
+      "Eduardo Noriega",
+      "Sergi López"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué película española trata sobre eutanasia?",
+    "correct_answer": "Mar adentro",
+    "incorrect_answers": [
+      "Los otros",
+      "Todo sobre mi madre",
+      "Hable con ella"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién dirigió 'El orfanato'?",
+    "correct_answer": "J.A. Bayona",
+    "incorrect_answers": [
+      "Alejandro Amenábar",
+      "Jaume Balagueró",
+      "Guillermo del Toro"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actor español salió en 'Piratas del Caribe'?",
+    "correct_answer": "Penélope Cruz",
+    "incorrect_answers": [
+      "Antonio Banderas",
+      "Javier Bardem",
+      "Ambos"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién protagonizó 'La piel que habito'?",
+    "correct_answer": "Antonio Banderas",
+    "incorrect_answers": [
+      "Javier Bardem",
+      "Eduardo Noriega",
+      "Sergi López"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué director español hizo 'Hable con ella'?",
+    "correct_answer": "Pedro Almodóvar",
+    "incorrect_answers": [
+      "Alejandro Amenábar",
+      "Fernando Trueba",
+      "José Luis Garci"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué película de Almodóvar ganó el Óscar a Mejor Película Extranjera?",
+    "correct_answer": "Todo sobre mi madre",
+    "incorrect_answers": [
+      "Hable con ella",
+      "Volver",
+      "Mujeres al borde"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién es la actriz fetiche de Almodóvar?",
+    "correct_answer": "Carmen Maura",
+    "incorrect_answers": [
+      "Victoria Abril",
+      "Rossy de Palma",
+      "Penélope Cruz"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué año se estrenó 'Todo sobre mi madre'?",
+    "correct_answer": "1999",
+    "incorrect_answers": [
+      "1998",
+      "2000",
+      "2001"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué película española trata sobre el franquismo?",
+    "correct_answer": "El laberinto del fauno",
+    "incorrect_answers": [
+      "Los otros",
+      "Mar adentro",
+      "Belle Époque"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién dirigió 'Lo imposible' sobre el tsunami?",
+    "correct_answer": "J.A. Bayona",
+    "incorrect_answers": [
+      "Alejandro Amenábar",
+      "Pedro Almodóvar",
+      "Fernando León"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actriz española protagonizó 'Lo imposible'?",
+    "correct_answer": "Naomi Watts",
+    "incorrect_answers": [
+      "Penélope Cruz",
+      "Belén Rueda",
+      "Carmen Maura"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es el grupo Héroes del Silencio?",
+    "correct_answer": "Zaragoza",
+    "incorrect_answers": [
+      "Madrid",
+      "Barcelona",
+      "Valencia"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién es el cantante de Héroes del Silencio?",
+    "correct_answer": "Enrique Bunbury",
+    "incorrect_answers": [
+      "Joaquín Sabina",
+      "Miguel Ríos",
+      "Manolo García"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué canción famosa tiene Mecano sobre Nueva York?",
+    "correct_answer": "Un año más",
+    "incorrect_answers": [
+      "Hijo de la luna",
+      "Mujer contra mujer",
+      "Cruz de navajas"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién cantaba 'Hijo de la luna'?",
+    "correct_answer": "Mecano",
+    "incorrect_answers": [
+      "Hombres G",
+      "La Oreja de Van Gogh",
+      "Amaral"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué estilo musical canta Rosalía?",
+    "correct_answer": "Flamenco fusión",
+    "incorrect_answers": [
+      "Pop",
+      "Rock",
+      "Reggaeton"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién cantaba 'La flaca'?",
+    "correct_answer": "Jarabe de Palo",
+    "incorrect_answers": [
+      "Estopa",
+      "Amaral",
+      "Pereza"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde es el grupo Estopa?",
+    "correct_answer": "Barcelona (Cornellà)",
+    "incorrect_answers": [
+      "Madrid",
+      "Sevilla",
+      "Valencia"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quiénes son los hermanos de Estopa?",
+    "correct_answer": "David y José Muñoz",
+    "incorrect_answers": [
+      "Álex y David",
+      "Juan y José",
+      "Carlos y David"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué cantante español tiene más ventas?",
+    "correct_answer": "Julio Iglesias",
+    "incorrect_answers": [
+      "Alejandro Sanz",
+      "Enrique Iglesias",
+      "David Bisbal"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién es el hijo de Julio Iglesias cantante?",
+    "correct_answer": "Enrique Iglesias",
+    "incorrect_answers": [
+      "David Bisbal",
+      "Pablo Alborán",
+      "Alejandro Sanz"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde es Pablo Alborán?",
+    "correct_answer": "Málaga",
+    "incorrect_answers": [
+      "Sevilla",
+      "Granada",
+      "Cádiz"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué guitarrista flamenco era conocido como 'Paco de Lucía'?",
+    "correct_answer": "Francisco Sánchez",
+    "incorrect_answers": [
+      "Vicente Amigo",
+      "Tomatito",
+      "Manolo Sanlúcar"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde era Paco de Lucía?",
+    "correct_answer": "Algeciras",
+    "incorrect_answers": [
+      "Sevilla",
+      "Jerez",
+      "Málaga"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién fue Camarón de la Isla?",
+    "correct_answer": "Cantante flamenco",
+    "incorrect_answers": [
+      "Guitarrista",
+      "Bailaor",
+      "Torero"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde era Camarón de la Isla?",
+    "correct_answer": "San Fernando (Cádiz)",
+    "incorrect_answers": [
+      "Sevilla",
+      "Jerez",
+      "Málaga"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué grupo español cantaba 'Devórame otra vez'?",
+    "correct_answer": "Lalo Rodríguez",
+    "incorrect_answers": [
+      "Hombres G",
+      "Mecano",
+      "La Unión"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién cantaba 'A quién le importa'?",
+    "correct_answer": "Alaska y Dinarama",
+    "incorrect_answers": [
+      "Mecano",
+      "Nacha Pop",
+      "Radio Futura"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es el grupo Amaral?",
+    "correct_answer": "Zaragoza",
+    "incorrect_answers": [
+      "Madrid",
+      "Barcelona",
+      "Valencia"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién es la cantante de Amaral?",
+    "correct_answer": "Eva Amaral",
+    "incorrect_answers": [
+      "Amaia Montero",
+      "Bebe",
+      "Malú"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde es La Oreja de Van Gogh?",
+    "correct_answer": "San Sebastián",
+    "incorrect_answers": [
+      "Bilbao",
+      "Pamplona",
+      "Vitoria"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién fue la primera cantante de La Oreja de Van Gogh?",
+    "correct_answer": "Amaia Montero",
+    "incorrect_answers": [
+      "Leire Martínez",
+      "Eva Amaral",
+      "Bebe"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué cantante español participó en Eurovisión 2022?",
+    "correct_answer": "Chanel",
+    "incorrect_answers": [
+      "Rosalía",
+      "Aitana",
+      "Lola Índigo"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Con qué canción ganó España Eurovisión en 1968?",
+    "correct_answer": "La la la",
+    "incorrect_answers": [
+      "Vivo cantando",
+      "Eres tú",
+      "Bailemos un vals"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién ganó Eurovisión para España en 1968?",
+    "correct_answer": "Massiel",
+    "incorrect_answers": [
+      "Salomé",
+      "Mocedades",
+      "Karina"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué grupo español cantaba 'Corazón partío'?",
+    "correct_answer": "Alejandro Sanz",
+    "incorrect_answers": [
+      "David Bisbal",
+      "Pablo Alborán",
+      "Manuel Carrasco"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde es Joaquín Sabina?",
+    "correct_answer": "Úbeda (Jaén)",
+    "incorrect_answers": [
+      "Madrid",
+      "Sevilla",
+      "Granada"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué cantante español tiene más Grammy Latinos?",
+    "correct_answer": "Alejandro Sanz",
+    "incorrect_answers": [
+      "Enrique Iglesias",
+      "Juanes",
+      "Shakira"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es el cantante David Bisbal?",
+    "correct_answer": "Almería",
+    "incorrect_answers": [
+      "Málaga",
+      "Granada",
+      "Murcia"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué programa salió a la fama David Bisbal?",
+    "correct_answer": "Operación Triunfo",
+    "incorrect_answers": [
+      "La Voz",
+      "Factor X",
+      "Got Talent"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fue Isabel la Católica?",
+    "correct_answer": "Reina de Castilla",
+    "incorrect_answers": [
+      "Reina de Aragón",
+      "Emperatriz",
+      "Infanta"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Con quién se casó Isabel la Católica?",
+    "correct_answer": "Fernando de Aragón",
+    "incorrect_answers": [
+      "Carlos V",
+      "Felipe II",
+      "Enrique IV"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fue Carlos V de España?",
+    "correct_answer": "Emperador del Sacro Imperio",
+    "incorrect_answers": [
+      "Rey de Francia",
+      "Papa",
+      "Duque"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué rey español se llamaba 'El Prudente'?",
+    "correct_answer": "Felipe II",
+    "incorrect_answers": [
+      "Carlos V",
+      "Felipe III",
+      "Felipe IV"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Bajo qué rey se construyó El Escorial?",
+    "correct_answer": "Felipe II",
+    "incorrect_answers": [
+      "Carlos V",
+      "Felipe III",
+      "Carlos III"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién fue el último rey de la dinastía de los Austrias?",
+    "correct_answer": "Carlos II",
+    "incorrect_answers": [
+      "Felipe IV",
+      "Felipe V",
+      "Carlos III"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué rey español empezó la dinastía de los Borbones?",
+    "correct_answer": "Felipe V",
+    "incorrect_answers": [
+      "Carlos III",
+      "Fernando VI",
+      "Carlos IV"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué navegante español dio la primera vuelta al mundo?",
+    "correct_answer": "Juan Sebastián Elcano",
+    "incorrect_answers": [
+      "Cristóbal Colón",
+      "Hernán Cortés",
+      "Francisco Pizarro"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién inició la vuelta al mundo que terminó Elcano?",
+    "correct_answer": "Fernando de Magallanes",
+    "incorrect_answers": [
+      "Cristóbal Colón",
+      "Vasco de Gama",
+      "Américo Vespucio"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde era Hernán Cortés?",
+    "correct_answer": "Extremadura",
+    "incorrect_answers": [
+      "Andalucía",
+      "Castilla",
+      "Aragón"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué imperio conquistó Hernán Cortés?",
+    "correct_answer": "Imperio Azteca",
+    "incorrect_answers": [
+      "Imperio Inca",
+      "Imperio Maya",
+      "Imperio Olmeca"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién conquistó el Imperio Inca?",
+    "correct_answer": "Francisco Pizarro",
+    "incorrect_answers": [
+      "Hernán Cortés",
+      "Diego de Almagro",
+      "Pedro de Valdivia"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde era Francisco Pizarro?",
+    "correct_answer": "Extremadura",
+    "incorrect_answers": [
+      "Andalucía",
+      "Castilla",
+      "León"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué rey español abdicó en 2014?",
+    "correct_answer": "Juan Carlos I",
+    "incorrect_answers": [
+      "Felipe VI",
+      "Alfonso XIII",
+      "Juan de Borbón"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué año fue proclamado rey Felipe VI?",
+    "correct_answer": "2014",
+    "incorrect_answers": [
+      "2013",
+      "2015",
+      "2016"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién fue Rodrigo Díaz de Vivar?",
+    "correct_answer": "El Cid Campeador",
+    "incorrect_answers": [
+      "Don Pelayo",
+      "Alfonso VI",
+      "Fernando III"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde era El Cid?",
+    "correct_answer": "Burgos",
+    "incorrect_answers": [
+      "Toledo",
+      "León",
+      "Valencia"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué ciudad murió El Cid?",
+    "correct_answer": "Valencia",
+    "incorrect_answers": [
+      "Burgos",
+      "Toledo",
+      "Zaragoza"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién fue Don Pelayo?",
+    "correct_answer": "Primer rey de Asturias",
+    "incorrect_answers": [
+      "Rey de León",
+      "Rey de Castilla",
+      "Emperador"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué reina española fue conocida como 'La Loca'?",
+    "correct_answer": "Juana I de Castilla",
+    "incorrect_answers": [
+      "Isabel II",
+      "María Cristina",
+      "Isabel la Católica"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién fue el marido de Juana la Loca?",
+    "correct_answer": "Felipe el Hermoso",
+    "incorrect_answers": [
+      "Carlos V",
+      "Fernando de Aragón",
+      "Enrique VIII"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué dictador español mandó en el siglo XX?",
+    "correct_answer": "Francisco Franco",
+    "incorrect_answers": [
+      "Miguel Primo de Rivera",
+      "José Antonio",
+      "Manuel Azaña"
+    ],
+    "category": "Historia",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos años duró la dictadura de Franco?",
+    "correct_answer": "36 años (1939-1975)",
+    "incorrect_answers": [
+      "30 años",
+      "40 años",
+      "25 años"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién fue presidente de la Segunda República?",
+    "correct_answer": "Manuel Azaña",
+    "incorrect_answers": [
+      "Niceto Alcalá-Zamora",
+      "Francisco Franco",
+      "José Antonio"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué político español firmó la Constitución de 1978?",
+    "correct_answer": "Adolfo Suárez",
+    "incorrect_answers": [
+      "Felipe González",
+      "José María Aznar",
+      "Santiago Carrillo"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién fue el primer presidente del Gobierno democrático?",
+    "correct_answer": "Adolfo Suárez",
+    "incorrect_answers": [
+      "Felipe González",
+      "Leopoldo Calvo-Sotelo",
+      "José María Aznar"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué presidente español estuvo más años en el cargo?",
+    "correct_answer": "Felipe González",
+    "incorrect_answers": [
+      "José María Aznar",
+      "Mariano Rajoy",
+      "Adolfo Suárez"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuántos años gobernó Felipe González?",
+    "correct_answer": "14 años (1982-1996)",
+    "incorrect_answers": [
+      "10 años",
+      "12 años",
+      "16 años"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién fue Santiago Ramón y Cajal?",
+    "correct_answer": "Premio Nobel de Medicina",
+    "incorrect_answers": [
+      "Escritor",
+      "Pintor",
+      "Político"
+    ],
+    "category": "Historia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es la fabada?",
+    "correct_answer": "Asturias",
+    "incorrect_answers": [
+      "Galicia",
+      "Cantabria",
+      "País Vasco"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué ingrediente principal tiene la fabada?",
+    "correct_answer": "Fabes (judías)",
+    "incorrect_answers": [
+      "Lentejas",
+      "Garbanzos",
+      "Guisantes"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde es el pulpo a feira?",
+    "correct_answer": "Galicia",
+    "incorrect_answers": [
+      "Asturias",
+      "Cantabria",
+      "País Vasco"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué ingrediente lleva el pulpo a feira?",
+    "correct_answer": "Pimentón",
+    "incorrect_answers": [
+      "Azafrán",
+      "Curry",
+      "Pimiento"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde son los calçots?",
+    "correct_answer": "Cataluña",
+    "incorrect_answers": [
+      "Valencia",
+      "Aragón",
+      "Baleares"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Con qué salsa se comen los calçots?",
+    "correct_answer": "Romesco",
+    "incorrect_answers": [
+      "Alioli",
+      "Brava",
+      "Verde"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es el cocido madrileño?",
+    "correct_answer": "Madrid",
+    "incorrect_answers": [
+      "Castilla",
+      "Toledo",
+      "Segovia"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué legumbre lleva el cocido madrileño?",
+    "correct_answer": "Garbanzos",
+    "incorrect_answers": [
+      "Lentejas",
+      "Judías",
+      "Guisantes"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde es el gazpacho andaluz?",
+    "correct_answer": "Andalucía",
+    "incorrect_answers": [
+      "Extremadura",
+      "Murcia",
+      "Valencia"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué verdura es la base del gazpacho?",
+    "correct_answer": "Tomate",
+    "incorrect_answers": [
+      "Pepino",
+      "Pimiento",
+      "Cebolla"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde es el salmorejo?",
+    "correct_answer": "Córdoba",
+    "incorrect_answers": [
+      "Sevilla",
+      "Granada",
+      "Málaga"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué se diferencia el salmorejo del gazpacho?",
+    "correct_answer": "Es más espeso",
+    "incorrect_answers": [
+      "Lleva ajo",
+      "Lleva tomate",
+      "Es frío"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es la tortilla de patatas?",
+    "correct_answer": "Toda España",
+    "incorrect_answers": [
+      "Madrid",
+      "País Vasco",
+      "Castilla"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué ingredientes básicos tiene la tortilla española?",
+    "correct_answer": "Huevo, patata, cebolla",
+    "incorrect_answers": [
+      "Solo huevo y patata",
+      "Huevo y chorizo",
+      "Patata y pimiento"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde son las migas?",
+    "correct_answer": "Varias regiones",
+    "incorrect_answers": [
+      "Extremadura",
+      "Castilla",
+      "Aragón"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es el marmitako?",
+    "correct_answer": "País Vasco",
+    "incorrect_answers": [
+      "Galicia",
+      "Asturias",
+      "Cantabria"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué pescado lleva el marmitako?",
+    "correct_answer": "Bonito",
+    "incorrect_answers": [
+      "Bacalao",
+      "Atún",
+      "Merluza"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es el pisto manchego?",
+    "correct_answer": "Castilla-La Mancha",
+    "incorrect_answers": [
+      "Murcia",
+      "Extremadura",
+      "Andalucía"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué verduras lleva el pisto?",
+    "correct_answer": "Tomate, pimiento, calabacín",
+    "incorrect_answers": [
+      "Solo tomate",
+      "Berenjena solo",
+      "Patata y cebolla"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde son las croquetas?",
+    "correct_answer": "Toda España",
+    "incorrect_answers": [
+      "Madrid",
+      "País Vasco",
+      "Cataluña"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde es el ajo blanco?",
+    "correct_answer": "Málaga",
+    "incorrect_answers": [
+      "Granada",
+      "Sevilla",
+      "Córdoba"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué fruto seco lleva el ajo blanco?",
+    "correct_answer": "Almendras",
+    "incorrect_answers": [
+      "Nueces",
+      "Piñones",
+      "Avellanas"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es el arroz a banda?",
+    "correct_answer": "Valencia/Alicante",
+    "incorrect_answers": [
+      "Murcia",
+      "Cataluña",
+      "Baleares"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es el rabo de toro?",
+    "correct_answer": "Córdoba",
+    "incorrect_answers": [
+      "Sevilla",
+      "Madrid",
+      "Salamanca"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es el zarangollo?",
+    "correct_answer": "Murcia",
+    "incorrect_answers": [
+      "Valencia",
+      "Andalucía",
+      "Extremadura"
+    ],
+    "category": "Gastronomía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué río pasa por Zaragoza?",
+    "correct_answer": "Ebro",
+    "incorrect_answers": [
+      "Duero",
+      "Tajo",
+      "Jalón"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué río pasa por Sevilla?",
+    "correct_answer": "Guadalquivir",
+    "incorrect_answers": [
+      "Tajo",
+      "Guadiana",
+      "Genil"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué río pasa por Toledo?",
+    "correct_answer": "Tajo",
+    "incorrect_answers": [
+      "Guadiana",
+      "Júcar",
+      "Duero"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué río pasa por Salamanca?",
+    "correct_answer": "Tormes",
+    "incorrect_answers": [
+      "Duero",
+      "Tajo",
+      "Esla"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué río pasa por Valladolid?",
+    "correct_answer": "Pisuerga",
+    "incorrect_answers": [
+      "Duero",
+      "Esla",
+      "Tormes"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué río desemboca en Valencia?",
+    "correct_answer": "Turia",
+    "incorrect_answers": [
+      "Júcar",
+      "Segura",
+      "Mijares"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué río pasa por Córdoba?",
+    "correct_answer": "Guadalquivir",
+    "incorrect_answers": [
+      "Genil",
+      "Guadiana",
+      "Tajo"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Dónde desemboca el Ebro?",
+    "correct_answer": "Mar Mediterráneo",
+    "incorrect_answers": [
+      "Mar Cantábrico",
+      "Océano Atlántico",
+      "Mar de Alborán"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Dónde desemboca el Guadalquivir?",
+    "correct_answer": "Océano Atlántico",
+    "incorrect_answers": [
+      "Mar Mediterráneo",
+      "Mar Cantábrico",
+      "Mar de Alborán"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué río forma frontera con Portugal?",
+    "correct_answer": "Guadiana",
+    "incorrect_answers": [
+      "Tajo",
+      "Duero",
+      "Miño"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué río pasa por Mérida?",
+    "correct_answer": "Guadiana",
+    "incorrect_answers": [
+      "Tajo",
+      "Guadalquivir",
+      "Júcar"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es el lago más grande de España?",
+    "correct_answer": "Embalse de Alqueva",
+    "incorrect_answers": [
+      "Lago de Sanabria",
+      "Embalse de Buendía",
+      "Albufera de Valencia"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el lago de Sanabria?",
+    "correct_answer": "Zamora",
+    "incorrect_answers": [
+      "León",
+      "Salamanca",
+      "Orense"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué es la Albufera de Valencia?",
+    "correct_answer": "Laguna costera",
+    "incorrect_answers": [
+      "Río",
+      "Mar",
+      "Pantano"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué río pasa por Pamplona?",
+    "correct_answer": "Arga",
+    "incorrect_answers": [
+      "Ebro",
+      "Jalón",
+      "Aragón"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué río pasa por Burgos?",
+    "correct_answer": "Arlanzón",
+    "incorrect_answers": [
+      "Duero",
+      "Pisuerga",
+      "Esla"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué río pasa por Granada?",
+    "correct_answer": "Genil",
+    "incorrect_answers": [
+      "Guadalquivir",
+      "Guadiana",
+      "Júcar"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde desemboca el Tajo?",
+    "correct_answer": "Lisboa (Portugal)",
+    "incorrect_answers": [
+      "España",
+      "Cádiz",
+      "Huelva"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué río pasa por Cáceres?",
+    "correct_answer": "Tajo",
+    "incorrect_answers": [
+      "Guadiana",
+      "Guadalquivir",
+      "Duero"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es la montaña más alta de España?",
+    "correct_answer": "Teide",
+    "incorrect_answers": [
+      "Mulhacén",
+      "Aneto",
+      "Veleta"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos metros tiene el Teide?",
+    "correct_answer": "3718 metros",
+    "incorrect_answers": [
+      "3500 metros",
+      "4000 metros",
+      "3300 metros"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es la montaña más alta de la Península Ibérica?",
+    "correct_answer": "Mulhacén",
+    "incorrect_answers": [
+      "Teide",
+      "Aneto",
+      "Veleta"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué sierra está el Mulhacén?",
+    "correct_answer": "Sierra Nevada",
+    "incorrect_answers": [
+      "Sierra de Gredos",
+      "Pirineos",
+      "Picos de Europa"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos metros tiene el Mulhacén?",
+    "correct_answer": "3479 metros",
+    "incorrect_answers": [
+      "3500 metros",
+      "3300 metros",
+      "3600 metros"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué provincia está Sierra Nevada?",
+    "correct_answer": "Granada",
+    "incorrect_answers": [
+      "Málaga",
+      "Almería",
+      "Jaén"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el pico más alto de los Pirineos?",
+    "correct_answer": "Aneto",
+    "incorrect_answers": [
+      "Monte Perdido",
+      "Posets",
+      "Vignemale"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué provincia está el Aneto?",
+    "correct_answer": "Huesca",
+    "incorrect_answers": [
+      "Lleida",
+      "Girona",
+      "Zaragoza"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuántos metros tiene el Aneto?",
+    "correct_answer": "3404 metros",
+    "incorrect_answers": [
+      "3500 metros",
+      "3300 metros",
+      "3200 metros"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde están los Picos de Europa?",
+    "correct_answer": "Asturias, León y Cantabria",
+    "incorrect_answers": [
+      "Galicia",
+      "País Vasco",
+      "Pirineos"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el pico más alto de los Picos de Europa?",
+    "correct_answer": "Torre Cerredo",
+    "incorrect_answers": [
+      "Naranjo de Bulnes",
+      "Peña Vieja",
+      "Torrecerredo"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Parque Nacional de Ordesa?",
+    "correct_answer": "Huesca",
+    "incorrect_answers": [
+      "Lleida",
+      "Zaragoza",
+      "Teruel"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Parque Nacional de Doñana?",
+    "correct_answer": "Huelva y Sevilla",
+    "incorrect_answers": [
+      "Cádiz",
+      "Córdoba",
+      "Málaga"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué animal protege Doñana?",
+    "correct_answer": "Lince ibérico",
+    "incorrect_answers": [
+      "Oso pardo",
+      "Lobo ibérico",
+      "Águila imperial"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Dónde está el Parque Nacional de Cabañeros?",
+    "correct_answer": "Ciudad Real y Toledo",
+    "incorrect_answers": [
+      "Cuenca",
+      "Guadalajara",
+      "Albacete"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Parque Nacional de Monfragüe?",
+    "correct_answer": "Cáceres",
+    "incorrect_answers": [
+      "Badajoz",
+      "Salamanca",
+      "Ávila"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué ave rapaz es típica de Monfragüe?",
+    "correct_answer": "Buitre negro",
+    "incorrect_answers": [
+      "Águila imperial",
+      "Milano real",
+      "Halcón peregrino"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Parque Nacional de Aigüestortes?",
+    "correct_answer": "Lleida",
+    "incorrect_answers": [
+      "Huesca",
+      "Girona",
+      "Barcelona"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Parque Nacional de Tablas de Daimiel?",
+    "correct_answer": "Ciudad Real",
+    "incorrect_answers": [
+      "Toledo",
+      "Cuenca",
+      "Albacete"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Parque Nacional de la Caldera de Taburiente?",
+    "correct_answer": "La Palma",
+    "incorrect_answers": [
+      "Tenerife",
+      "Gran Canaria",
+      "Lanzarote"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Parque Nacional del Timanfaya?",
+    "correct_answer": "Lanzarote",
+    "incorrect_answers": [
+      "Tenerife",
+      "Fuerteventura",
+      "Gran Canaria"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué caracteriza el Timanfaya?",
+    "correct_answer": "Paisaje volcánico",
+    "incorrect_answers": [
+      "Bosques",
+      "Lagos",
+      "Glaciares"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Dónde está el Parque Nacional de Garajonay?",
+    "correct_answer": "La Gomera",
+    "incorrect_answers": [
+      "El Hierro",
+      "La Palma",
+      "Tenerife"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué tipo de bosque tiene Garajonay?",
+    "correct_answer": "Laurisilva",
+    "incorrect_answers": [
+      "Pinos",
+      "Encinas",
+      "Robles"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actor español protagonizó 'La piel que habito'?",
+    "correct_answer": "Antonio Banderas",
+    "incorrect_answers": [
+      "Javier Bardem",
+      "Eduard Fernández",
+      "Sergi López"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde es Antonio Banderas?",
+    "correct_answer": "Málaga",
+    "incorrect_answers": [
+      "Sevilla",
+      "Granada",
+      "Cádiz"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué actriz española está casada con Javier Bardem?",
+    "correct_answer": "Penélope Cruz",
+    "incorrect_answers": [
+      "Victoria Abril",
+      "Carmen Maura",
+      "Belén Rueda"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué película trabajaron juntos Bardem y Cruz?",
+    "correct_answer": "Vicky Cristina Barcelona",
+    "incorrect_answers": [
+      "Los amantes pasajeros",
+      "Todo sobre mi madre",
+      "Hable con ella"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actriz española protagonizó 'El orfanato'?",
+    "correct_answer": "Belén Rueda",
+    "incorrect_answers": [
+      "Penélope Cruz",
+      "Victoria Abril",
+      "Carmen Maura"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actor español salió en 'Skyfall' de James Bond?",
+    "correct_answer": "Javier Bardem",
+    "incorrect_answers": [
+      "Antonio Banderas",
+      "Eduard Fernández",
+      "Sergi López"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué actriz trabajó en todas las películas de Almodóvar de los 80?",
+    "correct_answer": "Carmen Maura",
+    "incorrect_answers": [
+      "Victoria Abril",
+      "Rossy de Palma",
+      "Marisa Paredes"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién protagonizó 'Los lunes al sol'?",
+    "correct_answer": "Javier Bardem",
+    "incorrect_answers": [
+      "Antonio Banderas",
+      "Eduard Fernández",
+      "Luis Tosar"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actor español es conocido por '7 vidas'?",
+    "correct_answer": "Javier Cámara",
+    "incorrect_answers": [
+      "Paco León",
+      "Jorge Sanz",
+      "Antonio Resines"
+    ],
+    "category": "Series",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actriz protagoniza 'La Casa de Papel' como inspectora?",
+    "correct_answer": "Itziar Ituño",
+    "incorrect_answers": [
+      "Úrsula Corberó",
+      "Alba Flores",
+      "Esther Acebo"
+    ],
+    "category": "Series",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién interpreta a Tokio en La Casa de Papel?",
+    "correct_answer": "Úrsula Corberó",
+    "incorrect_answers": [
+      "Itziar Ituño",
+      "Alba Flores",
+      "Esther Acebo"
+    ],
+    "category": "Series",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién interpreta al Profesor en La Casa de Papel?",
+    "correct_answer": "Álvaro Morte",
+    "incorrect_answers": [
+      "Pedro Alonso",
+      "Jaime Lorente",
+      "Miguel Herrán"
+    ],
+    "category": "Series",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué actor español protagonizó 'The Impossible'?",
+    "correct_answer": "Ewan McGregor",
+    "incorrect_answers": [
+      "Javier Bardem",
+      "Antonio Banderas",
+      "Eduard Fernández"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actriz española está en 'Perdida' (Gone Girl)?",
+    "correct_answer": "Ninguna",
+    "incorrect_answers": [
+      "Penélope Cruz",
+      "Carmen Maura",
+      "Belén Rueda"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actor español salió en 'Pirates of the Caribbean'?",
+    "correct_answer": "Penélope Cruz",
+    "incorrect_answers": [
+      "Antonio Banderas",
+      "Javier Bardem",
+      "Ambos"
+    ],
+    "category": "Cine",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde es Javier Bardem?",
+    "correct_answer": "Las Palmas",
+    "incorrect_answers": [
+      "Madrid",
+      "Barcelona",
+      "Sevilla"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actor español es hijo de Pilar Bardem?",
+    "correct_answer": "Javier Bardem",
+    "incorrect_answers": [
+      "Antonio Banderas",
+      "Eduard Fernández",
+      "Carlos Bardem"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué hermano de Javier Bardem también es actor?",
+    "correct_answer": "Carlos Bardem",
+    "incorrect_answers": [
+      "Miguel Bardem",
+      "José Bardem",
+      "Luis Bardem"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué actriz española trabajó con Pedro Almodóvar desde los 80?",
+    "correct_answer": "Rossy de Palma",
+    "incorrect_answers": [
+      "Victoria Abril",
+      "Marisa Paredes",
+      "Cecilia Roth"
+    ],
+    "category": "Cine",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué youtuber español es el más seguido?",
+    "correct_answer": "El Rubius",
+    "incorrect_answers": [
+      "AuronPlay",
+      "Willyrex",
+      "Vegetta777"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde es El Rubius?",
+    "correct_answer": "Noruega (vive en España)",
+    "incorrect_answers": [
+      "Madrid",
+      "Barcelona",
+      "Valencia"
+    ],
+    "category": "Cultura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué streamer español es conocido por reacciones?",
+    "correct_answer": "Ibai Llanos",
+    "incorrect_answers": [
+      "El Rubius",
+      "AuronPlay",
+      "Willyrex"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De dónde es Ibai Llanos?",
+    "correct_answer": "Bilbao",
+    "incorrect_answers": [
+      "Barcelona",
+      "Madrid",
+      "San Sebastián"
+    ],
+    "category": "Cultura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué evento organiza Ibai cada año?",
+    "correct_answer": "La Velada del Año",
+    "incorrect_answers": [
+      "Los Premios Esland",
+      "La Velada de Boxeo",
+      "Los Gaming Awards"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué cantante español triunfó en Eurovisión 2022?",
+    "correct_answer": "Chanel",
+    "incorrect_answers": [
+      "Rosalía",
+      "Aitana",
+      "Ana Guerra"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué posición quedó Chanel en Eurovisión 2022?",
+    "correct_answer": "Tercera",
+    "incorrect_answers": [
+      "Primera",
+      "Segunda",
+      "Cuarta"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué rapero español es conocido por 'Bzrp Music Sessions'?",
+    "correct_answer": "Quevedo",
+    "incorrect_answers": [
+      "C. Tangana",
+      "Duki",
+      "Nicki Nicole"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es Quevedo?",
+    "correct_answer": "Canarias",
+    "incorrect_answers": [
+      "Madrid",
+      "Barcelona",
+      "Sevilla"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué canción de Quevedo fue viral en 2022?",
+    "correct_answer": "Quédate",
+    "incorrect_answers": [
+      "Cayó la noche",
+      "Columbia",
+      "Kassandra"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué cantante español es conocido por 'Ingobernable'?",
+    "correct_answer": "C. Tangana",
+    "incorrect_answers": [
+      "Quevedo",
+      "Bad Bunny",
+      "Rauw Alejandro"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es C. Tangana?",
+    "correct_answer": "Madrid",
+    "incorrect_answers": [
+      "Barcelona",
+      "Sevilla",
+      "Valencia"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué cantante salió de Operación Triunfo 2017?",
+    "correct_answer": "Aitana",
+    "incorrect_answers": [
+      "Ana Guerra",
+      "Amaia",
+      "Todas"
+    ],
+    "category": "Música",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién ganó Operación Triunfo 2017?",
+    "correct_answer": "Amaia",
+    "incorrect_answers": [
+      "Aitana",
+      "Ana Guerra",
+      "Alfred"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué dúo representó a España en Eurovisión 2018?",
+    "correct_answer": "Amaia y Alfred",
+    "incorrect_answers": [
+      "Aitana y Ana Guerra",
+      "Rosalía y C. Tangana",
+      "Amaral"
+    ],
+    "category": "Música",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué influencer española tiene más seguidores en Instagram?",
+    "correct_answer": "Georgina Rodríguez",
+    "incorrect_answers": [
+      "Paula Gonu",
+      "Dulceida",
+      "María Pombo"
+    ],
+    "category": "Cultura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Con quién está Georgina Rodríguez?",
+    "correct_answer": "Cristiano Ronaldo",
+    "incorrect_answers": [
+      "Sergio Ramos",
+      "Leo Messi",
+      "Karim Benzema"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué tiktoker español tiene más seguidores?",
+    "correct_answer": "Lola Lolita",
+    "incorrect_answers": [
+      "Nil Ojeda",
+      "Naim Darrechi",
+      "Paula Gonu"
+    ],
+    "category": "Cultura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué programa español de TV es viral en TikTok?",
+    "correct_answer": "First Dates",
+    "incorrect_answers": [
+      "MasterChef",
+      "La Voz",
+      "Got Talent"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué reality show español es más visto?",
+    "correct_answer": "Supervivientes",
+    "incorrect_answers": [
+      "Gran Hermano",
+      "La Isla de las Tentaciones",
+      "MasterChef"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué pintor está más representado en el Prado?",
+    "correct_answer": "Velázquez",
+    "incorrect_answers": [
+      "Goya",
+      "El Greco",
+      "Murillo"
+    ],
+    "category": "Arte",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Museo Reina Sofía?",
+    "correct_answer": "Madrid",
+    "incorrect_answers": [
+      "Barcelona",
+      "Sevilla",
+      "Valencia"
+    ],
+    "category": "Arte",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué obra famosa tiene el Reina Sofía?",
+    "correct_answer": "El Guernica",
+    "incorrect_answers": [
+      "Las Meninas",
+      "La maja desnuda",
+      "El jardín de las delicias"
+    ],
+    "category": "Arte",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿En qué ciudad hay OTRO Museo Picasso?",
+    "correct_answer": "Málaga",
+    "incorrect_answers": [
+      "Madrid",
+      "Valencia",
+      "Sevilla"
+    ],
+    "category": "Arte",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Museo Thyssen-Bornemisza?",
+    "correct_answer": "Madrid",
+    "incorrect_answers": [
+      "Barcelona",
+      "Sevilla",
+      "Valencia"
+    ],
+    "category": "Arte",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué tipo de museo es el Thyssen?",
+    "correct_answer": "Arte internacional",
+    "incorrect_answers": [
+      "Solo arte español",
+      "Arte contemporáneo",
+      "Escultura"
+    ],
+    "category": "Arte",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Museo Guggenheim?",
+    "correct_answer": "Bilbao",
+    "incorrect_answers": [
+      "San Sebastián",
+      "Madrid",
+      "Barcelona"
+    ],
+    "category": "Arte",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién diseñó el Guggenheim de Bilbao?",
+    "correct_answer": "Frank Gehry",
+    "incorrect_answers": [
+      "Santiago Calatrava",
+      "Norman Foster",
+      "Zaha Hadid"
+    ],
+    "category": "Arte",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Museo Nacional de Arte de Cataluña?",
+    "correct_answer": "Barcelona",
+    "incorrect_answers": [
+      "Tarragona",
+      "Girona",
+      "Lleida"
+    ],
+    "category": "Arte",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Museo de Bellas Artes más importante después del Prado?",
+    "correct_answer": "Sevilla",
+    "incorrect_answers": [
+      "Valencia",
+      "Bilbao",
+      "Granada"
+    ],
+    "category": "Arte",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Museo Arqueológico Nacional?",
+    "correct_answer": "Madrid",
+    "incorrect_answers": [
+      "Barcelona",
+      "Sevilla",
+      "Toledo"
+    ],
+    "category": "Arte",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde está el Museo de la Alhambra?",
+    "correct_answer": "Granada",
+    "incorrect_answers": [
+      "Sevilla",
+      "Córdoba",
+      "Málaga"
+    ],
+    "category": "Arte",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Dónde está el Museo Dalí?",
+    "correct_answer": "Figueres",
+    "incorrect_answers": [
+      "Barcelona",
+      "Girona",
+      "Cadaqués"
+    ],
+    "category": "Arte",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es la capital de Álava?",
+    "correct_answer": "Vitoria",
+    "incorrect_answers": [
+      "Bilbao",
+      "San Sebastián",
+      "Pamplona"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es la capital de Cáceres?",
+    "correct_answer": "Cáceres",
+    "incorrect_answers": [
+      "Badajoz",
+      "Mérida",
+      "Trujillo"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Castellón?",
+    "correct_answer": "Castellón de la Plana",
+    "incorrect_answers": [
+      "Valencia",
+      "Alicante",
+      "Benicàssim"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Ciudad Real?",
+    "correct_answer": "Ciudad Real",
+    "incorrect_answers": [
+      "Toledo",
+      "Albacete",
+      "Cuenca"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Girona?",
+    "correct_answer": "Girona",
+    "incorrect_answers": [
+      "Barcelona",
+      "Lleida",
+      "Tarragona"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Guipúzcoa?",
+    "correct_answer": "San Sebastián",
+    "incorrect_answers": [
+      "Bilbao",
+      "Vitoria",
+      "Pamplona"
+    ],
+    "category": "Geografía",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es la capital de La Coruña?",
+    "correct_answer": "La Coruña",
+    "incorrect_answers": [
+      "Santiago",
+      "Vigo",
+      "Ferrol"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Las Palmas?",
+    "correct_answer": "Las Palmas de Gran Canaria",
+    "incorrect_answers": [
+      "Santa Cruz de Tenerife",
+      "Arrecife",
+      "Puerto del Rosario"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Lleida?",
+    "correct_answer": "Lleida",
+    "incorrect_answers": [
+      "Barcelona",
+      "Tarragona",
+      "Girona"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Orense?",
+    "correct_answer": "Orense",
+    "incorrect_answers": [
+      "Lugo",
+      "Vigo",
+      "Pontevedra"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Pontevedra?",
+    "correct_answer": "Pontevedra",
+    "incorrect_answers": [
+      "Vigo",
+      "Santiago",
+      "Ourense"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la capital de Santa Cruz de Tenerife?",
+    "correct_answer": "Santa Cruz de Tenerife",
+    "incorrect_answers": [
+      "Las Palmas",
+      "La Laguna",
+      "Puerto de la Cruz"
+    ],
+    "category": "Geografía",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué colores es la bandera de España?",
+    "correct_answer": "Roja y amarilla",
+    "incorrect_answers": [
+      "Roja y azul",
+      "Verde y roja",
+      "Amarilla y azul"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué animal tiene el escudo de España?",
+    "correct_answer": "León",
+    "incorrect_answers": [
+      "Águila",
+      "Toro",
+      "Oso"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántas franjas tiene la bandera española?",
+    "correct_answer": "3",
+    "incorrect_answers": [
+      "2",
+      "4",
+      "5"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué representa el escudo de España?",
+    "correct_answer": "Los reinos históricos",
+    "incorrect_answers": [
+      "Las provincias",
+      "Las ciudades",
+      "Los ríos"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De qué color es la cruz de la bandera catalana?",
+    "correct_answer": "Amarilla y roja",
+    "incorrect_answers": [
+      "Azul y roja",
+      "Verde y amarilla",
+      "Blanca y roja"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué símbolo tiene la bandera de Andalucía?",
+    "correct_answer": "Escudo con Hércules",
+    "incorrect_answers": [
+      "León",
+      "Castillo",
+      "Águila"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De qué colores es la bandera andaluza?",
+    "correct_answer": "Verde y blanca",
+    "incorrect_answers": [
+      "Roja y amarilla",
+      "Azul y blanca",
+      "Verde y amarilla"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué árbol tiene el escudo de Madrid?",
+    "correct_answer": "Madroño",
+    "incorrect_answers": [
+      "Roble",
+      "Encina",
+      "Pino"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué animal acompaña al madroño de Madrid?",
+    "correct_answer": "Oso",
+    "incorrect_answers": [
+      "León",
+      "Toro",
+      "Águila"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿De qué color es la ikurriña (bandera vasca)?",
+    "correct_answer": "Roja, verde y blanca",
+    "incorrect_answers": [
+      "Azul y blanca",
+      "Roja y amarilla",
+      "Verde y amarilla"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué cruz tiene la bandera gallega?",
+    "correct_answer": "Cruz de Santiago",
+    "incorrect_answers": [
+      "Cruz de Malta",
+      "Cruz griega",
+      "Cruz celta"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De qué colores es la bandera de Valencia?",
+    "correct_answer": "Amarilla y roja",
+    "incorrect_answers": [
+      "Azul y amarilla",
+      "Verde y blanca",
+      "Roja y blanca"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué tiene la bandera de Asturias?",
+    "correct_answer": "Cruz de la Victoria",
+    "incorrect_answers": [
+      "Cruz de Santiago",
+      "León",
+      "Oso"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De qué color es la bandera de Castilla y León?",
+    "correct_answer": "Morada con castillos y leones",
+    "incorrect_answers": [
+      "Roja y amarilla",
+      "Azul y blanca",
+      "Verde y blanca"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué flor tiene el escudo de Canarias?",
+    "correct_answer": "Drago",
+    "incorrect_answers": [
+      "Rosa",
+      "Clavel",
+      "Lirio"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuándo se celebran las Fallas de Valencia?",
+    "correct_answer": "19 de marzo",
+    "incorrect_answers": [
+      "15 de marzo",
+      "1 de mayo",
+      "12 de octubre"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué se quema en las Fallas?",
+    "correct_answer": "Ninots (monumentos)",
+    "incorrect_answers": [
+      "Árboles",
+      "Muñecos",
+      "Castillos"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuándo es San Fermín en Pamplona?",
+    "correct_answer": "7 de julio",
+    "incorrect_answers": [
+      "15 de agosto",
+      "12 de octubre",
+      "1 de mayo"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué animal corre en San Fermín?",
+    "correct_answer": "Toros",
+    "incorrect_answers": [
+      "Caballos",
+      "Ovejas",
+      "Vacas"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuándo es la Feria de Abril de Sevilla?",
+    "correct_answer": "Abril (variable)",
+    "incorrect_answers": [
+      "15 de abril siempre",
+      "Semana Santa",
+      "1 de mayo"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué baile es típico de la Feria de Sevilla?",
+    "correct_answer": "Sevillanas",
+    "incorrect_answers": [
+      "Flamenco",
+      "Pasodoble",
+      "Jota"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuándo es la Tomatina de Buñol?",
+    "correct_answer": "Último miércoles de agosto",
+    "incorrect_answers": [
+      "1 de julio",
+      "15 de agosto",
+      "12 de octubre"
+    ],
+    "category": "Cultura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué se tira en la Tomatina?",
+    "correct_answer": "Tomates",
+    "incorrect_answers": [
+      "Harina",
+      "Agua",
+      "Frutas"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Dónde se celebra la Tomatina?",
+    "correct_answer": "Buñol (Valencia)",
+    "incorrect_answers": [
+      "Pamplona",
+      "Sevilla",
+      "Barcelona"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuándo es el Día de Reyes en España?",
+    "correct_answer": "6 de enero",
+    "incorrect_answers": [
+      "24 de diciembre",
+      "1 de enero",
+      "25 de diciembre"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuántos Reyes Magos hay?",
+    "correct_answer": "3",
+    "incorrect_answers": [
+      "2",
+      "4",
+      "5"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cómo se llaman los Reyes Magos?",
+    "correct_answer": "Melchor, Gaspar y Baltasar",
+    "incorrect_answers": [
+      "José, María y Jesús",
+      "Pedro, Pablo y Juan",
+      "Antonio, Manuel y Francisco"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuándo es la Semana Santa?",
+    "correct_answer": "Variable (antes de Pascua)",
+    "incorrect_answers": [
+      "Siempre en abril",
+      "Primera semana abril",
+      "Última semana marzo"
+    ],
+    "category": "Cultura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Dónde es más famosa la Semana Santa?",
+    "correct_answer": "Sevilla",
+    "incorrect_answers": [
+      "Madrid",
+      "Barcelona",
+      "Valencia"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué dulce se come en Semana Santa?",
+    "correct_answer": "Torrijas",
+    "incorrect_answers": [
+      "Polvorones",
+      "Turrón",
+      "Roscón"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuándo es el Día de Todos los Santos?",
+    "correct_answer": "1 de noviembre",
+    "incorrect_answers": [
+      "31 de octubre",
+      "2 de noviembre",
+      "15 de agosto"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué se come el Día de Todos los Santos?",
+    "correct_answer": "Huesos de santo",
+    "incorrect_answers": [
+      "Turrón",
+      "Polvorones",
+      "Roscón"
+    ],
+    "category": "Cultura",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuándo es la Nochebuena?",
+    "correct_answer": "24 de diciembre",
+    "incorrect_answers": [
+      "25 de diciembre",
+      "31 de diciembre",
+      "6 de enero"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuándo es Nochevieja?",
+    "correct_answer": "31 de diciembre",
+    "incorrect_answers": [
+      "1 de enero",
+      "24 de diciembre",
+      "6 de enero"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué se come en Nochevieja?",
+    "correct_answer": "12 uvas",
+    "incorrect_answers": [
+      "Turrón",
+      "Polvorones",
+      "Roscón"
+    ],
+    "category": "Cultura",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién inventó el autogiro (predecesor del helicóptero)?",
+    "correct_answer": "Juan de la Cierva",
+    "incorrect_answers": [
+      "Isaac Peral",
+      "Leonardo Torres Quevedo",
+      "Narcís Monturiol"
+    ],
+    "category": "Tecnología",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién inventó el submarino moderno en España?",
+    "correct_answer": "Isaac Peral",
+    "incorrect_answers": [
+      "Juan de la Cierva",
+      "Torres Quevedo",
+      "Narcís Monturiol"
+    ],
+    "category": "Tecnología",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién fue Leonardo Torres Quevedo?",
+    "correct_answer": "Inventor español (teleférico, mando a distancia)",
+    "incorrect_answers": [
+      "Pintor",
+      "Escritor",
+      "Arquitecto"
+    ],
+    "category": "Tecnología",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué inventó Leonardo Torres Quevedo?",
+    "correct_answer": "Mando a distancia",
+    "incorrect_answers": [
+      "Teléfono",
+      "Televisión",
+      "Radio"
+    ],
+    "category": "Tecnología",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién descubrió la vacuna de la rabia con Pasteur?",
+    "correct_answer": "Jaime Ferrán",
+    "incorrect_answers": [
+      "Ramón y Cajal",
+      "Severo Ochoa",
+      "Juan de la Cierva"
+    ],
+    "category": "Ciencia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué español ganó el Nobel de Medicina?",
+    "correct_answer": "Santiago Ramón y Cajal",
+    "incorrect_answers": [
+      "Severo Ochoa",
+      "Margarita Salas",
+      "Juan de la Cierva"
+    ],
+    "category": "Ciencia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué año ganó Ramón y Cajal el Nobel?",
+    "correct_answer": "1906",
+    "incorrect_answers": [
+      "1920",
+      "1890",
+      "1950"
+    ],
+    "category": "Ciencia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué estudió Santiago Ramón y Cajal?",
+    "correct_answer": "Sistema nervioso",
+    "incorrect_answers": [
+      "Corazón",
+      "Pulmones",
+      "Huesos"
+    ],
+    "category": "Ciencia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién fue Severo Ochoa?",
+    "correct_answer": "Bioquímico Nobel",
+    "incorrect_answers": [
+      "Físico",
+      "Médico",
+      "Matemático"
+    ],
+    "category": "Ciencia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué año ganó Severo Ochoa el Nobel?",
+    "correct_answer": "1959",
+    "incorrect_answers": [
+      "1950",
+      "1960",
+      "1970"
+    ],
+    "category": "Ciencia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién fue Margarita Salas?",
+    "correct_answer": "Bioquímica española",
+    "incorrect_answers": [
+      "Física",
+      "Matemática",
+      "Astrónoma"
+    ],
+    "category": "Ciencia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué descubrió Margarita Salas?",
+    "correct_answer": "ADN polimerasa",
+    "incorrect_answers": [
+      "Penicilina",
+      "Insulina",
+      "Vacuna"
+    ],
+    "category": "Ciencia",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Quién inventó la fregona?",
+    "correct_answer": "Manuel Jalón",
+    "incorrect_answers": [
+      "Juan de la Cierva",
+      "Isaac Peral",
+      "Leonardo Torres"
+    ],
+    "category": "Tecnología",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿En qué década se inventó la fregona?",
+    "correct_answer": "1950s",
+    "incorrect_answers": [
+      "1940s",
+      "1960s",
+      "1930s"
+    ],
+    "category": "Tecnología",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué empresa española fabrica aviones?",
+    "correct_answer": "Airbus (en España)",
+    "incorrect_answers": [
+      "CASA",
+      "Iberia",
+      "SEAT"
+    ],
+    "category": "Tecnología",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuántos habitantes tiene España aproximadamente?",
+    "correct_answer": "47 millones",
+    "incorrect_answers": [
+      "40 millones",
+      "50 millones",
+      "60 millones"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es la ciudad más poblada de España?",
+    "correct_answer": "Madrid",
+    "incorrect_answers": [
+      "Barcelona",
+      "Valencia",
+      "Sevilla"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la segunda ciudad más poblada?",
+    "correct_answer": "Barcelona",
+    "incorrect_answers": [
+      "Valencia",
+      "Sevilla",
+      "Málaga"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es la tercera ciudad más poblada?",
+    "correct_answer": "Valencia",
+    "incorrect_answers": [
+      "Sevilla",
+      "Zaragoza",
+      "Málaga"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuántos kilómetros cuadrados tiene España?",
+    "correct_answer": "505.990 km²",
+    "incorrect_answers": [
+      "400.000 km²",
+      "600.000 km²",
+      "450.000 km²"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿España es el país más grande de Europa?",
+    "correct_answer": "No, es el cuarto",
+    "incorrect_answers": [
+      "Sí",
+      "Es el segundo",
+      "Es el tercero"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué países son más grandes que España en Europa?",
+    "correct_answer": "Rusia, Ucrania, Francia",
+    "incorrect_answers": [
+      "Alemania, Italia, Polonia",
+      "Reino Unido, Turquía",
+      "Italia, Alemania"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuántos kilómetros de costa tiene España?",
+    "correct_answer": "Cerca de 8.000 km",
+    "incorrect_answers": [
+      "5.000 km",
+      "10.000 km",
+      "3.000 km"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿España tiene frontera con cuántos países?",
+    "correct_answer": "5 (Francia, Portugal, Andorra, Marruecos, Gibraltar)",
+    "incorrect_answers": [
+      "3",
+      "4",
+      "6"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuál es el punto más alto de la Península?",
+    "correct_answer": "Mulhacén",
+    "incorrect_answers": [
+      "Teide",
+      "Aneto",
+      "Veleta"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Cuál es el punto más bajo de España?",
+    "correct_answer": "Mina de Almadén (-79m)",
+    "incorrect_answers": [
+      "Mar Menor",
+      "Delta del Ebro",
+      "Marismas Doñana"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿España es el país con más bares por habitante?",
+    "correct_answer": "Sí",
+    "incorrect_answers": [
+      "No, es Italia",
+      "No, es Francia",
+      "No, es Alemania"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuántos idiomas oficiales tiene España?",
+    "correct_answer": "5 (castellano, catalán, gallego, vasco, aranés)",
+    "incorrect_answers": [
+      "1",
+      "3",
+      "4"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿España tiene más de 40 Patrimonios de la Humanidad?",
+    "correct_answer": "Sí, 49",
+    "incorrect_answers": [
+      "No, 35",
+      "No, 25",
+      "Sí, 60"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿España es el tercer país con más Patrimonios de la Humanidad?",
+    "correct_answer": "Sí",
+    "incorrect_answers": [
+      "No, es el primero",
+      "No, es el quinto",
+      "No, es el segundo"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué país tiene más Patrimonios de la Humanidad que España?",
+    "correct_answer": "Italia y China",
+    "incorrect_answers": [
+      "Francia",
+      "Alemania",
+      "India"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿España produce más vino que Francia?",
+    "correct_answer": "No, pero es el tercero",
+    "incorrect_answers": [
+      "Sí, es el primero",
+      "Sí, es el segundo",
+      "No, es el cuarto"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿España es el mayor productor de aceite de oliva?",
+    "correct_answer": "Sí",
+    "incorrect_answers": [
+      "No, es Italia",
+      "No, es Grecia",
+      "No, es Turquía"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué porcentaje del aceite de oliva mundial produce España?",
+    "correct_answer": "45%",
+    "incorrect_answers": [
+      "30%",
+      "60%",
+      "20%"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿España tiene más islas o penínsulas?",
+    "correct_answer": "Islas",
+    "incorrect_answers": [
+      "Penínsulas",
+      "Igual",
+      "Ninguna"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Cuántas horas de sol tiene España al año?",
+    "correct_answer": "Más de 2.500",
+    "incorrect_answers": [
+      "2.000",
+      "3.000",
+      "1.500"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿España es el país más montañoso de Europa después de Suiza?",
+    "correct_answer": "Sí",
+    "incorrect_answers": [
+      "No, es Francia",
+      "No, es Austria",
+      "No, es Italia"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿España tiene zonas desérticas?",
+    "correct_answer": "Sí, Tabernas (Almería)",
+    "incorrect_answers": [
+      "No",
+      "Solo en Canarias",
+      "Solo en Murcia"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué ciudad española es conocida como 'La Perla del Cantábrico'?",
+    "correct_answer": "Santander",
+    "incorrect_answers": [
+      "Gijón",
+      "Bilbao",
+      "San Sebastián"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué ciudad tiene el apodo de 'Ciudad de las Tres Culturas'?",
+    "correct_answer": "Toledo",
+    "incorrect_answers": [
+      "Córdoba",
+      "Granada",
+      "Sevilla"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué marca de coches española fabrica el León?",
+    "correct_answer": "SEAT",
+    "incorrect_answers": [
+      "Citroën",
+      "Renault",
+      "Opel"
+    ],
+    "category": "Tecnología",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué banco español es el más grande?",
+    "correct_answer": "Banco Santander",
+    "incorrect_answers": [
+      "BBVA",
+      "CaixaBank",
+      "Bankia"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿Qué aeropuerto español tiene más tráfico?",
+    "correct_answer": "Madrid-Barajas",
+    "incorrect_answers": [
+      "Barcelona-El Prat",
+      "Málaga",
+      "Palma"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Qué empresa española de moda es más conocida?",
+    "correct_answer": "Zara (Inditex)",
+    "incorrect_answers": [
+      "Mango",
+      "Pull & Bear",
+      "Massimo Dutti"
+    ],
+    "category": "España",
+    "difficulty": "easy"
+  },
+  {
+    "question": "¿Quién fundó Zara?",
+    "correct_answer": "Amancio Ortega",
+    "incorrect_answers": [
+      "Juan Roig",
+      "Francisco González",
+      "Isak Andic"
+    ],
+    "category": "España",
+    "difficulty": "medium"
+  },
+  {
+    "question": "¿De dónde es Amancio Ortega?",
+    "correct_answer": "Galicia",
+    "incorrect_answers": [
+      "Asturias",
+      "Madrid",
+      "Cantabria"
+    ],
+    "category": "España",
+    "difficulty": "medium"
   }
 ]
