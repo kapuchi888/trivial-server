@@ -753,6 +753,47 @@
         .difficulty-icon { font-size: 36px; margin-bottom: 8px; }
         .difficulty-name { font-size: 16px; font-weight: bold; }
         .difficulty-desc { font-size: 11px; margin-top: 5px; opacity: 0.8; }
+        
+        /* ESTILOS CONFIGURACIÓN DE RONDAS */
+        .config-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin: 15px 0;
+        }
+        .config-btn {
+            padding: 20px 10px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .config-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(233, 69, 96, 0.4);
+            border-color: rgba(233, 69, 96, 0.6);
+        }
+        .config-btn.selected {
+            border-color: #e94560;
+            background: linear-gradient(135deg, rgba(233, 69, 96, 0.3), rgba(233, 69, 96, 0.5));
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
+            transform: scale(1.05);
+        }
+        .config-number {
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .config-label {
+            font-size: 13px;
+            font-weight: 600;
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
@@ -816,8 +857,73 @@
                     <div class="difficulty-desc">CPU acierta ~80%</div>
                 </div>
             </div>
-            <button class="btn-primary" onclick="startCPUGameWithDifficulty()">Empezar Partida</button>
+            <button class="btn-primary" onclick="showScreen('cpuConfigScreen')">Continuar</button>
             <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
+        </div>
+        
+        <!-- PANTALLA CONFIGURACIÓN CPU -->
+        <div id="cpuConfigScreen" class="screen">
+            <h1>🎮 Configurar Partida</h1>
+            <h3 style="text-align: center; margin: 20px 0; color: rgba(255, 255, 255, 0.9); font-size: 18px;">
+                Personaliza tu experiencia
+            </h3>
+            
+            <!-- SELECTOR DE RONDAS -->
+            <div style="margin: 25px 0;">
+                <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); font-size: 16px; margin-bottom: 12px;">
+                    🔄 Número de Rondas
+                </h4>
+                <div class="config-selector">
+                    <div class="config-btn selected" onclick="selectRounds(1)" data-rounds="1">
+                        <div class="config-number">1</div>
+                        <div class="config-label">Ronda</div>
+                    </div>
+                    <div class="config-btn" onclick="selectRounds(2)" data-rounds="2">
+                        <div class="config-number">2</div>
+                        <div class="config-label">Rondas</div>
+                    </div>
+                    <div class="config-btn" onclick="selectRounds(3)" data-rounds="3">
+                        <div class="config-number">3</div>
+                        <div class="config-label">Rondas</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SELECTOR DE PREGUNTAS -->
+            <div style="margin: 25px 0;">
+                <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); font-size: 16px; margin-bottom: 12px;">
+                    ❓ Preguntas por Ronda
+                </h4>
+                <div class="config-selector">
+                    <div class="config-btn" onclick="selectQuestionsPerRound(5)" data-questions="5">
+                        <div class="config-number">5</div>
+                        <div class="config-label">Rápido</div>
+                    </div>
+                    <div class="config-btn" onclick="selectQuestionsPerRound(10)" data-questions="10">
+                        <div class="config-number">10</div>
+                        <div class="config-label">Medio</div>
+                    </div>
+                    <div class="config-btn selected" onclick="selectQuestionsPerRound(15)" data-questions="15">
+                        <div class="config-number">15</div>
+                        <div class="config-label">Largo</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RESUMEN -->
+            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; margin: 25px 0; backdrop-filter: blur(10px); border: 2px solid rgba(233, 69, 96, 0.3);">
+                <div style="text-align: center; color: rgba(255, 255, 255, 0.95); font-size: 15px; margin-bottom: 8px;">
+                    📊 <strong>Total:</strong> <span id="totalQuestions">15</span> preguntas
+                </div>
+                <div style="text-align: center; color: rgba(255, 255, 255, 0.8); font-size: 14px;">
+                    ⏱️ <strong>Tiempo estimado:</strong> <span id="estimatedTime">6</span> minutos
+                </div>
+            </div>
+            
+            <button class="btn-primary" onclick="startConfiguredCPUGame()">
+                <span style="position: relative; z-index: 1;">⚡ COMENZAR JUEGO</span>
+            </button>
+            <button class="btn-secondary" onclick="showScreen('cpuScreen')">Volver</button>
         </div>
         
         <!-- PANTALLA UNIRSE -->
@@ -921,6 +1027,12 @@
         var cpuQuestions = [];
         var currentQuestionIndex = 0;
         var isPlayerTurn = true;
+        
+        // SISTEMA DE RONDAS
+        var totalRounds = 1;
+        var currentRound = 1;
+        var questionsPerRound = 15;
+        var roundScores = { player: [], cpu: [] }; // Puntuaciones por ronda
         
         // SISTEMA DE HISTORIAL
         function saveMatch(result) {
@@ -1061,11 +1173,10 @@
         function sendCPUQuestion() {
             if (isPlayerTurn) {
                 // Turno del jugador
-                var questionsPerPlayer = gameMode === 'quick' ? 5 : 15;
-                if (playerQuestionsAnswered >= questionsPerPlayer) {
+                if (playerQuestionsAnswered >= questionsPerRound) {
                     // Jugador terminó, turno de CPU
                     isPlayerTurn = false;
-                    if (cpuQuestionsAnswered >= questionsPerPlayer) {
+                    if (cpuQuestionsAnswered >= questionsPerRound) {
                         endCPUGame();
                         return;
                     }
@@ -1077,15 +1188,15 @@
                 hasAnswered = false;
                 timeLeft = 15;
                 
-                // Mostrar comodín solo en modo normal
-                if (gameMode === 'normal') {
+                // Mostrar comodín si hay 10+ preguntas por ronda
+                if (questionsPerRound >= 10) {
                     document.querySelector('.powerup-container').style.display = 'block';
                     if (fiftyFiftyUsed) {
                         document.getElementById('fiftyFiftyBtn').disabled = true;
                         document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
                     } else {
                         document.getElementById('fiftyFiftyBtn').disabled = false;
-                        document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por partida)';
+                        document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por ronda)';
                     }
                 } else {
                     document.querySelector('.powerup-container').style.display = 'none';
@@ -1095,8 +1206,9 @@
                 document.getElementById('categoryBadge').textContent = category.name;
                 document.getElementById('categoryBadge').className = 'category-badge ' + category.class;
                 
-                var questionsPerPlayer = gameMode === 'quick' ? 5 : 15;
-                document.getElementById('questionNumber').textContent = 'Pregunta ' + (playerQuestionsAnswered + 1) + ' de ' + questionsPerPlayer;
+                // Mostrar ronda actual si hay más de 1
+                var roundText = totalRounds > 1 ? `🔄 RONDA ${currentRound}/${totalRounds} · ` : '';
+                document.getElementById('questionNumber').textContent = roundText + 'Pregunta ' + (playerQuestionsAnswered + 1) + ' de ' + questionsPerRound;
                 document.getElementById('questionText').textContent = currentQuestion.question;
                 document.getElementById('timer').textContent = timeLeft;
                 
@@ -1194,10 +1306,9 @@
             cpuQuestionsAnswered++;
             currentQuestionIndex++;
             
-            var questionsPerPlayer = gameMode === 'quick' ? 5 : 15;
-            
+            // Verificar si ambos terminaron sus preguntas de esta ronda
             setTimeout(function() {
-                if (playerQuestionsAnswered >= questionsPerPlayer && cpuQuestionsAnswered >= questionsPerPlayer) {
+                if (playerQuestionsAnswered >= questionsPerRound && cpuQuestionsAnswered >= questionsPerRound) {
                     endCPUGame();
                 } else {
                     isPlayerTurn = true;
@@ -1207,6 +1318,21 @@
         }
         
         function endCPUGame() {
+            // Guardar puntuaciones de esta ronda
+            roundScores.player.push(playerScore);
+            roundScores.cpu.push(cpuScore);
+            
+            // Verificar si hay más rondas
+            if (currentRound < totalRounds) {
+                // Mostrar ranking parcial y continuar a siguiente ronda
+                showRoundEndScreen();
+            } else {
+                // Mostrar ranking final
+                showFinalRanking();
+            }
+        }
+        
+        function showRoundEndScreen() {
             var difficultyBadge = cpuDifficulty === 'easy' ? '🟢' : cpuDifficulty === 'hard' ? '🔴' : '🟡';
             var difficultyText = cpuDifficulty === 'easy' ? 'Fácil' : cpuDifficulty === 'hard' ? 'Difícil' : 'Normal';
             
@@ -1216,7 +1342,72 @@
             ].sort((a, b) => b.score - a.score);
             
             var html = '<div style="text-align: center; padding: 0 10px;">';
+            html += '<h2 style="font-size: 28px; margin-bottom: 15px; margin-top: 10px; color: #ffffff; text-shadow: 0 0 30px rgba(233, 69, 96, 0.8), 0 4px 15px rgba(0,0,0,0.6); font-weight: 900; line-height: 1.2;">🎯 FIN DE RONDA ' + currentRound + '/' + totalRounds + '</h2>';
+            html += '<p style="color: rgba(255,255,255,0.8); font-size: 15px; margin-bottom: 20px;">Puntuaciones de esta ronda:</p>';
+            
+            var medals = ['🥇', '🥈'];
+            
+            ranking.forEach(function(p, index) {
+                var isMe = p.name === playerName;
+                var position = index + 1;
+                var medal = medals[index];
+                var style = '';
+                
+                if (position === 1) {
+                    style = 'background: linear-gradient(135deg, #FFD700, #FFA500); color: white;';
+                } else {
+                    style = 'background: linear-gradient(135deg, #C0C0C0, #808080); color: white;';
+                }
+                
+                html += '<div style="' + style + ' padding: 20px 12px; margin: 12px 5px; max-width: 96%; box-sizing: border-box; border-radius: 18px; font-size: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.3);">';
+                html += '<div style="font-size: 36px; margin-bottom: 8px;">' + medal + '</div>';
+                html += '<strong style="font-size: 22px; display: block; margin-bottom: 6px; word-wrap: break-word; line-height: 1.2;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong>';
+                html += '<span style="font-size: 28px; font-weight: 900;">' + p.score + ' pts</span>';
+                html += '</div>';
+            });
+            
+            html += '<p style="color: rgba(255,255,255,0.9); font-size: 16px; margin-top: 25px; font-weight: 700;">💪 ¡Todavía puedes ganar!</p>';
+            html += '<p style="color: rgba(255,255,255,0.7); font-size: 14px; margin-top: 10px;">Preparando Ronda ' + (currentRound + 1) + '...</p>';
+            html += '</div>';
+            
+            document.getElementById('finalScores').innerHTML = html;
+            showScreen('resultsScreen');
+            
+            // Automáticamente continuar a siguiente ronda después de 5 segundos
+            setTimeout(function() {
+                startNextRound();
+            }, 5000);
+        }
+        
+        function startNextRound() {
+            currentRound++;
+            
+            // Resetear contadores de preguntas (pero mantener puntuaciones acumuladas)
+            cpuQuestionsAnswered = 0;
+            playerQuestionsAnswered = 0;
+            isPlayerTurn = true;
+            fiftyFiftyUsed = false;
+            
+            // Continuar con las siguientes preguntas
+            showCPUGame();
+        }
+        
+        function showFinalRanking() {
+            var difficultyBadge = cpuDifficulty === 'easy' ? '🟢' : cpuDifficulty === 'hard' ? '🔴' : '🟡';
+            var difficultyText = cpuDifficulty === 'easy' ? 'Fácil' : cpuDifficulty === 'hard' ? 'Difícil' : 'Normal';
+            
+            // Calcular puntuaciones totales acumuladas
+            var totalPlayerScore = roundScores.player.reduce((a, b) => a + b, 0);
+            var totalCpuScore = roundScores.cpu.reduce((a, b) => a + b, 0);
+            
+            var ranking = [
+                { name: playerName, score: totalPlayerScore },
+                { name: difficultyBadge + ' CPU (' + difficultyText + ')', score: totalCpuScore }
+            ].sort((a, b) => b.score - a.score);
+            
+            var html = '<div style="text-align: center; padding: 0 10px;">';
             html += '<h2 style="font-size: 26px; margin-bottom: 20px; margin-top: 10px; color: #ffffff; text-shadow: 0 0 30px rgba(233, 69, 96, 0.8), 0 4px 15px rgba(0,0,0,0.6); font-weight: 900; line-height: 1.2;">🏆 RANKING FINAL 🏆</h2>';
+            html += '<p style="color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 15px;">' + totalRounds + ' rondas · ' + (totalRounds * questionsPerRound) + ' preguntas totales</p>';
             
             var medals = ['🥇', '🥈'];
             
@@ -1246,9 +1437,9 @@
             // Guardar en historial
             saveMatch({
                 won: ranking[0].name === playerName,
-                myScore: playerScore,
+                myScore: totalPlayerScore,
                 opponentName: difficultyBadge + ' CPU (' + difficultyText + ')',
-                opponentScore: cpuScore
+                opponentScore: totalCpuScore
             });
             
             // Confetti si ganaste
@@ -1619,6 +1810,59 @@
         socket.on('connect_error', function() {
             showError('Error de conexión');
         });
+        
+        // ===== FUNCIONES DE CONFIGURACIÓN DE RONDAS =====
+        function selectRounds(rounds) {
+            totalRounds = rounds;
+            document.querySelectorAll('.config-btn[data-rounds]').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`.config-btn[data-rounds="${rounds}"]`).classList.add('selected');
+            updateConfigSummary();
+        }
+        
+        function selectQuestionsPerRound(questions) {
+            questionsPerRound = questions;
+            document.querySelectorAll('.config-btn[data-questions]').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`.config-btn[data-questions="${questions}"]`).classList.add('selected');
+            updateConfigSummary();
+        }
+        
+        function updateConfigSummary() {
+            const total = totalRounds * questionsPerRound;
+            const time = Math.ceil(total * 0.4); // ~24 segundos por pregunta
+            document.getElementById('totalQuestions').textContent = total;
+            document.getElementById('estimatedTime').textContent = time;
+        }
+        
+        function startConfiguredCPUGame() {
+            cpuMode = true;
+            cpuScore = 0;
+            playerScore = 0;
+            cpuQuestionsAnswered = 0;
+            playerQuestionsAnswered = 0;
+            currentQuestionIndex = 0;
+            currentRound = 1;
+            roundScores = { player: [], cpu: [] };
+            isPlayerTurn = true;
+            fiftyFiftyUsed = false;
+            
+            // Calcular preguntas totales para TODA la partida
+            var totalQuestions = questionsPerRound * 2 * totalRounds; // x2 porque jugador + CPU
+            
+            // Pedir todas las preguntas al servidor
+            fetch('https://trivial-kapuchi.onrender.com/api/questions?count=' + totalQuestions)
+                .then(response => response.json())
+                .then(questions => {
+                    cpuQuestions = questions;
+                    showCPUGame();
+                })
+                .catch(() => {
+                    showError('Error al cargar preguntas. Intenta de nuevo.');
+                });
+        }
     </script>
 </body>
 </html>
