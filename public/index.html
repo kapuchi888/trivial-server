@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-<!-- Trivial Kapuchi v2.1 - ACTUALIZADO 2026-01-01 -->
+<!-- Trivial Kapuchi v2.2 - Multijugador con Rondas - 2026-01-01 -->
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 Trivial Kapuchi 2026 - ACTUALIZADO</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 Trivial Kapuchi - Sistema de Rondas</title>
+    <title>🎮 Trivial Kapuchi 2026 - Multijugador Actualizado</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -22,188 +20,114 @@
             overflow: hidden;
         }
         
-        /* Partículas brillantes de fondo */
-        body::before {
-            content: '';
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(2px 2px at 20% 30%, white, transparent),
-                radial-gradient(2px 2px at 60% 70%, white, transparent),
-                radial-gradient(1px 1px at 50% 50%, white, transparent),
-                radial-gradient(1px 1px at 80% 10%, white, transparent),
-                radial-gradient(2px 2px at 90% 60%, white, transparent),
-                radial-gradient(1px 1px at 33% 50%, white, transparent),
-                radial-gradient(2px 2px at 79% 53%, white, transparent);
-            background-size: 200% 200%;
-            animation: stars 20s linear infinite;
-            opacity: 0.4;
-            z-index: 0;
-        }
-        
-        @keyframes stars {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 100% 100%; }
-        }
-        
         @keyframes gradientShift {
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
         }
+        
         .container {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(30px);
-            padding: 25px 25px;
+            padding: 25px;
             border-radius: 30px;
             max-width: 600px;
             width: 90%;
             position: relative;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
-                        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             max-height: 98vh;
             overflow-y: auto;
             z-index: 1;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
-        /* Ocultar scrollbar pero mantener funcionalidad */
-        .container::-webkit-scrollbar {
-            width: 0px;
-            background: transparent;
-        }
-        
         h1 { 
             text-align: center; 
             color: #ffffff;
-            font-size: 56px;
+            font-size: 48px;
             margin-bottom: 15px;
             font-weight: 900;
-            letter-spacing: -2px;
-            text-shadow: 0 0 20px rgba(233, 69, 96, 0.8),
-                        0 0 40px rgba(233, 69, 96, 0.6),
-                        0 0 60px rgba(233, 69, 96, 0.4);
-            animation: titleGlow 3s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(233, 69, 96, 0.8);
         }
         
-        @keyframes titleGlow {
-            0%, 100% { 
-                text-shadow: 0 0 20px rgba(233, 69, 96, 0.8),
-                            0 0 40px rgba(233, 69, 96, 0.6),
-                            0 0 60px rgba(233, 69, 96, 0.4);
-            }
-            50% { 
-                text-shadow: 0 0 30px rgba(233, 69, 96, 1),
-                            0 0 60px rgba(233, 69, 96, 0.8),
-                            0 0 90px rgba(233, 69, 96, 0.6);
-            }
-        }
-        
-        /* Optimización móvil */
-        @media (max-width: 600px) {
-            .container {
-                padding: 25px 20px;
-                width: 95%;
-                max-height: 98vh;
-                border-radius: 30px;
-            }
-            h1 {
-                font-size: 40px;
-                margin-bottom: 5px;
-            }
-        }
-        input {
-            width: 100%;
-            padding: 18px 20px;
-            margin: 15px 0;
-            border: 3px solid rgba(102, 126, 234, 0.3);
-            border-radius: 18px;
-            font-size: 17px;
-            transition: all 0.4s ease;
-            box-sizing: border-box;
-            background: rgba(255, 255, 255, 0.9);
-            font-weight: 600;
-        }
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 5px rgba(102, 126, 234, 0.15),
-                        0 0 30px rgba(102, 126, 234, 0.4);
-            transform: translateY(-3px);
-            background: white;
-        }
-        
-        @media (max-width: 600px) {
-            input {
-                padding: 14px 16px;
-                margin: 12px 0;
-                font-size: 15px;
-                border-radius: 15px;
-            }
-        }
-        button {
+        input, button {
             width: 100%;
             padding: 14px;
             margin: 8px 0;
-            border: none;
             border-radius: 12px;
             font-size: 16px;
             font-weight: 700;
+        }
+        
+        input {
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        button {
+            border: none;
             cursor: pointer;
             color: white;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
         
-        @media (max-width: 600px) {
-            input {
-                padding: 12px 14px;
-                margin: 8px 0;
-                font-size: 15px;
-            }
-            button {
-                padding: 12px;
-                margin: 6px 0;
-                font-size: 15px;
-            }
+        button:hover {
+            transform: translateY(-3px);
         }
-        button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        button:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-        button:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        }
-        button:active { 
-            transform: translateY(-1px); 
-        }
+        
         .btn-primary { 
             background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
         }
+        
         .btn-secondary { 
             background: linear-gradient(135deg, #4ecdc4 0%, #44a3a0 100%);
         }
-        .btn-quick { 
-            background: linear-gradient(135deg, #ffa500 0%, #ff6347 100%);
-        }
+        
         .screen { display: none; }
         .screen.active { display: block; }
-        .error { background: #f44336; color: white; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        
+        .config-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin: 15px 0;
+        }
+        
+        .config-btn {
+            padding: 20px 10px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .config-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(233, 69, 96, 0.4);
+        }
+        
+        .config-btn.selected {
+            border-color: #e94560;
+            background: linear-gradient(135deg, rgba(233, 69, 96, 0.3), rgba(233, 69, 96, 0.5));
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
+            transform: scale(1.05);
+        }
+        
+        .config-number {
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 5px;
+        }
+        
+        .config-label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
         .room-code {
             background: #667eea;
             color: white;
@@ -215,14 +139,27 @@
             margin: 20px 0;
             letter-spacing: 5px;
         }
-        .player-list {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 10px 0;
+        
+        .player { 
+            padding: 10px; 
+            margin: 5px 0; 
+            background: white; 
+            border-radius: 5px; 
         }
-        .player { padding: 10px; margin: 5px 0; background: white; border-radius: 5px; }
-        .player.ready { background: #4CAF50; color: white; }
+        
+        .player.ready { 
+            background: #4CAF50; 
+            color: white; 
+        }
+        
+        .error { 
+            background: #f44336; 
+            color: white; 
+            padding: 10px; 
+            border-radius: 5px; 
+            margin: 10px 0; 
+        }
+        
         .question-text {
             font-size: 20px;
             font-weight: 700;
@@ -231,38 +168,13 @@
             padding: 25px 20px;
             background: rgba(255, 255, 255, 0.15);
             border-radius: 18px;
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3),
-                        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
-            backdrop-filter: blur(10px);
             color: #ffffff;
-            line-height: 1.5;
             min-height: 90px;
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: questionFloat 0.6s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        @keyframes questionFloat {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @media (max-width: 600px) {
-            .question-text {
-                font-size: 17px;
-                padding: 20px 15px;
-                min-height: 80px;
-                margin: 12px 0;
-            }
-        }
         .timer {
             width: 140px;
             height: 140px;
@@ -276,83 +188,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 50px rgba(255, 0, 0, 1),
-                        0 0 80px rgba(255, 0, 0, 0.7),
-                        0 10px 40px rgba(0, 0, 0, 0.6);
-            animation: timerMegaPulse 1s ease-in-out infinite;
-            position: relative;
+            box-shadow: 0 0 50px rgba(255, 0, 0, 1);
             border: 6px solid rgba(255, 255, 255, 0.5);
         }
         
-        .timer::before {
-            content: '';
-            position: absolute;
-            width: 170px;
-            height: 170px;
-            border-radius: 50%;
-            border: 4px solid rgba(255, 0, 0, 0.5);
-            animation: timerMegaRing 2s ease-out infinite;
-        }
-        
-        .timer::after {
-            content: '';
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            border: 3px solid rgba(255, 0, 0, 0.3);
-            animation: timerMegaRing 2.5s ease-out infinite;
-        }
-        
-        @keyframes timerMegaPulse {
-            0%, 100% { 
-                transform: scale(1);
-                box-shadow: 0 0 50px rgba(255, 0, 0, 1),
-                            0 0 80px rgba(255, 0, 0, 0.7),
-                            0 10px 40px rgba(0, 0, 0, 0.6);
-            }
-            50% { 
-                transform: scale(1.12);
-                box-shadow: 0 0 70px rgba(255, 0, 0, 1),
-                            0 0 100px rgba(255, 0, 0, 0.9),
-                            0 15px 50px rgba(0, 0, 0, 0.7);
-            }
-        }
-        
-        @keyframes timerMegaRing {
-            0% {
-                transform: scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(1.5);
-                opacity: 0;
-            }
-        }
-        
-        @media (max-width: 600px) {
-            .timer {
-                width: 110px;
-                height: 110px;
-                font-size: 48px;
-                margin: 10px auto;
-                border: 5px solid rgba(255, 255, 255, 0.5);
-            }
-            .timer::before {
-                width: 135px;
-                height: 135px;
-            }
-            .timer::after {
-                width: 160px;
-                height: 160px;
-            }
-        }
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin: 15px 0;
-        }
         .option-btn {
             padding: 16px 20px;
             border: none;
@@ -362,440 +201,27 @@
             cursor: pointer;
             background: rgba(255, 255, 255, 0.12);
             color: #ffffff;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-align: left;
-            display: block;
+            transition: all 0.3s;
+            margin: 6px 0;
             width: 100%;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
+            text-align: left;
         }
         
         .option-btn:hover {
             transform: translateY(-4px);
             background: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 30px rgba(233, 69, 96, 0.4);
-            border-color: rgba(233, 69, 96, 0.6);
-        }
-        
-        .option-btn:active {
-            transform: translateY(-2px);
         }
         
         .option-btn.selected { 
             background: linear-gradient(135deg, #e94560 0%, #ff6b9d 100%) !important;
-            color: white !important;
-            border-color: rgba(255, 255, 255, 0.3) !important;
-            box-shadow: 0 0 30px rgba(233, 69, 96, 0.8),
-                        0 8px 25px rgba(233, 69, 96, 0.5);
-            transform: translateY(-3px);
         }
+        
         .option-btn.correct {
             background: linear-gradient(135deg, #06ffa5 0%, #00d4aa 100%) !important;
-            color: white !important;
-            box-shadow: 0 0 40px rgba(6, 255, 165, 0.8),
-                        0 8px 30px rgba(6, 255, 165, 0.6);
-            animation: correctBounce 0.6s ease;
         }
+        
         .option-btn.wrong {
             background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%) !important;
-            color: white !important;
-            border-color: transparent !important;
-            box-shadow: 0 0 50px rgba(244, 67, 54, 0.8),
-                        0 15px 45px rgba(244, 67, 54, 0.6);
-            animation: wrongMegaShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-        }
-        .option-btn.disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-        
-        @media (max-width: 600px) {
-            .option-btn {
-                padding: 18px 16px;
-                font-size: 16px;
-            }
-        }
-        
-        @keyframes correctMegaPulse {
-            0% { transform: scale(1); }
-            30% { transform: scale(1.15); }
-            60% { transform: scale(0.95); }
-            100% { transform: scale(1.03); }
-        }
-        @keyframes wrongMegaShake {
-            0%, 100% { transform: translateX(0) rotate(0deg); }
-            10%, 30%, 50%, 70% { transform: translateX(-12px) rotate(-2deg); }
-            20%, 40%, 60%, 80% { transform: translateX(12px) rotate(2deg); }
-        }
-        
-        /* CATEGORÍAS CON COLORES */
-        .category-badge {
-            display: inline-block;
-            padding: 8px 20px;
-            border-radius: 25px;
-            font-size: 13px;
-            font-weight: 700;
-            margin: 5px auto 15px auto;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-        .cat-geografia { 
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); 
-            color: white; 
-        }
-        .cat-ciencia { 
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); 
-            color: white; 
-        }
-        .cat-historia { 
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); 
-            color: white; 
-        }
-        .cat-deportes { 
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); 
-            color: white; 
-        }
-        .cat-arte { 
-            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); 
-            color: white; 
-        }
-        .cat-entretenimiento { 
-            background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%); 
-            color: white; 
-        }
-        .cat-general { 
-            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%); 
-            color: white; 
-        }
-        
-        /* POWER-UP 50/50 */
-        .powerup-btn {
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-            color: #000;
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 800;
-            cursor: pointer;
-            border: none;
-            margin: 8px 0;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .powerup-btn:hover { 
-            transform: translateY(-3px) scale(1.05); 
-            box-shadow: 0 10px 30px rgba(255, 165, 0, 0.6);
-        }
-        .powerup-btn:disabled {
-            background: linear-gradient(135deg, #ccc 0%, #999 100%);
-            border-color: transparent;
-            cursor: not-allowed;
-            opacity: 0.5;
-            box-shadow: none;
-        }
-        .powerup-container {
-            text-align: center;
-            margin: 15px 0;
-        }
-        
-        /* HISTORIAL */
-        .history-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            margin: 0 auto 20px auto;
-            display: block;
-            width: fit-content;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-        .history-btn:hover {
-            transform: translateY(-3px);
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 6px 20px rgba(233, 69, 96, 0.5);
-        }
-        
-        @media (max-width: 600px) {
-            .history-btn {
-                padding: 8px 16px;
-                font-size: 12px;
-                margin: 0 auto 12px auto;
-            }
-        }
-        .history-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .history-modal.active { display: flex; }
-        .history-content {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .history-item {
-            background: #f5f5f5;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 10px;
-            border-left: 5px solid #667eea;
-        }
-        .history-win { border-left-color: #4CAF50; }
-        .history-lose { border-left-color: #f44336; }
-        
-        /* CONFETTI ANIMATION */
-        .confetti {
-            position: fixed;
-            width: 10px;
-            height: 10px;
-            background: #f0f;
-            position: absolute;
-            animation: confetti-fall 3s linear;
-        }
-        @keyframes confetti-fall {
-            to {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        /* MODE SELECTOR */
-        .mode-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin: 25px 0;
-        }
-        .mode-btn {
-            padding: 50px 20px;
-            border: none;
-            border-radius: 25px;
-            background: rgba(255, 255, 255, 0.15);
-            cursor: pointer;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: center;
-            position: relative;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            overflow: hidden;
-            min-height: 220px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .mode-btn::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(233, 69, 96, 0.3), transparent);
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
-        
-        .mode-btn:hover {
-            transform: translateY(-15px) scale(1.05);
-            box-shadow: 0 0 50px rgba(233, 69, 96, 0.6),
-                        0 25px 50px rgba(0, 0, 0, 0.4);
-            border-color: rgba(233, 69, 96, 0.8);
-        }
-        
-        .mode-btn:hover::before {
-            opacity: 1;
-            animation: rotate 3s linear infinite;
-        }
-        
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .mode-btn.selected {
-            background: linear-gradient(135deg, #e94560 0%, #ff6b9d 100%);
-            color: white;
-            transform: translateY(-10px) scale(1.05);
-            box-shadow: 0 0 60px rgba(233, 69, 96, 0.9),
-                        0 20px 45px rgba(233, 69, 96, 0.7);
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .mode-btn.selected .mode-icon,
-        .mode-btn.selected .mode-name,
-        .mode-btn.selected .mode-desc {
-            color: white;
-        }
-        
-        .mode-icon { 
-            font-size: 64px; 
-            margin-bottom: 15px;
-            display: block;
-            transition: all 0.3s;
-            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
-        }
-        
-        .mode-btn:hover .mode-icon {
-            transform: scale(1.2) rotate(5deg);
-        }
-        
-        .mode-name { 
-            font-size: 24px; 
-            font-weight: 900; 
-            margin-bottom: 8px;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: rgba(255, 255, 255, 0.95);
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-        
-        .mode-desc { 
-            font-size: 15px; 
-            margin-top: 8px; 
-            opacity: 0.9;
-            font-weight: 600;
-            transition: all 0.3s;
-            color: rgba(255, 255, 255, 0.85);
-            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
-        }
-        
-        @media (max-width: 600px) {
-            .mode-selector {
-                gap: 15px;
-                margin: 20px 0;
-            }
-            .mode-btn {
-                padding: 35px 15px;
-                border-radius: 20px;
-                min-height: 180px;
-            }
-            .mode-icon {
-                font-size: 52px;
-                margin-bottom: 10px;
-            }
-            .mode-name {
-                font-size: 20px;
-            }
-            .mode-desc {
-                font-size: 13px;
-            }
-        }
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        /* Difficulty selector */
-        .difficulty-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin: 20px 0;
-        }
-        .difficulty-btn {
-            padding: 25px 10px;
-            border: 3px solid #ddd;
-            border-radius: 15px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
-        .difficulty-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .difficulty-btn[data-difficulty="easy"]:hover,
-        .difficulty-btn[data-difficulty="easy"].selected {
-            border-color: #4CAF50;
-            background: #4CAF50;
-            color: white;
-        }
-        .difficulty-btn[data-difficulty="normal"]:hover,
-        .difficulty-btn[data-difficulty="normal"].selected {
-            border-color: #FF9800;
-            background: #FF9800;
-            color: white;
-        }
-        .difficulty-btn[data-difficulty="hard"]:hover,
-        .difficulty-btn[data-difficulty="hard"].selected {
-            border-color: #F44336;
-            background: #F44336;
-            color: white;
-        }
-        .difficulty-icon { font-size: 36px; margin-bottom: 8px; }
-        .difficulty-name { font-size: 16px; font-weight: bold; }
-        .difficulty-desc { font-size: 11px; margin-top: 5px; opacity: 0.8; }
-        
-        /* ESTILOS CONFIGURACIÓN DE RONDAS */
-        .config-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-            margin: 15px 0;
-        }
-        .config-btn {
-            padding: 20px 10px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.9);
-        }
-        .config-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(233, 69, 96, 0.4);
-            border-color: rgba(233, 69, 96, 0.6);
-        }
-        .config-btn.selected {
-            border-color: #e94560;
-            background: linear-gradient(135deg, rgba(233, 69, 96, 0.3), rgba(233, 69, 96, 0.5));
-            box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
-            transform: scale(1.05);
-        }
-        .config-number {
-            font-size: 32px;
-            font-weight: 900;
-            margin-bottom: 5px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-        .config-label {
-            font-size: 13px;
-            font-weight: 600;
-            opacity: 0.9;
         }
     </style>
 </head>
@@ -806,70 +232,43 @@
         <!-- PANTALLA INICIAL -->
         <div id="homeScreen" class="screen active">
             <h1>🎮 Trivial Kapuchi</h1>
-            <p style="text-align: center; color: rgba(255, 255, 255, 0.9); font-size: 16px; margin-top: 5px; margin-bottom: 20px; font-weight: 600; text-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+            <p style="text-align: center; color: rgba(255, 255, 255, 0.9); font-size: 16px; margin: 20px 0;">
                 Pon a prueba tus conocimientos
             </p>
-            <button class="history-btn" onclick="toggleHistory()">📊 Ver Historial</button>
             
-            <input type="text" id="playerName" placeholder="✨ Escribe tu nombre" maxlength="20" style="margin-top: 30px;">
-            <button class="btn-primary" onclick="createRoom()">
-                <span style="position: relative; z-index: 1;">🌐 Multijugador Online</span>
+            <input type="text" id="playerName" placeholder="✨ Escribe tu nombre" maxlength="20">
+            
+            <button class="btn-primary" onclick="showMultiplayerConfig()">
+                🌐 Multijugador Online
             </button>
-            <button class="btn-primary" onclick="startCPUGame()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <span style="position: relative; z-index: 1;">🤖 Jugar vs CPU</span>
-            </button>
+            
             <button class="btn-secondary" onclick="showJoinScreen()">
-                <span style="position: relative; z-index: 1;">🎯 Unirse a Partida</span>
+                🎯 Unirse a Partida
             </button>
         </div>
         
-        <!-- PANTALLA SELECCIÓN CPU -->
-        <div id="cpuScreen" class="screen">
-            <h1>🤖 Jugar contra CPU</h1>
-            <h3 style="text-align: center; margin: 20px 0;">Selecciona la dificultad:</h3>
-            <div class="difficulty-selector">
-                <div class="difficulty-btn" onclick="selectDifficulty('easy')" data-difficulty="easy">
-                    <div class="difficulty-icon">🟢</div>
-                    <div class="difficulty-name">Fácil</div>
-                    <div class="difficulty-desc">CPU acierta ~40%</div>
-                </div>
-                <div class="difficulty-btn selected" onclick="selectDifficulty('normal')" data-difficulty="normal">
-                    <div class="difficulty-icon">🟡</div>
-                    <div class="difficulty-name">Normal</div>
-                    <div class="difficulty-desc">CPU acierta ~60%</div>
-                </div>
-                <div class="difficulty-btn" onclick="selectDifficulty('hard')" data-difficulty="hard">
-                    <div class="difficulty-icon">🔴</div>
-                    <div class="difficulty-name">Difícil</div>
-                    <div class="difficulty-desc">CPU acierta ~80%</div>
-                </div>
-            </div>
-            <button class="btn-primary" onclick="showScreen('cpuConfigScreen')">Continuar</button>
-            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
-        </div>
-        
-        <!-- PANTALLA CONFIGURACIÓN CPU -->
-        <div id="cpuConfigScreen" class="screen">
-            <h1>🎮 Configurar Partida</h1>
-            <h3 style="text-align: center; margin: 20px 0; color: rgba(255, 255, 255, 0.9); font-size: 18px;">
-                Personaliza tu experiencia
+        <!-- PANTALLA CONFIGURACIÓN MULTIJUGADOR -->
+        <div id="multiplayerConfigScreen" class="screen">
+            <h1>🌐 Configurar Partida</h1>
+            <h3 style="text-align: center; margin: 20px 0; color: rgba(255, 255, 255, 0.9);">
+                Personaliza la experiencia
             </h3>
             
             <!-- SELECTOR DE RONDAS -->
             <div style="margin: 25px 0;">
-                <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); font-size: 16px; margin-bottom: 12px;">
+                <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); margin-bottom: 12px;">
                     🔄 Número de Rondas
                 </h4>
                 <div class="config-selector">
-                    <div class="config-btn selected" onclick="selectRounds(1)" data-rounds="1">
+                    <div class="config-btn selected" onclick="selectMultiplayerRounds(1)" data-rounds="1">
                         <div class="config-number">1</div>
                         <div class="config-label">Ronda</div>
                     </div>
-                    <div class="config-btn" onclick="selectRounds(2)" data-rounds="2">
+                    <div class="config-btn" onclick="selectMultiplayerRounds(2)" data-rounds="2">
                         <div class="config-number">2</div>
                         <div class="config-label">Rondas</div>
                     </div>
-                    <div class="config-btn" onclick="selectRounds(3)" data-rounds="3">
+                    <div class="config-btn" onclick="selectMultiplayerRounds(3)" data-rounds="3">
                         <div class="config-number">3</div>
                         <div class="config-label">Rondas</div>
                     </div>
@@ -878,19 +277,19 @@
             
             <!-- SELECTOR DE PREGUNTAS -->
             <div style="margin: 25px 0;">
-                <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); font-size: 16px; margin-bottom: 12px;">
+                <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); margin-bottom: 12px;">
                     ❓ Preguntas por Ronda
                 </h4>
                 <div class="config-selector">
-                    <div class="config-btn" onclick="selectQuestionsPerRound(5)" data-questions="5">
+                    <div class="config-btn" onclick="selectMultiplayerQuestions(5)" data-questions="5">
                         <div class="config-number">5</div>
                         <div class="config-label">Rápido</div>
                     </div>
-                    <div class="config-btn" onclick="selectQuestionsPerRound(10)" data-questions="10">
+                    <div class="config-btn" onclick="selectMultiplayerQuestions(10)" data-questions="10">
                         <div class="config-number">10</div>
                         <div class="config-label">Medio</div>
                     </div>
-                    <div class="config-btn selected" onclick="selectQuestionsPerRound(15)" data-questions="15">
+                    <div class="config-btn selected" onclick="selectMultiplayerQuestions(15)" data-questions="15">
                         <div class="config-number">15</div>
                         <div class="config-label">Largo</div>
                     </div>
@@ -898,27 +297,27 @@
             </div>
             
             <!-- RESUMEN -->
-            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; margin: 25px 0; backdrop-filter: blur(10px); border: 2px solid rgba(233, 69, 96, 0.3);">
+            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; margin: 25px 0;">
                 <div style="text-align: center; color: rgba(255, 255, 255, 0.95); font-size: 15px; margin-bottom: 8px;">
-                    📊 <strong>Total:</strong> <span id="totalQuestions">15</span> preguntas
+                    📊 <strong>Total:</strong> <span id="multiplayerTotalQuestions">15</span> preguntas por jugador
                 </div>
                 <div style="text-align: center; color: rgba(255, 255, 255, 0.8); font-size: 14px;">
-                    ⏱️ <strong>Tiempo estimado:</strong> <span id="estimatedTime">6</span> minutos
+                    ⏱️ <strong>Tiempo estimado:</strong> <span id="multiplayerEstimatedTime">6</span> minutos
                 </div>
             </div>
             
-            <button class="btn-primary" onclick="startConfiguredCPUGame()">
-                <span style="position: relative; z-index: 1;">⚡ COMENZAR JUEGO</span>
+            <button class="btn-primary" onclick="createRoomWithConfig()">
+                ⚡ CREAR SALA
             </button>
-            <button class="btn-secondary" onclick="showScreen('cpuScreen')">Volver</button>
+            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
         </div>
         
         <!-- PANTALLA UNIRSE -->
         <div id="joinScreen" class="screen">
-            <h1>🎮 Unirse a Partida</h1>
+            <h1>🎯 Unirse a Partida</h1>
             <input type="text" id="playerName2" placeholder="Tu nombre" maxlength="20">
             <input type="text" id="roomCodeInput" placeholder="Código de sala" maxlength="6">
-            <button class="btn-secondary" onclick="joinRoom()">Unirse a Partida</button>
+            <button class="btn-secondary" onclick="joinRoom()">Unirse</button>
             <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
         </div>
         
@@ -926,44 +325,30 @@
         <div id="waitingScreen" class="screen">
             <h1>⏳ Sala de Espera</h1>
             <div id="roomCodeDisplay" class="room-code"></div>
-            <p style="font-size: 16px; color: #888; margin: 10px 0;">
+            <p style="text-align: center; color: rgba(255,255,255,0.8); margin: 10px 0;">
                 <span id="playerCount">1</span>/4 jugadores · Mínimo 2 para empezar
             </p>
             <div id="playersList"></div>
             <button class="btn-primary" id="readyBtn" onclick="markReady()">¡Estoy Listo!</button>
-            <button class="btn-secondary" onclick="location.reload()">Volver</button>
+            <button class="btn-secondary" onclick="location.reload()">Salir</button>
         </div>
         
         <!-- PANTALLA JUEGO -->
         <div id="gameScreen" class="screen">
-            <div id="categoryBadge" class="category-badge" style="text-align: center; margin: 5px 0;"></div>
-            <div id="questionNumber" style="text-align: center; color: rgba(255, 255, 255, 0.95); font-weight: 900; font-size: 18px; margin: 8px 0; text-shadow: 0 0 20px rgba(233, 69, 96, 0.8), 0 2px 10px rgba(0,0,0,0.5);"></div>
+            <div id="questionNumber" style="text-align: center; color: #fff; font-weight: 900; font-size: 18px; margin: 8px 0;"></div>
             
-            <!-- MARCADOR EN VIVO -->
-            <div id="liveScoreboard" style="text-align: center; margin: 10px 0; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 12px; backdrop-filter: blur(10px);"></div>
-            
-            <!-- TIMER ARRIBA EN EL CENTRO -->
             <div id="timer" class="timer">15</div>
             
-            <!-- PREGUNTA -->
             <div id="questionText" class="question-text"></div>
             
-            <!-- OPCIONES -->
             <div id="optionsGrid"></div>
-            
-            <!-- POWER-UP ABAJO -->
-            <div class="powerup-container">
-                <button id="fiftyFiftyBtn" class="powerup-btn" onclick="useFiftyFifty()" title="Elimina 2 respuestas incorrectas. Solo puedes usarlo 1 vez por partida">
-                    ⚡ 50/50 (1 por partida)
-                </button>
-            </div>
         </div>
         
         <!-- PANTALLA ESPERANDO TURNO -->
         <div id="waitingTurnScreen" class="screen">
-            <h1 style="color: #ffffff; text-shadow: 0 0 30px rgba(233, 69, 96, 0.8), 0 4px 15px rgba(0,0,0,0.6); font-size: 42px;">⏳ Esperando turno...</h1>
-            <p style="text-align: center; font-size: 22px; color: rgba(255, 255, 255, 0.95); margin: 25px 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-weight: 700;">
-                <strong id="otherPlayerName" style="color: #ffffff;"></strong> está respondiendo su pregunta
+            <h1 style="color: #ffffff;">⏳ Esperando turno...</h1>
+            <p style="text-align: center; font-size: 22px; color: rgba(255, 255, 255, 0.95); margin: 25px 0;">
+                <strong id="otherPlayerName"></strong> está respondiendo
             </p>
             <div style="text-align: center; margin: 40px 0;">
                 <div style="display: inline-block; width: 100px; height: 100px; border: 8px solid rgba(255,255,255,0.2); border-top: 8px solid #e94560; border-radius: 50%; animation: spin 1s linear infinite;"></div>
@@ -980,18 +365,7 @@
         <div id="resultsScreen" class="screen">
             <h1>🏆 ¡Juego Terminado!</h1>
             <div id="finalScores"></div>
-            <form method="GET" action="">
-                <button type="submit" class="btn-primary" style="width: 100%;">🎮 Nueva Partida</button>
-            </form>
-        </div>
-    </div>
-    
-    <!-- MODAL HISTORIAL -->
-    <div id="historyModal" class="history-modal">
-        <div class="history-content">
-            <h2 style="text-align: center; margin-bottom: 20px;">📊 Historial de Partidas</h2>
-            <div id="historyList"></div>
-            <button class="btn-secondary" onclick="toggleHistory()" style="margin-top: 20px;">Cerrar</button>
+            <button class="btn-primary" onclick="location.reload()">🎮 Nueva Partida</button>
         </div>
     </div>
 
@@ -1003,522 +377,52 @@
         var timeLeft = 15;
         var timerInterval = null;
         var hasAnswered = false;
-        var gameMode = 'normal'; // 'normal' o 'quick'
-        var fiftyFiftyUsed = false;
         var currentQuestion = null;
-        var cpuDifficulty = 'normal'; // 'easy', 'normal', 'hard'
         
-        // MODO CPU
-        var cpuMode = false;
-        var cpuScore = 0;
-        var playerScore = 0;
-        var cpuQuestionsAnswered = 0;
-        var playerQuestionsAnswered = 0;
-        var cpuQuestions = [];
-        var currentQuestionIndex = 0;
-        var isPlayerTurn = true;
+        // CONFIGURACIÓN MULTIJUGADOR
+        var multiplayerRounds = 1;
+        var multiplayerQuestionsPerRound = 15;
         
-        // TRACKING DE ACIERTOS
-        var playerCorrectAnswers = 0;
-        var cpuCorrectAnswers = 0;
-        
-        // SISTEMA DE RONDAS
-        var totalRounds = 1;
-        var currentRound = 1;
-        var questionsPerRound = 15;
-        var roundScores = { player: [], cpu: [] }; // Puntuaciones por ronda
-        
-        // SISTEMA DE HISTORIAL
-        function saveMatch(result) {
-            var matches = JSON.parse(localStorage.getItem('trivialHistory') || '[]');
-            var modeText = totalRounds > 1 ? `${totalRounds} rondas × ${questionsPerRound}` : `${questionsPerRound} preguntas`;
-            matches.unshift({
-                date: new Date().toLocaleString('es-ES'),
-                mode: modeText,
-                result: result.won ? 'Victoria' : 'Derrota',
-                score: result.myScore,
-                opponent: result.opponentName,
-                opponentScore: result.opponentScore
-            });
-            // Mantener solo las últimas 20 partidas
-            if (matches.length > 20) matches = matches.slice(0, 20);
-            localStorage.setItem('trivialHistory', JSON.stringify(matches));
-        }
-        
-        function loadHistory() {
-            var matches = JSON.parse(localStorage.getItem('trivialHistory') || '[]');
-            var html = '';
-            if (matches.length === 0) {
-                html = '<p style="text-align: center; color: #999;">No hay partidas guardadas aún</p>';
-            } else {
-                var wins = matches.filter(m => m.result === 'Victoria').length;
-                var total = matches.length;
-                html += '<div style="text-align: center; background: #667eea; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px;">';
-                html += '<h3>Estadísticas</h3>';
-                html += '<p style="font-size: 24px; margin: 10px 0;"><strong>' + wins + '</strong> victorias de <strong>' + total + '</strong> partidas</p>';
-                html += '<p>Porcentaje: <strong>' + (total > 0 ? Math.round(wins/total*100) : 0) + '%</strong></p>';
-                html += '</div>';
-                
-                matches.forEach(function(match) {
-                    var className = match.result === 'Victoria' ? 'history-win' : 'history-lose';
-                    html += '<div class="history-item ' + className + '">';
-                    html += '<div style="display: flex; justify-content: space-between; margin-bottom: 5px;">';
-                    html += '<strong>' + match.result + '</strong>';
-                    html += '<span style="color: #999; font-size: 12px;">' + match.date + '</span>';
-                    html += '</div>';
-                    html += '<div style="font-size: 14px;">';
-                    html += '🎮 Modo: ' + match.mode + '<br>';
-                    html += '⭐ Puntos: ' + match.score + '<br>';
-                    html += '👤 vs ' + match.opponent + ' (' + match.opponentScore + ' pts)';
-                    html += '</div>';
-                    html += '</div>';
-                });
-            }
-            document.getElementById('historyList').innerHTML = html;
-        }
-        
-        function toggleHistory() {
-            var modal = document.getElementById('historyModal');
-            if (modal.classList.contains('active')) {
-                modal.classList.remove('active');
-            } else {
-                loadHistory();
-                modal.classList.add('active');
-            }
-        }
-        
-        // SELECCIÓN DE MODO
-        function selectMode(mode) {
-            gameMode = mode;
-            var buttons = document.querySelectorAll('.mode-btn');
-            buttons.forEach(function(btn) {
-                btn.classList.remove('selected');
-            });
-            event.target.closest('.mode-btn').classList.add('selected');
-        }
-        
-        // ===== MODO CPU =====
-        function startCPUGame() {
+        function showMultiplayerConfig() {
             playerName = document.getElementById('playerName').value.trim();
             if (!playerName) {
                 showError('Por favor escribe tu nombre');
                 return;
             }
-            showScreen('cpuScreen');
+            showScreen('multiplayerConfigScreen');
         }
         
-        function selectDifficulty(difficulty) {
-            cpuDifficulty = difficulty;
-            var buttons = document.querySelectorAll('.difficulty-btn');
-            buttons.forEach(function(btn) {
+        function selectMultiplayerRounds(rounds) {
+            multiplayerRounds = rounds;
+            document.querySelectorAll('.config-btn[data-rounds]').forEach(btn => {
                 btn.classList.remove('selected');
             });
-            event.target.closest('.difficulty-btn').classList.add('selected');
+            document.querySelector('.config-btn[data-rounds="' + rounds + '"]').classList.add('selected');
+            updateMultiplayerSummary();
         }
         
-        function startCPUGameWithDifficulty() {
-            cpuMode = true;
-            cpuScore = 0;
-            playerScore = 0;
-            cpuQuestionsAnswered = 0;
-            playerQuestionsAnswered = 0;
-            currentQuestionIndex = 0;
-            isPlayerTurn = true;
-            fiftyFiftyUsed = false;
-            
-            // Generar preguntas aleatorias
-            var questionsPerPlayer = gameMode === 'quick' ? 5 : 15;
-            var totalQuestions = questionsPerPlayer * 2;
-            
-            // Simulamos que pedimos preguntas al servidor
-            fetch('https://trivial-kapuchi.onrender.com/api/questions?count=' + totalQuestions)
-                .then(response => response.json())
-                .then(questions => {
-                    cpuQuestions = questions;
-                    showCPUGame();
-                })
-                .catch(() => {
-                    // Si falla, genera preguntas locales básicas
-                    cpuQuestions = generateLocalQuestions(totalQuestions);
-                    showCPUGame();
-                });
-        }
-        
-        function generateLocalQuestions(count) {
-            var localQuestions = [
-                { question: "¿Capital de Francia?", options: ["Londres", "París", "Berlín", "Madrid"], correct: 1 },
-                { question: "¿Planeta más grande?", options: ["Tierra", "Júpiter", "Marte", "Saturno"], correct: 1 },
-                { question: "¿Año llegada a la Luna?", options: ["1965", "1969", "1972", "1975"], correct: 1 },
-                { question: "¿Océano más grande?", options: ["Atlántico", "Pacífico", "Índico", "Ártico"], correct: 1 },
-                { question: "¿Quién pintó la Mona Lisa?", options: ["Van Gogh", "Da Vinci", "Picasso", "Miguel Ángel"], correct: 1 }
-            ];
-            
-            var questions = [];
-            for (var i = 0; i < count; i++) {
-                questions.push(localQuestions[i % localQuestions.length]);
-            }
-            return questions;
-        }
-        
-        function showCPUGame() {
-            showScreen('gameScreen');
-            sendCPUQuestion();
-        }
-        
-        function sendCPUQuestion() {
-            if (isPlayerTurn) {
-                // Turno del jugador
-                if (playerQuestionsAnswered >= questionsPerRound) {
-                    // Jugador terminó, turno de CPU
-                    isPlayerTurn = false;
-                    if (cpuQuestionsAnswered >= questionsPerRound) {
-                        endCPUGame();
-                        return;
-                    }
-                    setTimeout(sendCPUQuestion, 1000);
-                    return;
-                }
-                
-                currentQuestion = cpuQuestions[currentQuestionIndex];
-                hasAnswered = false;
-                timeLeft = 15;
-                
-                // Mostrar comodín si hay 10+ preguntas por ronda
-                if (questionsPerRound >= 10) {
-                    document.querySelector('.powerup-container').style.display = 'block';
-                    if (fiftyFiftyUsed) {
-                        document.getElementById('fiftyFiftyBtn').disabled = true;
-                        document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
-                    } else {
-                        document.getElementById('fiftyFiftyBtn').disabled = false;
-                        document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por ronda)';
-                    }
-                } else {
-                    document.querySelector('.powerup-container').style.display = 'none';
-                }
-                
-                var category = getCategoryInfo(currentQuestion.question);
-                document.getElementById('categoryBadge').textContent = category.name;
-                document.getElementById('categoryBadge').className = 'category-badge ' + category.class;
-                
-                // Mostrar ronda actual si hay más de 1
-                var roundText = totalRounds > 1 ? `🔄 RONDA ${currentRound}/${totalRounds} · ` : '';
-                document.getElementById('questionNumber').textContent = roundText + 'Pregunta ' + (playerQuestionsAnswered + 1) + ' de ' + questionsPerRound;
-                
-                // Actualizar marcador en vivo
-                updateLiveScoreboard();
-                
-                document.getElementById('questionText').textContent = currentQuestion.question;
-                document.getElementById('timer').textContent = timeLeft;
-                
-                var grid = document.getElementById('optionsGrid');
-                grid.innerHTML = '';
-                currentQuestion.options.forEach(function(option, index) {
-                    var btn = document.createElement('button');
-                    btn.className = 'option-btn';
-                    btn.textContent = option;
-                    btn.onclick = function() { submitCPUAnswer(index); };
-                    grid.appendChild(btn);
-                });
-                
-                clearInterval(timerInterval);
-                timerInterval = setInterval(function() {
-                    timeLeft--;
-                    document.getElementById('timer').textContent = timeLeft;
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        if (!hasAnswered) {
-                            submitCPUAnswer(-1); // No respondió
-                        }
-                    }
-                }, 1000);
-            } else {
-                // Turno de la CPU
-                showCPUThinking();
-            }
-        }
-        
-        function submitCPUAnswer(answerIndex) {
-            if (hasAnswered) return;
-            hasAnswered = true;
-            clearInterval(timerInterval);
-            
-            var isCorrect = answerIndex === currentQuestion.correct;
-            
-            if (isCorrect) {
-                playerScore += timeLeft * 10;
-                playerCorrectAnswers++; // Incrementar aciertos
-            }
-            
-            // Marcar respuesta seleccionada
-            var options = document.querySelectorAll('.option-btn');
-            if (answerIndex >= 0) {
-                options[answerIndex].classList.add(isCorrect ? 'correct' : 'wrong');
-            }
-            
-            playerQuestionsAnswered++;
-            currentQuestionIndex++;
-            
-            setTimeout(function() {
-                isPlayerTurn = false;
-                sendCPUQuestion();
-            }, 2000);
-        }
-        
-        function showCPUThinking() {
-            document.getElementById('questionText').textContent = '🤖 La CPU está pensando...';
-            document.getElementById('timer').textContent = '🤔';
-            document.getElementById('optionsGrid').innerHTML = '';
-            document.querySelector('.powerup-container').style.display = 'none';
-            
-            // CPU responde en 2-6 segundos
-            var thinkingTime = Math.random() * 4000 + 2000;
-            
-            setTimeout(function() {
-                processCPUAnswer();
-            }, thinkingTime);
-        }
-        
-        function processCPUAnswer() {
-            var question = cpuQuestions[currentQuestionIndex];
-            
-            // CPU acierta según dificultad
-            var accuracy = 0.6; // Normal por defecto
-            if (cpuDifficulty === 'easy') {
-                accuracy = 0.4;
-            } else if (cpuDifficulty === 'hard') {
-                accuracy = 0.8;
-            }
-            
-            var cpuCorrect = Math.random() < accuracy;
-            
-            // Tiempo aleatorio de respuesta (2-8 segundos)
-            var cpuTime = Math.floor(Math.random() * 7) + 2;
-            
-            if (cpuCorrect) {
-                cpuScore += cpuTime * 10;
-                cpuCorrectAnswers++; // Incrementar aciertos de CPU
-            }
-            
-            // Mostrar resultado
-            var difficultyEmoji = cpuDifficulty === 'easy' ? '🟢' : cpuDifficulty === 'hard' ? '🔴' : '🟡';
-            document.getElementById('questionText').textContent = difficultyEmoji + ' CPU respondió ' + (cpuCorrect ? 'correctamente ✓' : 'incorrectamente ✗');
-            
-            cpuQuestionsAnswered++;
-            currentQuestionIndex++;
-            
-            // Verificar si ambos terminaron sus preguntas de esta ronda
-            setTimeout(function() {
-                if (playerQuestionsAnswered >= questionsPerRound && cpuQuestionsAnswered >= questionsPerRound) {
-                    endCPUGame();
-                } else {
-                    isPlayerTurn = true;
-                    sendCPUQuestion();
-                }
-            }, 2000);
-        }
-        
-        function endCPUGame() {
-            // Guardar puntuaciones de esta ronda
-            roundScores.player.push(playerScore);
-            roundScores.cpu.push(cpuScore);
-            
-            // Verificar si hay más rondas
-            if (currentRound < totalRounds) {
-                // Mostrar ranking parcial y continuar a siguiente ronda
-                showRoundEndScreen();
-            } else {
-                // Mostrar ranking final
-                showFinalRanking();
-            }
-        }
-        
-        function showRoundEndScreen() {
-            var difficultyBadge = cpuDifficulty === 'easy' ? '🟢' : cpuDifficulty === 'hard' ? '🔴' : '🟡';
-            var difficultyText = cpuDifficulty === 'easy' ? 'Fácil' : cpuDifficulty === 'hard' ? 'Difícil' : 'Normal';
-            
-            var ranking = [
-                { name: playerName, score: playerScore },
-                { name: difficultyBadge + ' CPU (' + difficultyText + ')', score: cpuScore }
-            ].sort((a, b) => b.score - a.score);
-            
-            var html = '<div style="text-align: center; padding: 0 10px;">';
-            html += '<h2 style="font-size: 28px; margin-bottom: 15px; margin-top: 10px; color: #ffffff; text-shadow: 0 0 30px rgba(233, 69, 96, 0.8), 0 4px 15px rgba(0,0,0,0.6); font-weight: 900; line-height: 1.2;">🎯 FIN DE RONDA ' + currentRound + '/' + totalRounds + '</h2>';
-            html += '<p style="color: rgba(255,255,255,0.8); font-size: 15px; margin-bottom: 20px;">Puntuaciones de esta ronda:</p>';
-            
-            var medals = ['🥇', '🥈'];
-            
-            ranking.forEach(function(p, index) {
-                var isMe = p.name === playerName;
-                var position = index + 1;
-                var medal = medals[index];
-                var style = '';
-                
-                if (position === 1) {
-                    style = 'background: linear-gradient(135deg, #FFD700, #FFA500); color: white;';
-                } else {
-                    style = 'background: linear-gradient(135deg, #C0C0C0, #808080); color: white;';
-                }
-                
-                html += '<div style="' + style + ' padding: 20px 12px; margin: 12px 5px; max-width: 96%; box-sizing: border-box; border-radius: 18px; font-size: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.3);">';
-                html += '<div style="font-size: 36px; margin-bottom: 8px;">' + medal + '</div>';
-                html += '<strong style="font-size: 22px; display: block; margin-bottom: 6px; word-wrap: break-word; line-height: 1.2;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong>';
-                html += '<span style="font-size: 28px; font-weight: 900;">' + p.score + ' pts</span>';
-                html += '</div>';
+        function selectMultiplayerQuestions(questions) {
+            multiplayerQuestionsPerRound = questions;
+            document.querySelectorAll('.config-btn[data-questions]').forEach(btn => {
+                btn.classList.remove('selected');
             });
-            
-            html += '<p style="color: rgba(255,255,255,0.9); font-size: 16px; margin-top: 25px; font-weight: 700;">💪 ¡Todavía puedes ganar!</p>';
-            html += '<p style="color: rgba(255,255,255,0.7); font-size: 14px; margin-top: 10px;">Preparando Ronda ' + (currentRound + 1) + '...</p>';
-            html += '</div>';
-            
-            document.getElementById('finalScores').innerHTML = html;
-            showScreen('resultsScreen');
-            
-            // Automáticamente continuar a siguiente ronda después de 5 segundos
-            setTimeout(function() {
-                startNextRound();
-            }, 5000);
+            document.querySelector('.config-btn[data-questions="' + questions + '"]').classList.add('selected');
+            updateMultiplayerSummary();
         }
         
-        function startNextRound() {
-            currentRound++;
-            
-            // Resetear contadores de preguntas (pero mantener puntuaciones acumuladas)
-            cpuQuestionsAnswered = 0;
-            playerQuestionsAnswered = 0;
-            playerCorrectAnswers = 0; // Reset aciertos
-            cpuCorrectAnswers = 0; // Reset aciertos
-            isPlayerTurn = true;
-            fiftyFiftyUsed = false;
-            
-            // Continuar con las siguientes preguntas
-            showCPUGame();
+        function updateMultiplayerSummary() {
+            var total = multiplayerRounds * multiplayerQuestionsPerRound;
+            var time = Math.ceil(total * 0.4);
+            document.getElementById('multiplayerTotalQuestions').textContent = total;
+            document.getElementById('multiplayerEstimatedTime').textContent = time;
         }
         
-        function showFinalRanking() {
-            var difficultyBadge = cpuDifficulty === 'easy' ? '🟢' : cpuDifficulty === 'hard' ? '🔴' : '🟡';
-            var difficultyText = cpuDifficulty === 'easy' ? 'Fácil' : cpuDifficulty === 'hard' ? 'Difícil' : 'Normal';
-            
-            // Calcular puntuaciones totales acumuladas
-            var totalPlayerScore = roundScores.player.reduce((a, b) => a + b, 0);
-            var totalCpuScore = roundScores.cpu.reduce((a, b) => a + b, 0);
-            
-            var ranking = [
-                { name: playerName, score: totalPlayerScore },
-                { name: difficultyBadge + ' CPU (' + difficultyText + ')', score: totalCpuScore }
-            ].sort((a, b) => b.score - a.score);
-            
-            var html = '<div style="text-align: center; padding: 0 10px;">';
-            html += '<h2 style="font-size: 26px; margin-bottom: 20px; margin-top: 10px; color: #ffffff; text-shadow: 0 0 30px rgba(233, 69, 96, 0.8), 0 4px 15px rgba(0,0,0,0.6); font-weight: 900; line-height: 1.2;">🏆 RANKING FINAL 🏆</h2>';
-            html += '<p style="color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 15px;">' + totalRounds + ' rondas · ' + (totalRounds * questionsPerRound) + ' preguntas totales</p>';
-            
-            var medals = ['🥇', '🥈'];
-            
-            ranking.forEach(function(p, index) {
-                var isMe = p.name === playerName;
-                var position = index + 1;
-                var medal = medals[index];
-                var style = '';
-                
-                if (position === 1) {
-                    style = 'background: linear-gradient(135deg, #FFD700, #FFA500); color: white;';
-                } else {
-                    style = 'background: linear-gradient(135deg, #C0C0C0, #808080); color: white;';
-                }
-                
-                html += '<div style="' + style + ' padding: 20px 12px; margin: 12px 5px; max-width: 96%; box-sizing: border-box; border-radius: 18px; font-size: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.3);">';
-                html += '<div style="font-size: 36px; margin-bottom: 8px;">' + medal + '</div>';
-                html += '<strong style="font-size: 22px; display: block; margin-bottom: 6px; word-wrap: break-word; line-height: 1.2;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong>';
-                html += '<span style="font-size: 28px; font-weight: 900;">' + p.score + ' pts</span>';
-                html += '</div>';
+        function createRoomWithConfig() {
+            socket.emit('createRoom', { 
+                playerName: playerName,
+                totalRounds: multiplayerRounds,
+                questionsPerRound: multiplayerQuestionsPerRound
             });
-            
-            html += '</div>';
-            document.getElementById('finalScores').innerHTML = html;
-            showScreen('resultsScreen');
-            
-            // Guardar en historial
-            saveMatch({
-                won: ranking[0].name === playerName,
-                myScore: totalPlayerScore,
-                opponentName: difficultyBadge + ' CPU (' + difficultyText + ')',
-                opponentScore: totalCpuScore
-            });
-            
-            // Confetti si ganaste
-            if (ranking[0].name === playerName) {
-                createConfetti();
-            }
-            
-            cpuMode = false;
-        }
-        
-        // POWER-UP 50/50
-        function useFiftyFifty() {
-            if (fiftyFiftyUsed || hasAnswered) return;
-            
-            fiftyFiftyUsed = true;
-            document.getElementById('fiftyFiftyBtn').disabled = true;
-            document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
-            
-            var options = document.querySelectorAll('.option-btn');
-            var correctIndex = currentQuestion.correct;
-            var incorrectIndices = [];
-            
-            for (var i = 0; i < options.length; i++) {
-                if (i !== correctIndex) {
-                    incorrectIndices.push(i);
-                }
-            }
-            
-            // Eliminar 2 incorrectas aleatoriamente
-            var toRemove = [];
-            while (toRemove.length < 2 && incorrectIndices.length > 0) {
-                var randomIndex = Math.floor(Math.random() * incorrectIndices.length);
-                toRemove.push(incorrectIndices[randomIndex]);
-                incorrectIndices.splice(randomIndex, 1);
-            }
-            
-            toRemove.forEach(function(index) {
-                options[index].style.display = 'none';
-            });
-        }
-        
-        // ANIMACIÓN CONFETTI
-        function createConfetti() {
-            var colors = ['#FF6B6B', '#4ECDC4', '#FFD93D', '#6BCF7F', '#A78BFA'];
-            for (var i = 0; i < 100; i++) {
-                setTimeout(function() {
-                    var confetti = document.createElement('div');
-                    confetti.className = 'confetti';
-                    confetti.style.left = Math.random() * 100 + '%';
-                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
-                    document.body.appendChild(confetti);
-                    setTimeout(function() {
-                        confetti.remove();
-                    }, 3000);
-                }, i * 30);
-            }
-        }
-        
-        // CATEGORÍAS
-        function getCategoryInfo(question) {
-            var text = question.toLowerCase();
-            if (text.includes('capital') || text.includes('país') || text.includes('continente') || text.includes('océano') || text.includes('río')) {
-                return { name: '🌍 Geografía', class: 'cat-geografia' };
-            } else if (text.includes('planeta') || text.includes('animal') || text.includes('célula') || text.includes('átomo') || text.includes('elemento')) {
-                return { name: '🧪 Ciencia', class: 'cat-ciencia' };
-            } else if (text.includes('año') || text.includes('guerra') || text.includes('emperador') || text.includes('rey')) {
-                return { name: '📜 Historia', class: 'cat-historia' };
-            } else if (text.includes('deporte') || text.includes('jugadores') || text.includes('fútbol') || text.includes('olímpicos')) {
-                return { name: '⚽ Deportes', class: 'cat-deportes' };
-            } else if (text.includes('pintó') || text.includes('escribió') || text.includes('compuso') || text.includes('dirigió')) {
-                return { name: '🎨 Arte', class: 'cat-arte' };
-            } else if (text.includes('película') || text.includes('canta') || text.includes('actor') || text.includes('música')) {
-                return { name: '🎬 Entretenimiento', class: 'cat-entretenimiento' };
-            }
-            return { name: '💡 General', class: 'cat-general' };
         }
         
         function showScreen(screenId) {
@@ -1535,15 +439,6 @@
             }, 3000);
         }
         
-        function createRoom() {
-            playerName = document.getElementById('playerName').value.trim();
-            if (!playerName) {
-                showError('Por favor ingresa tu nombre');
-                return;
-            }
-            socket.emit('createRoom', { playerName: playerName, mode: gameMode });
-        }
-        
         function showJoinScreen() {
             showScreen('joinScreen');
         }
@@ -1551,9 +446,6 @@
         function joinRoom() {
             playerName = document.getElementById('playerName2').value.trim();
             var roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-            
-            console.log('🔍 Intentando unirse a sala:', roomCode);
-            console.log('📝 Longitud del código:', roomCode.length);
             
             if (!playerName || !roomCode) {
                 showError('Por favor completa todos los campos');
@@ -1571,8 +463,6 @@
             hasAnswered = true;
             clearInterval(timerInterval);
             
-            // NO marcar como selected todavía - esperar resultado
-            // Guardar el índice para cuando llegue el resultado
             window.selectedAnswerIndex = index;
             
             socket.emit('submitAnswer', {
@@ -1586,18 +476,12 @@
         socket.on('roomCreated', function(data) {
             currentRoom = data.roomCode;
             document.getElementById('roomCodeDisplay').textContent = data.roomCode;
-            document.getElementById('playersList').innerHTML = '<div class="player">' + data.playerName + ' (Tú)</div>';
+            document.getElementById('playersList').innerHTML = '<div class="player">' + playerName + ' (Tú)</div>';
             showScreen('waitingScreen');
         });
         
         socket.on('roomError', function(message) {
-            if (message === 'Sala no encontrada') {
-                showError('❌ Sala no encontrada. Posibles causas:\n• El código expiró\n• El creador salió\n• Código incorrecto');
-            } else if (message === 'Sala llena') {
-                showError('❌ Esta sala ya tiene 2 jugadores');
-            } else {
-                showError(message);
-            }
+            showError(message);
         });
         
         socket.on('playerJoined', function(data) {
@@ -1610,13 +494,7 @@
                 html += '<div class="' + className + '">' + p.name + readyText + '</div>';
             });
             document.getElementById('playersList').innerHTML = html;
-            
-            // Actualizar contador de jugadores
-            var counterElement = document.getElementById('playerCount');
-            if (counterElement) {
-                counterElement.textContent = data.players.length;
-            }
-            
+            document.getElementById('playerCount').textContent = data.players.length;
             showScreen('waitingScreen');
         });
         
@@ -1628,42 +506,17 @@
                 html += '<div class="' + className + '">' + p.name + readyText + '</div>';
             });
             document.getElementById('playersList').innerHTML = html;
-            
-            // Actualizar contador de jugadores
-            var counterElement = document.getElementById('playerCount');
-            if (counterElement) {
-                counterElement.textContent = players.length;
-            }
+            document.getElementById('playerCount').textContent = players.length;
         });
         
         socket.on('newQuestion', function(data) {
             currentQuestion = data;
-            // fiftyFiftyUsed NO se resetea - solo 1 uso por partida
             hasAnswered = false;
             timeLeft = 15;
             
-            // Ocultar comodín en modo rápido
-            var powerupContainer = document.querySelector('.powerup-container');
-            if (gameMode === 'quick') {
-                powerupContainer.style.display = 'none';
-            } else {
-                powerupContainer.style.display = 'block';
-                
-                // Actualizar el estado del botón según si ya fue usado
-                if (fiftyFiftyUsed) {
-                    document.getElementById('fiftyFiftyBtn').disabled = true;
-                    document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
-                } else {
-                    document.getElementById('fiftyFiftyBtn').disabled = false;
-                    document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por partida)';
-                }
-            }
+            var roundText = data.totalRounds > 1 ? '🔄 RONDA ' + data.currentRound + '/' + data.totalRounds + ' · ' : '';
+            document.getElementById('questionNumber').textContent = roundText + 'Pregunta ' + data.questionNumber + ' de ' + data.totalQuestions;
             
-            var category = getCategoryInfo(data.question);
-            document.getElementById('categoryBadge').textContent = category.name;
-            document.getElementById('categoryBadge').className = 'category-badge ' + category.class;
-            
-            document.getElementById('questionNumber').textContent = 'Pregunta ' + data.questionNumber + ' de ' + data.totalQuestions;
             document.getElementById('questionText').textContent = data.question;
             document.getElementById('timer').textContent = timeLeft;
             
@@ -1695,11 +548,8 @@
         
         socket.on('answerResult', function(data) {
             var options = document.querySelectorAll('.option-btn');
-            
-            // Usar el índice guardado
             var selectedIndex = window.selectedAnswerIndex;
             if (selectedIndex !== undefined && options[selectedIndex]) {
-                // Agregar selected y correct/wrong AL MISMO TIEMPO
                 options[selectedIndex].classList.add('selected');
                 if (data.isCorrect) {
                     options[selectedIndex].classList.add('correct');
@@ -1711,94 +561,56 @@
         
         socket.on('waitingTurn', function(data) {
             document.getElementById('otherPlayerName').textContent = data.currentPlayerName;
-            
-            // Mostrar tabla de puntuaciones si hay múltiples jugadores
-            if (data.allPlayers && data.allPlayers.length > 2) {
-                var scoresHtml = '<div style="margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.15); border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">';
-                scoresHtml += '<h3 style="margin-bottom: 15px; color: #ffffff; font-size: 20px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">📊 Puntuaciones actuales:</h3>';
-                
-                var sortedPlayers = [...data.allPlayers].sort((a, b) => b.score - a.score);
-                sortedPlayers.forEach(function(p) {
-                    var isMe = p.name === playerName;
-                    var isCurrent = p.name === data.currentPlayerName;
-                    var style = 'padding: 12px 15px; margin: 10px 0; border-radius: 10px; font-size: 16px; ';
-                    
-                    if (isCurrent) {
-                        style += 'background: rgba(233, 69, 96, 0.4); border: 2px solid #e94560; color: #ffffff; font-weight: 700;';
-                    } else {
-                        style += 'background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.2);';
-                    }
-                    
-                    scoresHtml += '<div style="' + style + '">';
-                    scoresHtml += p.name + (isMe ? ' (Tú)' : '') + (isCurrent ? ' 🎯' : '') + ': <strong style="font-size: 18px;">' + p.score + ' pts</strong>';
-                    scoresHtml += '</div>';
-                });
-                scoresHtml += '</div>';
-                
-                var waitingDiv = document.getElementById('otherPlayerName').parentElement;
-                var existingScores = waitingDiv.querySelector('.scores-table');
-                if (existingScores) {
-                    existingScores.remove();
-                }
-                var div = document.createElement('div');
-                div.className = 'scores-table';
-                div.innerHTML = scoresHtml;
-                waitingDiv.appendChild(div);
-            }
-            
             showScreen('waitingTurnScreen');
         });
         
-        socket.on('gameOver', function(data) {
-            var html = '<div style="text-align: center; padding: 0 10px;">';
-            html += '<h2 style="font-size: 26px; margin-bottom: 20px; margin-top: 10px; color: #ffffff; text-shadow: 0 0 30px rgba(233, 69, 96, 0.8), 0 4px 15px rgba(0,0,0,0.6); font-weight: 900; line-height: 1.2;">🏆 RANKING FINAL 🏆</h2>';
+        socket.on('roundEnd', function(data) {
+            var html = '<div style="text-align: center; padding: 10px;">';
+            html += '<h2 style="color: #fff; margin: 20px 0;">🎯 FIN DE RONDA ' + data.currentRound + '/' + data.totalRounds + '</h2>';
+            html += '<p style="color: rgba(255,255,255,0.8); margin: 15px 0;">Puntuaciones:</p>';
             
-            // Usar el ranking ordenado del servidor
-            var ranking = data.ranking || data.players.sort((a, b) => b.score - a.score);
-            var medals = ['🥇', '🥈', '🥉', '4º'];
-            
-            ranking.forEach(function(p, index) {
-                var isMe = p.name === playerName;
-                var position = index + 1;
-                var medal = medals[index] || (position + 'º');
-                var style = '';
-                
-                if (position === 1) {
-                    style = 'background: linear-gradient(135deg, #FFD700, #FFA500); color: white;';
-                } else if (position === 2) {
-                    style = 'background: linear-gradient(135deg, #C0C0C0, #808080); color: white;';
-                } else if (position === 3) {
-                    style = 'background: linear-gradient(135deg, #CD7F32, #8B4513); color: white;';
-                } else {
-                    style = 'background: rgba(255,255,255,0.9); color: #333;';
-                }
-                
-                html += '<div style="' + style + ' padding: 20px 12px; margin: 12px 5px; max-width: 96%; box-sizing: border-box; border-radius: 18px; font-size: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.3);">';
-                html += '<div style="font-size: 36px; margin-bottom: 8px;">' + medal + '</div>';
-                html += '<strong style="font-size: 22px; display: block; margin-bottom: 6px; word-wrap: break-word; line-height: 1.2;">' + p.name + (isMe ? ' (Tú)' : '') + '</strong>';
-                html += '<span style="font-size: 28px; font-weight: 900;">' + p.score + ' pts</span>';
+            data.ranking.forEach(function(p, index) {
+                var medal = index === 0 ? '🥇' : '🥈';
+                html += '<div style="background: ' + (index === 0 ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'linear-gradient(135deg, #C0C0C0, #808080)') + '; color: white; padding: 15px; margin: 10px; border-radius: 15px;">';
+                html += '<div style="font-size: 32px;">' + medal + '</div>';
+                html += '<strong style="font-size: 20px;">' + p.name + '</strong><br>';
+                html += '<span style="font-size: 24px;">' + p.score + ' pts</span>';
                 html += '</div>';
+            });
+            
+            html += '<p style="color: rgba(255,255,255,0.9); margin-top: 20px;">Preparando Ronda ' + (data.currentRound + 1) + '...</p>';
+            html += '</div>';
+            
+            document.getElementById('finalScores').innerHTML = html;
+            showScreen('resultsScreen');
+        });
+        
+        socket.on('gameOver', function(data) {
+            var html = '<div style="text-align: center; padding: 10px;">';
+            html += '<h2 style="color: #fff; margin: 20px 0;">🏆 RANKING FINAL</h2>';
+            if (data.totalRounds > 1) {
+                html += '<p style="color: rgba(255,255,255,0.8); margin-bottom: 15px;">' + data.totalRounds + ' rondas completadas</p>';
+            }
+            
+            var medals = ['🥇', '🥈', '🥉', '4º'];
+            data.ranking.forEach(function(p, index) {
+                var colors = [
+                    'linear-gradient(135deg, #FFD700, #FFA500)',
+                    'linear-gradient(135deg, #C0C0C0, #808080)',
+                    'linear-gradient(135deg, #CD7F32, #8B4513)',
+                    'rgba(255,255,255,0.9)'
+                ];
                 
-                if (isMe) {
-                    // Guardar en historial
-                    var opponents = ranking.filter(pl => pl.name !== playerName);
-                    saveMatch({
-                        won: position === 1,
-                        myScore: p.score,
-                        opponentName: opponents.map(o => o.name).join(', '),
-                        opponentScore: opponents.map(o => o.score).join(', ')
-                    });
-                }
+                html += '<div style="background: ' + colors[index] + '; color: ' + (index < 3 ? 'white' : '#333') + '; padding: 15px; margin: 10px; border-radius: 15px;">';
+                html += '<div style="font-size: 32px;">' + medals[index] + '</div>';
+                html += '<strong style="font-size: 20px;">' + p.name + '</strong><br>';
+                html += '<span style="font-size: 24px;">' + p.score + ' pts</span>';
+                html += '</div>';
             });
             
             html += '</div>';
             document.getElementById('finalScores').innerHTML = html;
             showScreen('resultsScreen');
-            
-            // Confetti si ganaste (1er lugar)
-            if (data.winner === playerName) {
-                createConfetti();
-            }
         });
         
         socket.on('playerLeft', function(players) {
@@ -1813,84 +625,6 @@
         socket.on('connect_error', function() {
             showError('Error de conexión');
         });
-        
-        // ===== FUNCIONES DE CONFIGURACIÓN DE RONDAS =====
-        function selectRounds(rounds) {
-            totalRounds = rounds;
-            document.querySelectorAll('.config-btn[data-rounds]').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            document.querySelector(`.config-btn[data-rounds="${rounds}"]`).classList.add('selected');
-            updateConfigSummary();
-        }
-        
-        function selectQuestionsPerRound(questions) {
-            questionsPerRound = questions;
-            document.querySelectorAll('.config-btn[data-questions]').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            document.querySelector(`.config-btn[data-questions="${questions}"]`).classList.add('selected');
-            updateConfigSummary();
-        }
-        
-        function updateConfigSummary() {
-            const total = totalRounds * questionsPerRound;
-            const time = Math.ceil(total * 0.4); // ~24 segundos por pregunta
-            document.getElementById('totalQuestions').textContent = total;
-            document.getElementById('estimatedTime').textContent = time;
-        }
-        
-        function startConfiguredCPUGame() {
-            cpuMode = true;
-            cpuScore = 0;
-            playerScore = 0;
-            cpuQuestionsAnswered = 0;
-            playerQuestionsAnswered = 0;
-            playerCorrectAnswers = 0; // Reset aciertos
-            cpuCorrectAnswers = 0; // Reset aciertos
-            currentQuestionIndex = 0;
-            currentRound = 1;
-            roundScores = { player: [], cpu: [] };
-            isPlayerTurn = true;
-            fiftyFiftyUsed = false;
-            
-            // Calcular preguntas totales para TODA la partida
-            var totalQuestions = questionsPerRound * 2 * totalRounds; // x2 porque jugador + CPU
-            
-            // Pedir todas las preguntas al servidor
-            fetch('https://trivial-kapuchi.onrender.com/api/questions?count=' + totalQuestions)
-                .then(response => response.json())
-                .then(questions => {
-                    cpuQuestions = questions;
-                    showCPUGame();
-                })
-                .catch(() => {
-                    showError('Error al cargar preguntas. Intenta de nuevo.');
-                });
-        }
-        
-        // ===== FUNCIÓN PARA ACTUALIZAR MARCADOR EN VIVO =====
-        function updateLiveScoreboard() {
-            var difficultyBadge = cpuDifficulty === 'easy' ? '🟢' : cpuDifficulty === 'hard' ? '🔴' : '🟡';
-            
-            var html = '<div style="display: flex; justify-content: space-around; gap: 10px; flex-wrap: wrap;">';
-            
-            // Jugador
-            html += '<div style="flex: 1; min-width: 140px; text-align: center;">';
-            html += '<div style="color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 700; margin-bottom: 4px;">👤 ' + playerName + '</div>';
-            html += '<div style="color: #FFD700; font-size: 16px; font-weight: 900;">' + playerScore + ' pts <span style="color: rgba(255,255,255,0.8); font-size: 13px;">(' + playerCorrectAnswers + '/' + playerQuestionsAnswered + '✓)</span></div>';
-            html += '</div>';
-            
-            // CPU
-            html += '<div style="flex: 1; min-width: 140px; text-align: center;">';
-            html += '<div style="color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 700; margin-bottom: 4px;">🤖 CPU ' + difficultyBadge + '</div>';
-            html += '<div style="color: #FFA500; font-size: 16px; font-weight: 900;">' + cpuScore + ' pts <span style="color: rgba(255,255,255,0.8); font-size: 13px;">(' + cpuCorrectAnswers + '/' + cpuQuestionsAnswered + '✓)</span></div>';
-            html += '</div>';
-            
-            html += '</div>';
-            
-            document.getElementById('liveScoreboard').innerHTML = html;
-        }
     </script>
 </body>
 </html>
