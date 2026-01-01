@@ -708,7 +708,8 @@ function sendQuestion(roomCode) {
         questionNumber: currentPlayer.questionsAnswered + 1,
         totalQuestions: room.questionsPerRound,
         currentRound: room.currentRound,
-        totalRounds: room.totalRounds
+        totalRounds: room.totalRounds,
+        allPlayers: room.players // ← AÑADIDO para marcador en vivo
     });
     
     // Enviar "esperando" a TODOS los demás jugadores
