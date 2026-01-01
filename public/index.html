@@ -337,6 +337,9 @@
         <div id="gameScreen" class="screen">
             <div id="questionNumber" style="text-align: center; color: #fff; font-weight: 900; font-size: 18px; margin: 8px 0;"></div>
             
+            <!-- MARCADOR EN VIVO -->
+            <div id="liveScoreboard" style="text-align: center; margin: 10px 0; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 12px; backdrop-filter: blur(10px);"></div>
+            
             <div id="timer" class="timer">15</div>
             
             <div id="questionText" class="question-text"></div>
@@ -517,6 +520,11 @@
             var roundText = data.totalRounds > 1 ? '🔄 RONDA ' + data.currentRound + '/' + data.totalRounds + ' · ' : '';
             document.getElementById('questionNumber').textContent = roundText + 'Pregunta ' + data.questionNumber + ' de ' + data.totalQuestions;
             
+            // Actualizar marcador en vivo si hay datos de jugadores
+            if (data.allPlayers && data.allPlayers.length > 0) {
+                updateLiveScoreboard(data.allPlayers);
+            }
+            
             document.getElementById('questionText').textContent = data.question;
             document.getElementById('timer').textContent = timeLeft;
             
@@ -561,8 +569,52 @@
         
         socket.on('waitingTurn', function(data) {
             document.getElementById('otherPlayerName').textContent = data.currentPlayerName;
+            
+            // Actualizar marcador en vivo
+            if (data.allPlayers && data.allPlayers.length > 0) {
+                var html = '<div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 12px; margin: 20px 0;">';
+                html += '<h4 style="color: #fff; margin-bottom: 10px;">📊 Puntuaciones:</h4>';
+                
+                var sorted = data.allPlayers.sort((a, b) => b.score - a.score);
+                sorted.forEach(function(p) {
+                    var isCurrent = p.name === data.currentPlayerName;
+                    html += '<div style="padding: 8px; margin: 5px 0; background: rgba(255,255,255,' + (isCurrent ? '0.2' : '0.05') + '); border-radius: 8px; border-left: 3px solid ' + (isCurrent ? '#e94560' : '#667eea') + ';">';
+                    html += '<strong style="color: #fff;">' + p.name + (isCurrent ? ' 🎯' : '') + ':</strong> ';
+                    html += '<span style="color: #FFD700; font-weight: 900;">' + p.score + ' pts</span>';
+                    html += '</div>';
+                });
+                html += '</div>';
+                
+                var waitingDiv = document.getElementById('otherPlayerName').parentElement;
+                var existing = waitingDiv.querySelector('.scores-display');
+                if (existing) existing.remove();
+                var div = document.createElement('div');
+                div.className = 'scores-display';
+                div.innerHTML = html;
+                waitingDiv.appendChild(div);
+            }
+            
             showScreen('waitingTurnScreen');
         });
+        
+        function updateLiveScoreboard(players) {
+            var html = '<div style="display: flex; justify-content: space-around; gap: 10px; flex-wrap: wrap;">';
+            
+            players.forEach(function(p) {
+                var isMe = p.name === playerName;
+                html += '<div style="flex: 1; min-width: 120px; text-align: center;">';
+                html += '<div style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700; margin-bottom: 4px;">';
+                html += (isMe ? '👤 ' : '👥 ') + p.name;
+                html += '</div>';
+                html += '<div style="color: #FFD700; font-size: 15px; font-weight: 900;">';
+                html += p.score + ' pts';
+                html += '</div>';
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            document.getElementById('liveScoreboard').innerHTML = html;
+        }
         
         socket.on('roundEnd', function(data) {
             var html = '<div style="text-align: center; padding: 10px;">';
