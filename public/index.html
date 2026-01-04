@@ -345,6 +345,13 @@
             <div id="questionText" class="question-text"></div>
             
             <div id="optionsGrid"></div>
+            
+            <!-- POWER-UP 50/50 -->
+            <div class="powerup-container" style="text-align: center; margin: 15px 0;">
+                <button id="fiftyFiftyBtn" class="powerup-btn" onclick="useFiftyFifty()" title="Elimina 2 respuestas incorrectas. Solo 1 vez por partida" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #000; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; border: none; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);">
+                    ⚡ 50/50 (1 por partida)
+                </button>
+            </div>
         </div>
         
         <!-- PANTALLA ESPERANDO TURNO -->
@@ -381,6 +388,7 @@
         var timerInterval = null;
         var hasAnswered = false;
         var currentQuestion = null;
+        var fiftyFiftyUsed = false; // ← AÑADIDO
         
         // CONFIGURACIÓN MULTIJUGADOR
         var multiplayerRounds = 1;
@@ -517,6 +525,26 @@
             hasAnswered = false;
             timeLeft = 15;
             
+            // Guardar índice correcto para el 50/50
+            currentQuestion.correct = data.correctAnswer !== undefined ? data.correctAnswer : 0;
+            
+            // Actualizar botón 50/50
+            var btn = document.getElementById('fiftyFiftyBtn');
+            if (multiplayerQuestionsPerRound >= 10) {
+                document.querySelector('.powerup-container').style.display = 'block';
+                if (fiftyFiftyUsed) {
+                    btn.disabled = true;
+                    btn.textContent = '✓ Usado';
+                    btn.style.opacity = '0.5';
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = '⚡ 50/50 (1 por partida)';
+                    btn.style.opacity = '1';
+                }
+            } else {
+                document.querySelector('.powerup-container').style.display = 'none';
+            }
+            
             var roundText = data.totalRounds > 1 ? '🔄 RONDA ' + data.currentRound + '/' + data.totalRounds + ' · ' : '';
             document.getElementById('questionNumber').textContent = roundText + 'Pregunta ' + data.questionNumber + ' de ' + data.totalQuestions;
             
@@ -596,6 +624,37 @@
             
             showScreen('waitingTurnScreen');
         });
+        
+        function useFiftyFifty() {
+            if (fiftyFiftyUsed || hasAnswered) return;
+            
+            fiftyFiftyUsed = true;
+            document.getElementById('fiftyFiftyBtn').disabled = true;
+            document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
+            document.getElementById('fiftyFiftyBtn').style.opacity = '0.5';
+            
+            var options = document.querySelectorAll('.option-btn');
+            var correctIndex = currentQuestion.correct || 0;
+            var incorrectIndices = [];
+            
+            for (var i = 0; i < options.length; i++) {
+                if (i !== correctIndex) {
+                    incorrectIndices.push(i);
+                }
+            }
+            
+            // Eliminar 2 incorrectas aleatoriamente
+            var toRemove = [];
+            while (toRemove.length < 2 && incorrectIndices.length > 0) {
+                var randomIndex = Math.floor(Math.random() * incorrectIndices.length);
+                toRemove.push(incorrectIndices[randomIndex]);
+                incorrectIndices.splice(randomIndex, 1);
+            }
+            
+            toRemove.forEach(function(index) {
+                options[index].style.display = 'none';
+            });
+        }
         
         function updateLiveScoreboard(players) {
             var html = '<div style="display: flex; justify-content: space-around; gap: 10px; flex-wrap: wrap;">';
