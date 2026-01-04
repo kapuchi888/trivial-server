@@ -709,7 +709,8 @@ function sendQuestion(roomCode) {
         totalQuestions: room.questionsPerRound,
         currentRound: room.currentRound,
         totalRounds: room.totalRounds,
-        allPlayers: room.players // ← AÑADIDO para marcador en vivo
+        allPlayers: room.players, // ← AÑADIDO para marcador en vivo
+        correctAnswer: question.correct // ← AÑADIDO para comodín 50/50
     });
     
     // Enviar "esperando" a TODOS los demás jugadores
