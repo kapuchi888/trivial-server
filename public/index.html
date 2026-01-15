@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Trivial Kapuchi v2.2 - Multijugador con Rondas - 2026-01-01 -->
+<!-- Trivial Kapuchi v2.3 - Multijugador con Rondas + CPU - 2026-01-15 -->
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -81,6 +81,10 @@
         
         .btn-secondary { 
             background: linear-gradient(135deg, #4ecdc4 0%, #44a3a0 100%);
+        }
+        
+        .btn-cpu {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
         }
         
         .screen { display: none; }
@@ -223,6 +227,56 @@
         .option-btn.wrong {
             background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%) !important;
         }
+        
+        .difficulty-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
+        .difficulty-btn {
+            padding: 20px 10px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .difficulty-btn:hover {
+            transform: translateY(-5px);
+        }
+        
+        .difficulty-btn.selected {
+            transform: scale(1.05);
+        }
+        
+        .difficulty-btn[data-difficulty="easy"] {
+            border-color: #4CAF50;
+        }
+        .difficulty-btn[data-difficulty="easy"].selected {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.4), rgba(76, 175, 80, 0.6));
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.6);
+        }
+        
+        .difficulty-btn[data-difficulty="medium"] {
+            border-color: #FF9800;
+        }
+        .difficulty-btn[data-difficulty="medium"].selected {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.4), rgba(255, 152, 0, 0.6));
+            box-shadow: 0 0 20px rgba(255, 152, 0, 0.6);
+        }
+        
+        .difficulty-btn[data-difficulty="hard"] {
+            border-color: #f44336;
+        }
+        .difficulty-btn[data-difficulty="hard"].selected {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.4), rgba(244, 67, 54, 0.6));
+            box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
+        }
     </style>
 </head>
 <body>
@@ -238,6 +292,10 @@
             
             <input type="text" id="playerName" placeholder="✨ Escribe tu nombre" maxlength="20">
             
+            <button class="btn-cpu" onclick="showCpuConfig()">
+                🤖 Jugar vs CPU
+            </button>
+            
             <button class="btn-primary" onclick="showMultiplayerConfig()">
                 🌐 Multijugador Online
             </button>
@@ -245,6 +303,71 @@
             <button class="btn-secondary" onclick="showJoinScreen()">
                 🎯 Unirse a Partida
             </button>
+        </div>
+        
+        <!-- PANTALLA CONFIGURACIÓN CPU -->
+        <div id="cpuConfigScreen" class="screen">
+            <h1>🤖 Jugar vs CPU</h1>
+            <h3 style="text-align: center; margin: 20px 0; color: rgba(255, 255, 255, 0.9);">
+                Configura tu partida
+            </h3>
+            
+            <!-- SELECTOR DE DIFICULTAD CPU -->
+            <div style="margin: 25px 0;">
+                <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); margin-bottom: 12px;">
+                    🎯 Dificultad de la CPU
+                </h4>
+                <div class="difficulty-selector">
+                    <div class="difficulty-btn selected" onclick="selectCpuDifficulty('easy')" data-difficulty="easy">
+                        <div style="font-size: 32px;">🟢</div>
+                        <div style="font-weight: 700;">Fácil</div>
+                        <div style="font-size: 11px; opacity: 0.8;">40% acierto</div>
+                    </div>
+                    <div class="difficulty-btn" onclick="selectCpuDifficulty('medium')" data-difficulty="medium">
+                        <div style="font-size: 32px;">🟡</div>
+                        <div style="font-weight: 700;">Normal</div>
+                        <div style="font-size: 11px; opacity: 0.8;">60% acierto</div>
+                    </div>
+                    <div class="difficulty-btn" onclick="selectCpuDifficulty('hard')" data-difficulty="hard">
+                        <div style="font-size: 32px;">🔴</div>
+                        <div style="font-weight: 700;">Difícil</div>
+                        <div style="font-size: 11px; opacity: 0.8;">85% acierto</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SELECTOR DE PREGUNTAS -->
+            <div style="margin: 25px 0;">
+                <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); margin-bottom: 12px;">
+                    ❓ Número de Preguntas
+                </h4>
+                <div class="config-selector">
+                    <div class="config-btn" onclick="selectCpuQuestions(5)" data-cpuquestions="5">
+                        <div class="config-number">5</div>
+                        <div class="config-label">Rápido</div>
+                    </div>
+                    <div class="config-btn selected" onclick="selectCpuQuestions(10)" data-cpuquestions="10">
+                        <div class="config-number">10</div>
+                        <div class="config-label">Normal</div>
+                    </div>
+                    <div class="config-btn" onclick="selectCpuQuestions(15)" data-cpuquestions="15">
+                        <div class="config-number">15</div>
+                        <div class="config-label">Largo</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RESUMEN -->
+            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; margin: 25px 0;">
+                <div style="text-align: center; color: rgba(255, 255, 255, 0.95); font-size: 15px;">
+                    📊 <strong id="cpuSummary">10 preguntas · CPU Fácil (40%)</strong>
+                </div>
+            </div>
+            
+            <button class="btn-cpu" onclick="startCpuGame()">
+                ⚡ COMENZAR PARTIDA
+            </button>
+            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
         </div>
         
         <!-- PANTALLA CONFIGURACIÓN MULTIJUGADOR -->
@@ -388,11 +511,279 @@
         var timerInterval = null;
         var hasAnswered = false;
         var currentQuestion = null;
-        var fiftyFiftyUsed = false; // ← AÑADIDO
+        var fiftyFiftyUsed = false;
         
         // CONFIGURACIÓN MULTIJUGADOR
         var multiplayerRounds = 1;
         var multiplayerQuestionsPerRound = 15;
+        
+        // ===== CONFIGURACIÓN CPU =====
+        var cpuDifficulty = 'easy';
+        var cpuQuestions = 10;
+        var cpuGame = {
+            active: false,
+            questions: [],
+            currentIndex: 0,
+            playerScore: 0,
+            cpuScore: 0,
+            playerCorrect: 0,
+            cpuCorrect: 0
+        };
+        
+        // Probabilidad de acierto de la CPU según dificultad
+        var cpuAccuracy = {
+            'easy': 0.40,
+            'medium': 0.60,
+            'hard': 0.85
+        };
+        
+        function showCpuConfig() {
+            playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) {
+                showError('Por favor escribe tu nombre');
+                return;
+            }
+            showScreen('cpuConfigScreen');
+            updateCpuSummary();
+        }
+        
+        function selectCpuDifficulty(difficulty) {
+            cpuDifficulty = difficulty;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector('.difficulty-btn[data-difficulty="' + difficulty + '"]').classList.add('selected');
+            updateCpuSummary();
+        }
+        
+        function selectCpuQuestions(count) {
+            cpuQuestions = count;
+            document.querySelectorAll('.config-btn[data-cpuquestions]').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector('.config-btn[data-cpuquestions="' + count + '"]').classList.add('selected');
+            updateCpuSummary();
+        }
+        
+        function updateCpuSummary() {
+            var diffNames = { 'easy': 'Fácil (40%)', 'medium': 'Normal (60%)', 'hard': 'Difícil (85%)' };
+            document.getElementById('cpuSummary').textContent = cpuQuestions + ' preguntas · CPU ' + diffNames[cpuDifficulty];
+        }
+        
+        async function startCpuGame() {
+            // Resetear estado
+            cpuGame = {
+                active: true,
+                questions: [],
+                currentIndex: 0,
+                playerScore: 0,
+                cpuScore: 0,
+                playerCorrect: 0,
+                cpuCorrect: 0
+            };
+            fiftyFiftyUsed = false;
+            
+            // Cargar preguntas del servidor
+            try {
+                var response = await fetch('/api/questions?count=' + cpuQuestions);
+                cpuGame.questions = await response.json();
+                
+                if (cpuGame.questions.length === 0) {
+                    showError('Error cargando preguntas');
+                    return;
+                }
+                
+                showCpuQuestion();
+            } catch (error) {
+                showError('Error de conexión');
+                console.error(error);
+            }
+        }
+        
+        function showCpuQuestion() {
+            if (cpuGame.currentIndex >= cpuGame.questions.length) {
+                endCpuGame();
+                return;
+            }
+            
+            hasAnswered = false;
+            timeLeft = 15;
+            var q = cpuGame.questions[cpuGame.currentIndex];
+            currentQuestion = q;
+            
+            // Actualizar número de pregunta
+            document.getElementById('questionNumber').textContent = 'Pregunta ' + (cpuGame.currentIndex + 1) + ' de ' + cpuGame.questions.length;
+            
+            // Actualizar marcador en vivo
+            updateCpuScoreboard();
+            
+            // Mostrar/ocultar 50/50
+            var btn = document.getElementById('fiftyFiftyBtn');
+            if (cpuQuestions >= 10) {
+                document.querySelector('.powerup-container').style.display = 'block';
+                if (fiftyFiftyUsed) {
+                    btn.disabled = true;
+                    btn.textContent = '✓ Usado';
+                    btn.style.opacity = '0.5';
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = '⚡ 50/50 (1 por partida)';
+                    btn.style.opacity = '1';
+                }
+            } else {
+                document.querySelector('.powerup-container').style.display = 'none';
+            }
+            
+            // Mostrar pregunta
+            document.getElementById('questionText').textContent = q.question;
+            document.getElementById('timer').textContent = timeLeft;
+            
+            // Crear opciones
+            var grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+            q.options.forEach(function(option, index) {
+                var btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = function() { submitCpuAnswer(index); };
+                grid.appendChild(btn);
+            });
+            
+            showScreen('gameScreen');
+            
+            // Iniciar temporizador
+            clearInterval(timerInterval);
+            timerInterval = setInterval(function() {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    if (!hasAnswered) {
+                        hasAnswered = true;
+                        // Tiempo agotado = respuesta incorrecta
+                        showCpuAnswerResult(-1);
+                    }
+                }
+            }, 1000);
+        }
+        
+        function submitCpuAnswer(index) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+            clearInterval(timerInterval);
+            
+            showCpuAnswerResult(index);
+        }
+        
+        function showCpuAnswerResult(playerAnswerIndex) {
+            var q = cpuGame.questions[cpuGame.currentIndex];
+            var playerCorrect = (playerAnswerIndex === q.correct);
+            
+            // Calcular respuesta de la CPU
+            var cpuCorrect = Math.random() < cpuAccuracy[cpuDifficulty];
+            
+            // Actualizar puntuaciones
+            if (playerCorrect) {
+                cpuGame.playerScore += timeLeft * 10;
+                cpuGame.playerCorrect++;
+            }
+            if (cpuCorrect) {
+                // CPU responde en tiempo aleatorio entre 5-12 segundos
+                var cpuTime = Math.floor(Math.random() * 8) + 5;
+                cpuGame.cpuScore += cpuTime * 10;
+                cpuGame.cpuCorrect++;
+            }
+            
+            // Mostrar resultado visual
+            var options = document.querySelectorAll('.option-btn');
+            
+            if (playerAnswerIndex >= 0 && options[playerAnswerIndex]) {
+                options[playerAnswerIndex].classList.add('selected');
+                if (playerCorrect) {
+                    options[playerAnswerIndex].classList.add('correct');
+                } else {
+                    options[playerAnswerIndex].classList.add('wrong');
+                }
+            }
+            
+            // Actualizar marcador
+            updateCpuScoreboard();
+            
+            // Siguiente pregunta después de 2 segundos
+            setTimeout(function() {
+                cpuGame.currentIndex++;
+                showCpuQuestion();
+            }, 2000);
+        }
+        
+        function updateCpuScoreboard() {
+            var html = '<div style="display: flex; justify-content: space-around; gap: 10px; flex-wrap: wrap;">';
+            
+            // Jugador
+            html += '<div style="flex: 1; min-width: 120px; text-align: center;">';
+            html += '<div style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700; margin-bottom: 4px;">👤 ' + playerName + '</div>';
+            html += '<div style="color: #FFD700; font-size: 15px; font-weight: 900;">' + cpuGame.playerScore + ' pts</div>';
+            html += '<div style="color: rgba(255,255,255,0.7); font-size: 11px;">(' + cpuGame.playerCorrect + '/' + (cpuGame.currentIndex) + ' ✓)</div>';
+            html += '</div>';
+            
+            // CPU
+            var diffEmoji = { 'easy': '🟢', 'medium': '🟡', 'hard': '🔴' };
+            html += '<div style="flex: 1; min-width: 120px; text-align: center;">';
+            html += '<div style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700; margin-bottom: 4px;">🤖 CPU ' + diffEmoji[cpuDifficulty] + '</div>';
+            html += '<div style="color: #FFD700; font-size: 15px; font-weight: 900;">' + cpuGame.cpuScore + ' pts</div>';
+            html += '<div style="color: rgba(255,255,255,0.7); font-size: 11px;">(' + cpuGame.cpuCorrect + '/' + (cpuGame.currentIndex) + ' ✓)</div>';
+            html += '</div>';
+            
+            html += '</div>';
+            document.getElementById('liveScoreboard').innerHTML = html;
+        }
+        
+        function endCpuGame() {
+            cpuGame.active = false;
+            clearInterval(timerInterval);
+            
+            var playerWins = cpuGame.playerScore > cpuGame.cpuScore;
+            var tie = cpuGame.playerScore === cpuGame.cpuScore;
+            
+            var diffNames = { 'easy': 'Fácil', 'medium': 'Normal', 'hard': 'Difícil' };
+            var diffEmoji = { 'easy': '🟢', 'medium': '🟡', 'hard': '🔴' };
+            
+            var html = '<div style="text-align: center; padding: 10px;">';
+            
+            if (tie) {
+                html += '<h2 style="color: #fff; margin: 20px 0;">🤝 ¡EMPATE!</h2>';
+            } else if (playerWins) {
+                html += '<h2 style="color: #fff; margin: 20px 0;">🎉 ¡GANASTE!</h2>';
+            } else {
+                html += '<h2 style="color: #fff; margin: 20px 0;">😢 La CPU gana</h2>';
+            }
+            
+            html += '<p style="color: rgba(255,255,255,0.8); margin-bottom: 15px;">CPU ' + diffEmoji[cpuDifficulty] + ' ' + diffNames[cpuDifficulty] + '</p>';
+            
+            // Jugador
+            var playerBg = playerWins ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'linear-gradient(135deg, #C0C0C0, #808080)';
+            html += '<div style="background: ' + playerBg + '; color: white; padding: 15px; margin: 10px; border-radius: 15px;">';
+            html += '<div style="font-size: 32px;">' + (playerWins ? '🥇' : '🥈') + '</div>';
+            html += '<strong style="font-size: 20px;">👤 ' + playerName + '</strong><br>';
+            html += '<span style="font-size: 24px;">' + cpuGame.playerScore + ' pts</span><br>';
+            html += '<span style="font-size: 14px;">(' + cpuGame.playerCorrect + '/' + cpuQuestions + ' aciertos)</span>';
+            html += '</div>';
+            
+            // CPU
+            var cpuBg = !playerWins && !tie ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'linear-gradient(135deg, #C0C0C0, #808080)';
+            html += '<div style="background: ' + cpuBg + '; color: white; padding: 15px; margin: 10px; border-radius: 15px;">';
+            html += '<div style="font-size: 32px;">' + (!playerWins && !tie ? '🥇' : '🥈') + '</div>';
+            html += '<strong style="font-size: 20px;">🤖 CPU ' + diffEmoji[cpuDifficulty] + '</strong><br>';
+            html += '<span style="font-size: 24px;">' + cpuGame.cpuScore + ' pts</span><br>';
+            html += '<span style="font-size: 14px;">(' + cpuGame.cpuCorrect + '/' + cpuQuestions + ' aciertos)</span>';
+            html += '</div>';
+            
+            html += '</div>';
+            
+            document.getElementById('finalScores').innerHTML = html;
+            showScreen('resultsScreen');
+        }
+        // ===== FIN CONFIGURACIÓN CPU =====
         
         function showMultiplayerConfig() {
             playerName = document.getElementById('playerName').value.trim();
