@@ -793,7 +793,8 @@
         // ===== SOCKET EVENTS =====
         socket.on('roomCreated', function(data) {
             currentRoom = data.roomCode;
-            gameMode = data.gameMode || 'classic';
+            // Mantener el modo que seleccionamos, no sobreescribir
+            if (data.gameMode) gameMode = data.gameMode;
             document.getElementById('roomCodeDisplay').textContent = data.roomCode;
             document.getElementById('gameModeDisplay').textContent = gameMode === 'classic' ? '🎯 Modo Clásico' : '💀 Modo Supervivencia';
             document.getElementById('playersList').innerHTML = '<div class="player">' + playerName + ' (Tú)</div>';
@@ -906,19 +907,14 @@
         socket.on('answerResult', function(data) {
             var options = document.querySelectorAll('.option-btn');
             
-            // Mostrar correcta/incorrecta
+            // Mostrar solo si acertó o falló, NO mostrar la correcta
             if (data.selectedIndex >= 0 && options[data.selectedIndex]) {
                 if (data.isCorrect) {
                     options[data.selectedIndex].classList.add('correct');
                 } else {
                     options[data.selectedIndex].classList.add('wrong');
-                    // Mostrar la correcta
-                    if (options[data.correctAnswer]) {
-                        options[data.correctAnswer].classList.add('correct');
-                    }
+                    // NO mostrar la correcta
                 }
-            } else if (data.correctAnswer !== undefined && options[data.correctAnswer]) {
-                options[data.correctAnswer].classList.add('correct');
             }
             
             // Shake si perdió vida
@@ -1174,14 +1170,12 @@
             var options = document.querySelectorAll('.option-btn');
             options.forEach(btn => btn.disabled = true);
             
-            // Mostrar resultado del jugador
+            // Mostrar resultado del jugador - NO mostrar la correcta si falla
             if (playerAnswer >= 0 && options[playerAnswer]) {
                 options[playerAnswer].classList.add('selected');
                 options[playerAnswer].classList.add(playerCorrect ? 'correct' : 'wrong');
             }
-            if (!playerCorrect && options[q.correct]) {
-                options[q.correct].classList.add('correct');
-            }
+            // NO mostrar la correcta cuando fallas
             
             if (cpuMode === 'classic') {
                 // Modo clásico: sumar puntos
