@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Trivial Kapuchi v3.1 - CORREGIDO - 2026-01-15 -->
+<!-- Trivial Kapuchi v3.2 - CORREGIDO - 2026-02-01 -->
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -272,6 +272,7 @@
         <!-- PANTALLA INICIAL -->
         <div id="homeScreen" class="screen active">
             <h1>🎮 Trivial Kapuchi</h1>
+            <p style="text-align: center; color: rgba(255, 255, 255, 0.5); font-size: 10px; margin: -10px 0 10px 0;">v3.2</p>
             <p style="text-align: center; color: rgba(255, 255, 255, 0.9); font-size: 16px; margin: 20px 0;">
                 ¡Pon a prueba tus conocimientos!
             </p>
@@ -602,7 +603,9 @@
         
         // ===== CREAR/UNIRSE SALA =====
         function createRoom() {
-            console.log('Creando sala: modo=' + gameMode + ', preguntas=' + totalQuestions);
+            console.log('=== CREANDO SALA ===');
+            console.log('gameMode:', gameMode);
+            console.log('totalQuestions:', totalQuestions);
             socket.emit('createRoom', {
                 playerName: playerName,
                 gameMode: gameMode,
