@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- Trivial Kapuchi v2.3 - Multijugador con Rondas + CPU - 2026-01-15 -->
+<!-- Trivial Kapuchi v3.0 - Clásico + Supervivencia - 2026-01-15 -->
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 Trivial Kapuchi 2026 - Multijugador Actualizado</title>
+    <title>🎮 Trivial Kapuchi 2026</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -43,10 +43,17 @@
         h1 { 
             text-align: center; 
             color: #ffffff;
-            font-size: 48px;
+            font-size: 42px;
             margin-bottom: 15px;
             font-weight: 900;
             text-shadow: 0 0 20px rgba(233, 69, 96, 0.8);
+        }
+        
+        h2 {
+            text-align: center;
+            color: #ffffff;
+            font-size: 28px;
+            margin-bottom: 10px;
         }
         
         input, button {
@@ -75,17 +82,11 @@
             transform: translateY(-3px);
         }
         
-        .btn-primary { 
-            background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
-        }
-        
-        .btn-secondary { 
-            background: linear-gradient(135deg, #4ecdc4 0%, #44a3a0 100%);
-        }
-        
-        .btn-cpu {
-            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
-        }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .btn-survival { background: linear-gradient(135deg, #f12711 0%, #f5af19 100%); }
+        .btn-cpu { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .btn-secondary { background: linear-gradient(135deg, #4ecdc4 0%, #44a3a0 100%); }
+        .btn-join { background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%); }
         
         .screen { display: none; }
         .screen.active { display: block; }
@@ -133,35 +134,39 @@
         }
         
         .room-code {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 15px;
             text-align: center;
-            font-size: 32px;
+            font-size: 36px;
             font-weight: bold;
             margin: 20px 0;
-            letter-spacing: 5px;
+            letter-spacing: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
         .player { 
-            padding: 10px; 
+            padding: 12px; 
             margin: 5px 0; 
-            background: white; 
-            border-radius: 5px; 
+            background: rgba(255,255,255,0.9); 
+            border-radius: 8px;
+            font-weight: 600;
         }
         
         .player.ready { 
-            background: #4CAF50; 
+            background: linear-gradient(135deg, #4CAF50, #45a049); 
             color: white; 
         }
         
         .error { 
-            background: #f44336; 
+            background: linear-gradient(135deg, #f44336, #d32f2f); 
             color: white; 
-            padding: 10px; 
-            border-radius: 5px; 
-            margin: 10px 0; 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin: 10px 0;
+            text-align: center;
+            font-weight: 600;
         }
         
         .question-text {
@@ -180,20 +185,20 @@
         }
         
         .timer {
-            width: 140px;
-            height: 140px;
-            font-size: 64px;
+            width: 120px;
+            height: 120px;
+            font-size: 56px;
             font-weight: 900;
             text-align: center;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ff0000 100%);
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
             color: #ffffff;
             margin: 15px auto;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 50px rgba(255, 0, 0, 1);
-            border: 6px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.8);
+            border: 5px solid rgba(255, 255, 255, 0.4);
         }
         
         .option-btn {
@@ -211,13 +216,18 @@
             text-align: left;
         }
         
-        .option-btn:hover {
+        .option-btn:hover:not(:disabled) {
             transform: translateY(-4px);
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
         }
         
         .option-btn.selected { 
-            background: linear-gradient(135deg, #e94560 0%, #ff6b9d 100%) !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         }
         
         .option-btn.correct {
@@ -228,15 +238,86 @@
             background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%) !important;
         }
         
+        .lives-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .life {
+            font-size: 36px;
+            transition: all 0.3s;
+        }
+        
+        .life.lost {
+            opacity: 0.2;
+            transform: scale(0.8);
+        }
+        
+        .mode-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .mode-btn {
+            padding: 25px 15px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.95);
+        }
+        
+        .mode-btn:hover {
+            transform: translateY(-5px);
+        }
+        
+        .mode-btn.selected {
+            transform: scale(1.05);
+        }
+        
+        .mode-btn[data-mode="classic"].selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.4));
+            box-shadow: 0 0 25px rgba(102, 126, 234, 0.5);
+        }
+        
+        .mode-btn[data-mode="survival"].selected {
+            border-color: #f5af19;
+            background: linear-gradient(135deg, rgba(241, 39, 17, 0.3), rgba(245, 175, 25, 0.4));
+            box-shadow: 0 0 25px rgba(245, 175, 25, 0.5);
+        }
+        
+        .mode-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .mode-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        
+        .mode-desc {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
         .difficulty-selector {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 12px;
-            margin: 20px 0;
+            margin: 15px 0;
         }
         
         .difficulty-btn {
-            padding: 20px 10px;
+            padding: 15px 10px;
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.1);
@@ -246,36 +327,64 @@
             color: rgba(255, 255, 255, 0.9);
         }
         
-        .difficulty-btn:hover {
-            transform: translateY(-5px);
-        }
+        .difficulty-btn:hover { transform: translateY(-3px); }
         
-        .difficulty-btn.selected {
-            transform: scale(1.05);
-        }
+        .difficulty-btn.selected { transform: scale(1.05); }
         
-        .difficulty-btn[data-difficulty="easy"] {
+        .difficulty-btn[data-diff="easy"].selected {
             border-color: #4CAF50;
-        }
-        .difficulty-btn[data-difficulty="easy"].selected {
             background: linear-gradient(135deg, rgba(76, 175, 80, 0.4), rgba(76, 175, 80, 0.6));
-            box-shadow: 0 0 20px rgba(76, 175, 80, 0.6);
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
         }
         
-        .difficulty-btn[data-difficulty="medium"] {
+        .difficulty-btn[data-diff="medium"].selected {
             border-color: #FF9800;
-        }
-        .difficulty-btn[data-difficulty="medium"].selected {
             background: linear-gradient(135deg, rgba(255, 152, 0, 0.4), rgba(255, 152, 0, 0.6));
-            box-shadow: 0 0 20px rgba(255, 152, 0, 0.6);
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.5);
         }
         
-        .difficulty-btn[data-difficulty="hard"] {
+        .difficulty-btn[data-diff="hard"].selected {
             border-color: #f44336;
-        }
-        .difficulty-btn[data-difficulty="hard"].selected {
             background: linear-gradient(135deg, rgba(244, 67, 54, 0.4), rgba(244, 67, 54, 0.6));
-            box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
+            box-shadow: 0 0 15px rgba(244, 67, 54, 0.5);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .shake { animation: shake 0.5s ease-in-out; }
+        
+        .powerup-container { text-align: center; margin: 15px 0; }
+        
+        .powerup-btn {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);
+        }
+        
+        .powerup-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -287,160 +396,185 @@
         <div id="homeScreen" class="screen active">
             <h1>🎮 Trivial Kapuchi</h1>
             <p style="text-align: center; color: rgba(255, 255, 255, 0.9); font-size: 16px; margin: 20px 0;">
-                Pon a prueba tus conocimientos
+                ¡Pon a prueba tus conocimientos!
             </p>
             
             <input type="text" id="playerName" placeholder="✨ Escribe tu nombre" maxlength="20">
             
-            <button class="btn-cpu" onclick="showCpuConfig()">
+            <button class="btn-cpu" onclick="showCpuModeSelect()">
                 🤖 Jugar vs CPU
             </button>
             
-            <button class="btn-primary" onclick="showMultiplayerConfig()">
+            <button class="btn-primary" onclick="showOnlineModeSelect()">
                 🌐 Multijugador Online
             </button>
             
-            <button class="btn-secondary" onclick="showJoinScreen()">
+            <button class="btn-join" onclick="showJoinScreen()">
                 🎯 Unirse a Partida
             </button>
         </div>
         
-        <!-- PANTALLA CONFIGURACIÓN CPU -->
-        <div id="cpuConfigScreen" class="screen">
-            <h1>🤖 Jugar vs CPU</h1>
-            <h3 style="text-align: center; margin: 20px 0; color: rgba(255, 255, 255, 0.9);">
-                Configura tu partida
+        <!-- PANTALLA SELECCIÓN MODO (ONLINE) -->
+        <div id="modeSelectScreen" class="screen">
+            <h1>🌐 Multijugador</h1>
+            <h3 style="text-align: center; margin: 15px 0; color: rgba(255, 255, 255, 0.9);">
+                Elige el modo de juego
             </h3>
             
-            <!-- SELECTOR DE DIFICULTAD CPU -->
-            <div style="margin: 25px 0;">
-                <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); margin-bottom: 12px;">
-                    🎯 Dificultad de la CPU
-                </h4>
-                <div class="difficulty-selector">
-                    <div class="difficulty-btn selected" onclick="selectCpuDifficulty('easy')" data-difficulty="easy">
-                        <div style="font-size: 32px;">🟢</div>
-                        <div style="font-weight: 700;">Fácil</div>
-                        <div style="font-size: 11px; opacity: 0.8;">40% acierto</div>
-                    </div>
-                    <div class="difficulty-btn" onclick="selectCpuDifficulty('medium')" data-difficulty="medium">
-                        <div style="font-size: 32px;">🟡</div>
-                        <div style="font-weight: 700;">Normal</div>
-                        <div style="font-size: 11px; opacity: 0.8;">60% acierto</div>
-                    </div>
-                    <div class="difficulty-btn" onclick="selectCpuDifficulty('hard')" data-difficulty="hard">
-                        <div style="font-size: 32px;">🔴</div>
-                        <div style="font-weight: 700;">Difícil</div>
-                        <div style="font-size: 11px; opacity: 0.8;">85% acierto</div>
-                    </div>
+            <div class="mode-selector">
+                <div class="mode-btn selected" data-mode="classic" onclick="selectGameMode('classic')">
+                    <div class="mode-icon">🎯</div>
+                    <div class="mode-title">Clásico</div>
+                    <div class="mode-desc">Turnos alternados<br>El que más puntos gana</div>
+                </div>
+                <div class="mode-btn" data-mode="survival" onclick="selectGameMode('survival')">
+                    <div class="mode-icon">💀</div>
+                    <div class="mode-title">Supervivencia</div>
+                    <div class="mode-desc">3 vidas · Todos a la vez<br>El último en pie gana</div>
                 </div>
             </div>
             
-            <!-- SELECTOR DE PREGUNTAS -->
+            <button class="btn-primary" onclick="showConfigScreen()">Continuar</button>
+            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
+        </div>
+        
+        <!-- PANTALLA SELECCIÓN MODO (CPU) -->
+        <div id="cpuModeSelectScreen" class="screen">
+            <h1>🤖 vs CPU</h1>
+            <h3 style="text-align: center; margin: 15px 0; color: rgba(255, 255, 255, 0.9);">
+                Elige el modo de juego
+            </h3>
+            
+            <div class="mode-selector">
+                <div class="mode-btn selected" data-mode="classic" onclick="selectCpuGameMode('classic')">
+                    <div class="mode-icon">🎯</div>
+                    <div class="mode-title">Clásico</div>
+                    <div class="mode-desc">Turnos alternados<br>El que más puntos gana</div>
+                </div>
+                <div class="mode-btn" data-mode="survival" onclick="selectCpuGameMode('survival')">
+                    <div class="mode-icon">💀</div>
+                    <div class="mode-title">Supervivencia</div>
+                    <div class="mode-desc">3 vidas · Misma pregunta<br>El último en pie gana</div>
+                </div>
+            </div>
+            
+            <button class="btn-cpu" onclick="showCpuConfigScreen()">Continuar</button>
+            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
+        </div>
+        
+        <!-- PANTALLA CONFIGURACIÓN ONLINE -->
+        <div id="configScreen" class="screen">
+            <h1 id="configTitle">🎯 Modo Clásico</h1>
+            
+            <div id="classicConfigInfo" style="text-align: center; color: rgba(255,255,255,0.8); margin: 10px 0; font-size: 14px;">
+                Turnos alternados · El que más puntos gana
+            </div>
+            <div id="survivalConfigInfo" style="text-align: center; color: rgba(255,255,255,0.8); margin: 10px 0; font-size: 14px; display: none;">
+                3 vidas · Todos responden a la vez · Fallas = pierdes vida
+            </div>
+            
             <div style="margin: 25px 0;">
                 <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); margin-bottom: 12px;">
                     ❓ Número de Preguntas
                 </h4>
                 <div class="config-selector">
-                    <div class="config-btn" onclick="selectCpuQuestions(5)" data-cpuquestions="5">
+                    <div class="config-btn" onclick="selectQuestions(5)" data-questions="5">
                         <div class="config-number">5</div>
                         <div class="config-label">Rápido</div>
                     </div>
-                    <div class="config-btn selected" onclick="selectCpuQuestions(10)" data-cpuquestions="10">
+                    <div class="config-btn selected" onclick="selectQuestions(10)" data-questions="10">
                         <div class="config-number">10</div>
                         <div class="config-label">Normal</div>
                     </div>
-                    <div class="config-btn" onclick="selectCpuQuestions(15)" data-cpuquestions="15">
+                    <div class="config-btn" onclick="selectQuestions(15)" data-questions="15">
                         <div class="config-number">15</div>
                         <div class="config-label">Largo</div>
                     </div>
                 </div>
             </div>
             
-            <!-- RESUMEN -->
-            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; margin: 25px 0;">
+            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; margin: 20px 0;">
                 <div style="text-align: center; color: rgba(255, 255, 255, 0.95); font-size: 15px;">
-                    📊 <strong id="cpuSummary">10 preguntas · CPU Fácil (40%)</strong>
+                    📊 <strong id="configSummary">10 preguntas · Modo Clásico</strong>
                 </div>
             </div>
             
-            <button class="btn-cpu" onclick="startCpuGame()">
-                ⚡ COMENZAR PARTIDA
-            </button>
-            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
+            <button class="btn-primary" id="createRoomBtn" onclick="createRoom()">⚡ CREAR SALA</button>
+            <button class="btn-secondary" onclick="showScreen('modeSelectScreen')">Volver</button>
         </div>
         
-        <!-- PANTALLA CONFIGURACIÓN MULTIJUGADOR -->
-        <div id="multiplayerConfigScreen" class="screen">
-            <h1>🌐 Configurar Partida</h1>
-            <h3 style="text-align: center; margin: 20px 0; color: rgba(255, 255, 255, 0.9);">
-                Personaliza la experiencia
-            </h3>
+        <!-- PANTALLA CONFIGURACIÓN CPU -->
+        <div id="cpuConfigScreen" class="screen">
+            <h1 id="cpuConfigTitle">🎯 vs CPU</h1>
             
-            <!-- SELECTOR DE RONDAS -->
-            <div style="margin: 25px 0;">
+            <div id="cpuClassicInfo" style="text-align: center; color: rgba(255,255,255,0.8); margin: 10px 0; font-size: 14px;">
+                Turnos alternados · El que más puntos gana
+            </div>
+            <div id="cpuSurvivalInfo" style="text-align: center; color: rgba(255,255,255,0.8); margin: 10px 0; font-size: 14px; display: none;">
+                3 vidas · Misma pregunta · Fallas = pierdes vida
+            </div>
+            
+            <!-- Dificultad CPU -->
+            <div style="margin: 20px 0;">
                 <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); margin-bottom: 12px;">
-                    🔄 Número de Rondas
+                    🎯 Dificultad CPU
                 </h4>
-                <div class="config-selector">
-                    <div class="config-btn selected" onclick="selectMultiplayerRounds(1)" data-rounds="1">
-                        <div class="config-number">1</div>
-                        <div class="config-label">Ronda</div>
+                <div class="difficulty-selector">
+                    <div class="difficulty-btn selected" data-diff="easy" onclick="selectCpuDifficulty('easy')">
+                        <div style="font-size: 24px;">🟢</div>
+                        <div style="font-weight: 700;">Fácil</div>
+                        <div style="font-size: 11px; opacity: 0.8;">40%</div>
                     </div>
-                    <div class="config-btn" onclick="selectMultiplayerRounds(2)" data-rounds="2">
-                        <div class="config-number">2</div>
-                        <div class="config-label">Rondas</div>
+                    <div class="difficulty-btn" data-diff="medium" onclick="selectCpuDifficulty('medium')">
+                        <div style="font-size: 24px;">🟡</div>
+                        <div style="font-weight: 700;">Normal</div>
+                        <div style="font-size: 11px; opacity: 0.8;">60%</div>
                     </div>
-                    <div class="config-btn" onclick="selectMultiplayerRounds(3)" data-rounds="3">
-                        <div class="config-number">3</div>
-                        <div class="config-label">Rondas</div>
+                    <div class="difficulty-btn" data-diff="hard" onclick="selectCpuDifficulty('hard')">
+                        <div style="font-size: 24px;">🔴</div>
+                        <div style="font-weight: 700;">Difícil</div>
+                        <div style="font-size: 11px; opacity: 0.8;">85%</div>
                     </div>
                 </div>
             </div>
             
-            <!-- SELECTOR DE PREGUNTAS -->
-            <div style="margin: 25px 0;">
+            <!-- Preguntas -->
+            <div style="margin: 20px 0;">
                 <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); margin-bottom: 12px;">
-                    ❓ Preguntas por Ronda
+                    ❓ Número de Preguntas
                 </h4>
                 <div class="config-selector">
-                    <div class="config-btn" onclick="selectMultiplayerQuestions(5)" data-questions="5">
+                    <div class="config-btn" onclick="selectCpuQuestions(5)" data-cpuq="5">
                         <div class="config-number">5</div>
                         <div class="config-label">Rápido</div>
                     </div>
-                    <div class="config-btn" onclick="selectMultiplayerQuestions(10)" data-questions="10">
+                    <div class="config-btn selected" onclick="selectCpuQuestions(10)" data-cpuq="10">
                         <div class="config-number">10</div>
-                        <div class="config-label">Medio</div>
+                        <div class="config-label">Normal</div>
                     </div>
-                    <div class="config-btn selected" onclick="selectMultiplayerQuestions(15)" data-questions="15">
+                    <div class="config-btn" onclick="selectCpuQuestions(15)" data-cpuq="15">
                         <div class="config-number">15</div>
                         <div class="config-label">Largo</div>
                     </div>
                 </div>
             </div>
             
-            <!-- RESUMEN -->
-            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; margin: 25px 0;">
-                <div style="text-align: center; color: rgba(255, 255, 255, 0.95); font-size: 15px; margin-bottom: 8px;">
-                    📊 <strong>Total:</strong> <span id="multiplayerTotalQuestions">15</span> preguntas por jugador
-                </div>
-                <div style="text-align: center; color: rgba(255, 255, 255, 0.8); font-size: 14px;">
-                    ⏱️ <strong>Tiempo estimado:</strong> <span id="multiplayerEstimatedTime">6</span> minutos
+            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; margin: 20px 0;">
+                <div style="text-align: center; color: rgba(255, 255, 255, 0.95); font-size: 15px;">
+                    📊 <strong id="cpuConfigSummary">10 preguntas · CPU Fácil · Clásico</strong>
                 </div>
             </div>
             
-            <button class="btn-primary" onclick="createRoomWithConfig()">
-                ⚡ CREAR SALA
-            </button>
-            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
+            <button class="btn-cpu" onclick="startCpuGame()">⚡ COMENZAR</button>
+            <button class="btn-secondary" onclick="showScreen('cpuModeSelectScreen')">Volver</button>
         </div>
         
         <!-- PANTALLA UNIRSE -->
         <div id="joinScreen" class="screen">
-            <h1>🎯 Unirse a Partida</h1>
+            <h1>🎯 Unirse</h1>
             <input type="text" id="playerName2" placeholder="Tu nombre" maxlength="20">
-            <input type="text" id="roomCodeInput" placeholder="Código de sala" maxlength="6">
-            <button class="btn-secondary" onclick="joinRoom()">Unirse</button>
+            <input type="text" id="roomCodeInput" placeholder="Código de sala (6 letras)" maxlength="6" style="text-transform: uppercase;">
+            <button class="btn-join" onclick="joinRoom()">Unirse a la Sala</button>
             <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
         </div>
         
@@ -449,19 +583,23 @@
             <h1>⏳ Sala de Espera</h1>
             <div id="roomCodeDisplay" class="room-code"></div>
             <p style="text-align: center; color: rgba(255,255,255,0.8); margin: 10px 0;">
-                <span id="playerCount">1</span>/4 jugadores · Mínimo 2 para empezar
+                Comparte el código · <span id="playerCount">1</span>/4 jugadores
             </p>
+            <div id="gameModeDisplay" style="text-align: center; color: #FFD700; font-weight: 700; margin: 10px 0;"></div>
             <div id="playersList"></div>
-            <button class="btn-primary" id="readyBtn" onclick="markReady()">¡Estoy Listo!</button>
-            <button class="btn-secondary" onclick="location.reload()">Salir</button>
+            <button class="btn-primary" id="readyBtn" onclick="markReady()">✅ ¡Estoy Listo!</button>
+            <button class="btn-secondary" onclick="leaveRoom()">Salir</button>
         </div>
         
         <!-- PANTALLA JUEGO -->
         <div id="gameScreen" class="screen">
             <div id="questionNumber" style="text-align: center; color: #fff; font-weight: 900; font-size: 18px; margin: 8px 0;"></div>
             
+            <!-- Vidas (solo supervivencia) -->
+            <div id="livesDisplay" class="lives-container" style="display: none;"></div>
+            
             <!-- MARCADOR EN VIVO -->
-            <div id="liveScoreboard" style="text-align: center; margin: 10px 0; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 12px; backdrop-filter: blur(10px);"></div>
+            <div id="liveScoreboard" style="text-align: center; margin: 10px 0; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 12px;"></div>
             
             <div id="timer" class="timer">15</div>
             
@@ -470,120 +608,469 @@
             <div id="optionsGrid"></div>
             
             <!-- POWER-UP 50/50 -->
-            <div class="powerup-container" style="text-align: center; margin: 15px 0;">
-                <button id="fiftyFiftyBtn" class="powerup-btn" onclick="useFiftyFifty()" title="Elimina 2 respuestas incorrectas. Solo 1 vez por partida" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #000; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; border: none; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);">
+            <div class="powerup-container" id="powerupContainer">
+                <button id="fiftyFiftyBtn" class="powerup-btn" onclick="useFiftyFifty()">
                     ⚡ 50/50 (1 por partida)
                 </button>
             </div>
         </div>
         
-        <!-- PANTALLA ESPERANDO TURNO -->
+        <!-- PANTALLA ESPERANDO TURNO (solo clásico) -->
         <div id="waitingTurnScreen" class="screen">
-            <h1 style="color: #ffffff;">⏳ Esperando turno...</h1>
+            <h1 style="color: #ffffff;">⏳ Esperando...</h1>
             <p style="text-align: center; font-size: 22px; color: rgba(255, 255, 255, 0.95); margin: 25px 0;">
                 <strong id="otherPlayerName"></strong> está respondiendo
             </p>
+            <div id="waitingScores"></div>
             <div style="text-align: center; margin: 40px 0;">
-                <div style="display: inline-block; width: 100px; height: 100px; border: 8px solid rgba(255,255,255,0.2); border-top: 8px solid #e94560; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <div style="display: inline-block; width: 80px; height: 80px; border: 6px solid rgba(255,255,255,0.2); border-top: 6px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
             </div>
-            <style>
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            </style>
         </div>
         
         <!-- PANTALLA RESULTADOS -->
         <div id="resultsScreen" class="screen">
-            <h1>🏆 ¡Juego Terminado!</h1>
+            <h1 id="resultsTitle">🏆 ¡Fin del Juego!</h1>
             <div id="finalScores"></div>
+            <button class="btn-primary" onclick="location.reload()">🎮 Nueva Partida</button>
+        </div>
+        
+        <!-- PANTALLA ELIMINADO (supervivencia) -->
+        <div id="eliminatedScreen" class="screen">
+            <h1 style="color: #f44336;">💀 ¡Eliminado!</h1>
+            <p style="text-align: center; font-size: 20px; color: rgba(255,255,255,0.9); margin: 20px 0;">
+                Te quedaste sin vidas
+            </p>
+            <div id="eliminatedInfo"></div>
             <button class="btn-primary" onclick="location.reload()">🎮 Nueva Partida</button>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"></script>
     <script>
+        // ===== CONEXIÓN =====
         var socket = io('https://trivial-kapuchi.onrender.com');
-        var currentRoom = null;
+        
+        // ===== VARIABLES GLOBALES =====
         var playerName = '';
+        var currentRoom = null;
+        var gameMode = 'classic'; // 'classic' o 'survival'
+        var totalQuestions = 10;
         var timeLeft = 15;
         var timerInterval = null;
         var hasAnswered = false;
         var currentQuestion = null;
         var fiftyFiftyUsed = false;
+        var myLives = 3;
         
-        // CONFIGURACIÓN MULTIJUGADOR
-        var multiplayerRounds = 1;
-        var multiplayerQuestionsPerRound = 15;
-        
-        // ===== CONFIGURACIÓN CPU =====
+        // Variables CPU
+        var cpuMode = 'classic';
         var cpuDifficulty = 'easy';
         var cpuQuestions = 10;
-        var cpuGame = {
-            active: false,
-            questions: [],
-            currentIndex: 0,
-            playerScore: 0,
-            cpuScore: 0,
-            playerCorrect: 0,
-            cpuCorrect: 0
-        };
+        var cpuGame = null;
+        var cpuAccuracy = { 'easy': 0.40, 'medium': 0.60, 'hard': 0.85 };
         
-        // Probabilidad de acierto de la CPU según dificultad
-        var cpuAccuracy = {
-            'easy': 0.40,
-            'medium': 0.60,
-            'hard': 0.85
-        };
+        // ===== FUNCIONES DE PANTALLA =====
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
         
-        function showCpuConfig() {
+        function showError(message) {
+            document.getElementById('errorContainer').innerHTML = '<div class="error">' + message + '</div>';
+            setTimeout(() => document.getElementById('errorContainer').innerHTML = '', 3000);
+        }
+        
+        // ===== PANTALLA INICIAL =====
+        function showOnlineModeSelect() {
             playerName = document.getElementById('playerName').value.trim();
-            if (!playerName) {
-                showError('Por favor escribe tu nombre');
-                return;
-            }
+            if (!playerName) { showError('Escribe tu nombre'); return; }
+            showScreen('modeSelectScreen');
+        }
+        
+        function showCpuModeSelect() {
+            playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) { showError('Escribe tu nombre'); return; }
+            showScreen('cpuModeSelectScreen');
+        }
+        
+        function showJoinScreen() {
+            showScreen('joinScreen');
+        }
+        
+        // ===== SELECCIÓN DE MODO =====
+        function selectGameMode(mode) {
+            gameMode = mode;
+            document.querySelectorAll('#modeSelectScreen .mode-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelector('#modeSelectScreen .mode-btn[data-mode="' + mode + '"]').classList.add('selected');
+        }
+        
+        function selectCpuGameMode(mode) {
+            cpuMode = mode;
+            document.querySelectorAll('#cpuModeSelectScreen .mode-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelector('#cpuModeSelectScreen .mode-btn[data-mode="' + mode + '"]').classList.add('selected');
+        }
+        
+        function showConfigScreen() {
+            var isClassic = gameMode === 'classic';
+            document.getElementById('configTitle').textContent = isClassic ? '🎯 Modo Clásico' : '💀 Modo Supervivencia';
+            document.getElementById('classicConfigInfo').style.display = isClassic ? 'block' : 'none';
+            document.getElementById('survivalConfigInfo').style.display = isClassic ? 'none' : 'block';
+            document.getElementById('createRoomBtn').className = isClassic ? 'btn-primary' : 'btn-survival';
+            updateConfigSummary();
+            showScreen('configScreen');
+        }
+        
+        function showCpuConfigScreen() {
+            var isClassic = cpuMode === 'classic';
+            document.getElementById('cpuConfigTitle').textContent = isClassic ? '🎯 vs CPU Clásico' : '💀 vs CPU Supervivencia';
+            document.getElementById('cpuClassicInfo').style.display = isClassic ? 'block' : 'none';
+            document.getElementById('cpuSurvivalInfo').style.display = isClassic ? 'none' : 'block';
+            updateCpuConfigSummary();
             showScreen('cpuConfigScreen');
-            updateCpuSummary();
         }
         
-        function selectCpuDifficulty(difficulty) {
-            cpuDifficulty = difficulty;
-            document.querySelectorAll('.difficulty-btn').forEach(btn => {
-                btn.classList.remove('selected');
+        // ===== CONFIGURACIÓN ONLINE =====
+        function selectQuestions(num) {
+            totalQuestions = num;
+            document.querySelectorAll('.config-btn[data-questions]').forEach(btn => btn.classList.remove('selected'));
+            document.querySelector('.config-btn[data-questions="' + num + '"]').classList.add('selected');
+            updateConfigSummary();
+        }
+        
+        function updateConfigSummary() {
+            var modeText = gameMode === 'classic' ? 'Clásico' : 'Supervivencia';
+            document.getElementById('configSummary').textContent = totalQuestions + ' preguntas · Modo ' + modeText;
+        }
+        
+        // ===== CONFIGURACIÓN CPU =====
+        function selectCpuDifficulty(diff) {
+            cpuDifficulty = diff;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelector('.difficulty-btn[data-diff="' + diff + '"]').classList.add('selected');
+            updateCpuConfigSummary();
+        }
+        
+        function selectCpuQuestions(num) {
+            cpuQuestions = num;
+            document.querySelectorAll('.config-btn[data-cpuq]').forEach(btn => btn.classList.remove('selected'));
+            document.querySelector('.config-btn[data-cpuq="' + num + '"]').classList.add('selected');
+            updateCpuConfigSummary();
+        }
+        
+        function updateCpuConfigSummary() {
+            var diffNames = { 'easy': 'Fácil', 'medium': 'Normal', 'hard': 'Difícil' };
+            var modeText = cpuMode === 'classic' ? 'Clásico' : 'Supervivencia';
+            document.getElementById('cpuConfigSummary').textContent = cpuQuestions + ' preguntas · CPU ' + diffNames[cpuDifficulty] + ' · ' + modeText;
+        }
+        
+        // ===== CREAR/UNIRSE SALA =====
+        function createRoom() {
+            socket.emit('createRoom', {
+                playerName: playerName,
+                gameMode: gameMode,
+                totalQuestions: totalQuestions
             });
-            document.querySelector('.difficulty-btn[data-difficulty="' + difficulty + '"]').classList.add('selected');
-            updateCpuSummary();
         }
         
-        function selectCpuQuestions(count) {
-            cpuQuestions = count;
-            document.querySelectorAll('.config-btn[data-cpuquestions]').forEach(btn => {
-                btn.classList.remove('selected');
+        function joinRoom() {
+            playerName = document.getElementById('playerName2').value.trim();
+            var roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+            if (!playerName || !roomCode) { showError('Completa todos los campos'); return; }
+            socket.emit('joinRoom', { roomCode: roomCode, playerName: playerName });
+        }
+        
+        function markReady() {
+            socket.emit('playerReady', currentRoom);
+            document.getElementById('readyBtn').disabled = true;
+            document.getElementById('readyBtn').textContent = '✅ Listo';
+        }
+        
+        function leaveRoom() {
+            socket.emit('leaveRoom', currentRoom);
+            location.reload();
+        }
+        
+        // ===== SOCKET EVENTS =====
+        socket.on('roomCreated', function(data) {
+            currentRoom = data.roomCode;
+            gameMode = data.gameMode || 'classic';
+            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
+            document.getElementById('gameModeDisplay').textContent = gameMode === 'classic' ? '🎯 Modo Clásico' : '💀 Modo Supervivencia';
+            document.getElementById('playersList').innerHTML = '<div class="player">' + playerName + ' (Tú)</div>';
+            showScreen('waitingScreen');
+        });
+        
+        socket.on('roomError', function(msg) { showError(msg); });
+        
+        socket.on('playerJoined', function(data) {
+            currentRoom = data.roomCode;
+            gameMode = data.gameMode || 'classic';
+            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
+            document.getElementById('gameModeDisplay').textContent = gameMode === 'classic' ? '🎯 Modo Clásico' : '💀 Modo Supervivencia';
+            updatePlayersList(data.players);
+            showScreen('waitingScreen');
+        });
+        
+        socket.on('playersUpdate', function(players) {
+            updatePlayersList(players);
+        });
+        
+        function updatePlayersList(players) {
+            var html = '';
+            players.forEach(function(p) {
+                var readyClass = p.ready ? ' ready' : '';
+                var readyText = p.ready ? ' ✓' : '';
+                html += '<div class="player' + readyClass + '">' + p.name + readyText + '</div>';
             });
-            document.querySelector('.config-btn[data-cpuquestions="' + count + '"]').classList.add('selected');
-            updateCpuSummary();
+            document.getElementById('playersList').innerHTML = html;
+            document.getElementById('playerCount').textContent = players.length;
         }
         
-        function updateCpuSummary() {
-            var diffNames = { 'easy': 'Fácil (40%)', 'medium': 'Normal (60%)', 'hard': 'Difícil (85%)' };
-            document.getElementById('cpuSummary').textContent = cpuQuestions + ' preguntas · CPU ' + diffNames[cpuDifficulty];
+        // ===== JUEGO ONLINE =====
+        socket.on('newQuestion', function(data) {
+            currentQuestion = data;
+            hasAnswered = false;
+            timeLeft = 15;
+            gameMode = data.gameMode || 'classic';
+            
+            // Actualizar vidas si es supervivencia
+            if (gameMode === 'survival') {
+                myLives = data.myLives !== undefined ? data.myLives : 3;
+                showLives(data.allPlayers || []);
+            } else {
+                document.getElementById('livesDisplay').style.display = 'none';
+            }
+            
+            // Número de pregunta
+            document.getElementById('questionNumber').textContent = 'Pregunta ' + data.questionNumber + ' de ' + data.totalQuestions;
+            
+            // Marcador
+            updateLiveScoreboard(data.allPlayers || [], gameMode);
+            
+            // 50/50
+            var showPowerup = totalQuestions >= 10 && !fiftyFiftyUsed;
+            document.getElementById('powerupContainer').style.display = showPowerup ? 'block' : 'none';
+            if (showPowerup) {
+                document.getElementById('fiftyFiftyBtn').disabled = false;
+                document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por partida)';
+            }
+            
+            // Pregunta y opciones
+            document.getElementById('questionText').textContent = data.question;
+            document.getElementById('timer').textContent = timeLeft;
+            
+            var grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+            data.options.forEach(function(opt, idx) {
+                var btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = function() { submitAnswer(idx); };
+                grid.appendChild(btn);
+            });
+            
+            showScreen('gameScreen');
+            startTimer();
+        });
+        
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(function() {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    if (!hasAnswered) {
+                        hasAnswered = true;
+                        socket.emit('submitAnswer', { roomCode: currentRoom, answerIndex: -1, timeLeft: 0 });
+                    }
+                }
+            }, 1000);
         }
         
+        function submitAnswer(index) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+            clearInterval(timerInterval);
+            
+            // Marcar selección
+            var options = document.querySelectorAll('.option-btn');
+            options.forEach(btn => btn.disabled = true);
+            if (index >= 0 && options[index]) {
+                options[index].classList.add('selected');
+            }
+            
+            socket.emit('submitAnswer', { roomCode: currentRoom, answerIndex: index, timeLeft: timeLeft });
+        }
+        
+        socket.on('answerResult', function(data) {
+            var options = document.querySelectorAll('.option-btn');
+            
+            // Mostrar correcta/incorrecta
+            if (data.selectedIndex >= 0 && options[data.selectedIndex]) {
+                if (data.isCorrect) {
+                    options[data.selectedIndex].classList.add('correct');
+                } else {
+                    options[data.selectedIndex].classList.add('wrong');
+                    // Mostrar la correcta
+                    if (options[data.correctAnswer]) {
+                        options[data.correctAnswer].classList.add('correct');
+                    }
+                }
+            } else if (data.correctAnswer !== undefined && options[data.correctAnswer]) {
+                options[data.correctAnswer].classList.add('correct');
+            }
+            
+            // Shake si perdió vida
+            if (data.lostLife) {
+                document.querySelector('.container').classList.add('shake');
+                setTimeout(() => document.querySelector('.container').classList.remove('shake'), 500);
+            }
+        });
+        
+        socket.on('waitingTurn', function(data) {
+            document.getElementById('otherPlayerName').textContent = data.currentPlayerName;
+            
+            // Mostrar puntuaciones
+            var html = '<div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 12px; margin: 20px 0;">';
+            html += '<h4 style="color: #fff; margin-bottom: 10px;">📊 Puntuaciones:</h4>';
+            data.allPlayers.sort((a, b) => b.score - a.score).forEach(function(p) {
+                var isCurrent = p.name === data.currentPlayerName;
+                html += '<div style="padding: 8px; margin: 5px 0; background: rgba(255,255,255,' + (isCurrent ? '0.2' : '0.05') + '); border-radius: 8px;">';
+                html += '<strong style="color: #fff;">' + p.name + (isCurrent ? ' 🎯' : '') + ':</strong> ';
+                html += '<span style="color: #FFD700; font-weight: 900;">' + p.score + ' pts</span>';
+                html += '</div>';
+            });
+            html += '</div>';
+            document.getElementById('waitingScores').innerHTML = html;
+            
+            showScreen('waitingTurnScreen');
+        });
+        
+        socket.on('playerEliminated', function(data) {
+            if (data.odocéId === socket.id) {
+                document.getElementById('eliminatedInfo').innerHTML = '<p style="color: rgba(255,255,255,0.8);">Jugadores restantes: ' + data.remainingPlayers + '</p>';
+                showScreen('eliminatedScreen');
+            }
+        });
+        
+        socket.on('gameOver', function(data) {
+            var html = '<div style="text-align: center; padding: 10px;">';
+            
+            if (data.gameMode === 'survival') {
+                html += '<h2 style="color: #FFD700; margin: 20px 0;">👑 ' + data.winner + ' es el superviviente</h2>';
+            } else {
+                html += '<h2 style="color: #fff; margin: 20px 0;">🏆 RANKING FINAL</h2>';
+            }
+            
+            var medals = ['🥇', '🥈', '🥉', '4️⃣'];
+            var colors = [
+                'linear-gradient(135deg, #FFD700, #FFA500)',
+                'linear-gradient(135deg, #C0C0C0, #A0A0A0)',
+                'linear-gradient(135deg, #CD7F32, #8B4513)',
+                'linear-gradient(135deg, #666, #444)'
+            ];
+            
+            data.ranking.forEach(function(p, i) {
+                html += '<div style="background: ' + colors[i] + '; color: white; padding: 15px; margin: 10px; border-radius: 15px;">';
+                html += '<div style="font-size: 32px;">' + medals[i] + '</div>';
+                html += '<strong style="font-size: 20px;">' + p.name + '</strong>';
+                if (data.gameMode === 'survival') {
+                    html += '<br><span style="font-size: 16px;">' + (p.lives > 0 ? '❤️'.repeat(p.lives) : '💀') + '</span>';
+                }
+                html += '<br><span style="font-size: 24px;">' + p.score + ' pts</span>';
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            document.getElementById('finalScores').innerHTML = html;
+            document.getElementById('resultsTitle').textContent = data.gameMode === 'survival' ? '💀 ¡Supervivencia!' : '🏆 ¡Fin del Juego!';
+            showScreen('resultsScreen');
+        });
+        
+        socket.on('playerLeft', function(players) {
+            updatePlayersList(players);
+            if (players.length < 2) {
+                showError('Un jugador se desconectó');
+            }
+        });
+        
+        socket.on('connect_error', function() { showError('Error de conexión'); });
+        
+        // ===== FUNCIONES AUXILIARES =====
+        function showLives(players) {
+            var container = document.getElementById('livesDisplay');
+            container.style.display = 'flex';
+            
+            var html = '';
+            players.forEach(function(p) {
+                html += '<div style="text-align: center; margin: 0 15px;">';
+                html += '<div style="color: #fff; font-size: 12px; margin-bottom: 5px;">' + p.name + '</div>';
+                for (var i = 0; i < 3; i++) {
+                    var lost = i >= p.lives;
+                    html += '<span class="life' + (lost ? ' lost' : '') + '">❤️</span>';
+                }
+                html += '</div>';
+            });
+            container.innerHTML = html;
+        }
+        
+        function updateLiveScoreboard(players, mode) {
+            var html = '<div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px;">';
+            
+            players.forEach(function(p) {
+                var isMe = p.name === playerName;
+                html += '<div style="flex: 1; min-width: 100px; text-align: center;">';
+                html += '<div style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700;">' + (isMe ? '👤 ' : '👥 ') + p.name + '</div>';
+                if (mode === 'survival') {
+                    html += '<div style="font-size: 14px;">' + '❤️'.repeat(p.lives) + '🖤'.repeat(3 - p.lives) + '</div>';
+                }
+                html += '<div style="color: #FFD700; font-size: 15px; font-weight: 900;">' + p.score + ' pts</div>';
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            document.getElementById('liveScoreboard').innerHTML = html;
+        }
+        
+        function useFiftyFifty() {
+            if (fiftyFiftyUsed || hasAnswered) return;
+            fiftyFiftyUsed = true;
+            
+            document.getElementById('fiftyFiftyBtn').disabled = true;
+            document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
+            
+            var options = document.querySelectorAll('.option-btn');
+            var correctIdx = currentQuestion.correctAnswer || 0;
+            var incorrects = [];
+            
+            for (var i = 0; i < options.length; i++) {
+                if (i !== correctIdx) incorrects.push(i);
+            }
+            
+            // Eliminar 2 incorrectas
+            for (var j = 0; j < 2 && incorrects.length > 0; j++) {
+                var randIdx = Math.floor(Math.random() * incorrects.length);
+                var toHide = incorrects.splice(randIdx, 1)[0];
+                options[toHide].style.display = 'none';
+            }
+        }
+        
+        // ===== JUEGO CPU =====
         async function startCpuGame() {
-            // Resetear estado
             cpuGame = {
                 active: true,
                 questions: [],
                 currentIndex: 0,
                 playerScore: 0,
                 cpuScore: 0,
+                playerLives: 3,
+                cpuLives: 3,
                 playerCorrect: 0,
                 cpuCorrect: 0
             };
             fiftyFiftyUsed = false;
             
-            // Cargar preguntas del servidor
             try {
                 var response = await fetch('/api/questions?count=' + cpuQuestions);
                 cpuGame.questions = await response.json();
@@ -596,11 +1083,22 @@
                 showCpuQuestion();
             } catch (error) {
                 showError('Error de conexión');
-                console.error(error);
             }
         }
         
         function showCpuQuestion() {
+            if (cpuMode === 'survival') {
+                // Verificar si alguien perdió todas las vidas
+                if (cpuGame.playerLives <= 0) {
+                    endCpuGame('cpu');
+                    return;
+                }
+                if (cpuGame.cpuLives <= 0) {
+                    endCpuGame('player');
+                    return;
+                }
+            }
+            
             if (cpuGame.currentIndex >= cpuGame.questions.length) {
                 endCpuGame();
                 return;
@@ -610,48 +1108,43 @@
             timeLeft = 15;
             var q = cpuGame.questions[cpuGame.currentIndex];
             currentQuestion = q;
+            currentQuestion.correctAnswer = q.correct;
             
-            // Actualizar número de pregunta
             document.getElementById('questionNumber').textContent = 'Pregunta ' + (cpuGame.currentIndex + 1) + ' de ' + cpuGame.questions.length;
             
-            // Actualizar marcador en vivo
+            // Mostrar vidas o puntos
             updateCpuScoreboard();
             
-            // Mostrar/ocultar 50/50
-            var btn = document.getElementById('fiftyFiftyBtn');
-            if (cpuQuestions >= 10) {
-                document.querySelector('.powerup-container').style.display = 'block';
-                if (fiftyFiftyUsed) {
-                    btn.disabled = true;
-                    btn.textContent = '✓ Usado';
-                    btn.style.opacity = '0.5';
-                } else {
-                    btn.disabled = false;
-                    btn.textContent = '⚡ 50/50 (1 por partida)';
-                    btn.style.opacity = '1';
-                }
+            // Mostrar/ocultar vidas
+            if (cpuMode === 'survival') {
+                showCpuLives();
             } else {
-                document.querySelector('.powerup-container').style.display = 'none';
+                document.getElementById('livesDisplay').style.display = 'none';
             }
             
-            // Mostrar pregunta
+            // 50/50
+            var showPowerup = cpuQuestions >= 10 && !fiftyFiftyUsed;
+            document.getElementById('powerupContainer').style.display = showPowerup ? 'block' : 'none';
+            if (showPowerup) {
+                document.getElementById('fiftyFiftyBtn').disabled = false;
+                document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por partida)';
+            }
+            
             document.getElementById('questionText').textContent = q.question;
             document.getElementById('timer').textContent = timeLeft;
             
-            // Crear opciones
             var grid = document.getElementById('optionsGrid');
             grid.innerHTML = '';
-            q.options.forEach(function(option, index) {
+            q.options.forEach(function(opt, idx) {
                 var btn = document.createElement('button');
                 btn.className = 'option-btn';
-                btn.textContent = option;
-                btn.onclick = function() { submitCpuAnswer(index); };
+                btn.textContent = opt;
+                btn.onclick = function() { submitCpuAnswer(idx); };
                 grid.appendChild(btn);
             });
             
             showScreen('gameScreen');
             
-            // Iniciar temporizador
             clearInterval(timerInterval);
             timerInterval = setInterval(function() {
                 timeLeft--;
@@ -660,8 +1153,7 @@
                     clearInterval(timerInterval);
                     if (!hasAnswered) {
                         hasAnswered = true;
-                        // Tiempo agotado = respuesta incorrecta
-                        showCpuAnswerResult(-1);
+                        processCpuAnswer(-1);
                     }
                 }
             }, 1000);
@@ -671,462 +1163,186 @@
             if (hasAnswered) return;
             hasAnswered = true;
             clearInterval(timerInterval);
-            
-            showCpuAnswerResult(index);
+            processCpuAnswer(index);
         }
         
-        function showCpuAnswerResult(playerAnswerIndex) {
+        function processCpuAnswer(playerAnswer) {
             var q = cpuGame.questions[cpuGame.currentIndex];
-            var playerCorrect = (playerAnswerIndex === q.correct);
-            
-            // Calcular respuesta de la CPU
+            var playerCorrect = playerAnswer === q.correct;
             var cpuCorrect = Math.random() < cpuAccuracy[cpuDifficulty];
             
-            // Actualizar puntuaciones
-            if (playerCorrect) {
-                cpuGame.playerScore += timeLeft * 10;
-                cpuGame.playerCorrect++;
-            }
-            if (cpuCorrect) {
-                // CPU responde en tiempo aleatorio entre 5-12 segundos
-                var cpuTime = Math.floor(Math.random() * 8) + 5;
-                cpuGame.cpuScore += cpuTime * 10;
-                cpuGame.cpuCorrect++;
-            }
-            
-            // Mostrar resultado visual
             var options = document.querySelectorAll('.option-btn');
+            options.forEach(btn => btn.disabled = true);
             
-            if (playerAnswerIndex >= 0 && options[playerAnswerIndex]) {
-                options[playerAnswerIndex].classList.add('selected');
+            // Mostrar resultado del jugador
+            if (playerAnswer >= 0 && options[playerAnswer]) {
+                options[playerAnswer].classList.add('selected');
+                options[playerAnswer].classList.add(playerCorrect ? 'correct' : 'wrong');
+            }
+            if (!playerCorrect && options[q.correct]) {
+                options[q.correct].classList.add('correct');
+            }
+            
+            if (cpuMode === 'classic') {
+                // Modo clásico: sumar puntos
                 if (playerCorrect) {
-                    options[playerAnswerIndex].classList.add('correct');
+                    cpuGame.playerScore += timeLeft * 10;
+                    cpuGame.playerCorrect++;
+                }
+                if (cpuCorrect) {
+                    var cpuTime = Math.floor(Math.random() * 8) + 5;
+                    cpuGame.cpuScore += cpuTime * 10;
+                    cpuGame.cpuCorrect++;
+                }
+            } else {
+                // Modo supervivencia: quitar vidas
+                if (playerCorrect) {
+                    cpuGame.playerScore += 10;
+                    cpuGame.playerCorrect++;
                 } else {
-                    options[playerAnswerIndex].classList.add('wrong');
+                    cpuGame.playerLives--;
+                    document.querySelector('.container').classList.add('shake');
+                    setTimeout(() => document.querySelector('.container').classList.remove('shake'), 500);
+                }
+                
+                if (cpuCorrect) {
+                    cpuGame.cpuScore += 10;
+                    cpuGame.cpuCorrect++;
+                } else {
+                    cpuGame.cpuLives--;
                 }
             }
             
-            // Actualizar marcador
             updateCpuScoreboard();
+            if (cpuMode === 'survival') showCpuLives();
             
-            // Siguiente pregunta después de 2 segundos
             setTimeout(function() {
                 cpuGame.currentIndex++;
                 showCpuQuestion();
             }, 2000);
         }
         
-        function updateCpuScoreboard() {
-            var html = '<div style="display: flex; justify-content: space-around; gap: 10px; flex-wrap: wrap;">';
+        function showCpuLives() {
+            var container = document.getElementById('livesDisplay');
+            container.style.display = 'flex';
             
-            // Jugador
-            html += '<div style="flex: 1; min-width: 120px; text-align: center;">';
-            html += '<div style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700; margin-bottom: 4px;">👤 ' + playerName + '</div>';
-            html += '<div style="color: #FFD700; font-size: 15px; font-weight: 900;">' + cpuGame.playerScore + ' pts</div>';
-            html += '<div style="color: rgba(255,255,255,0.7); font-size: 11px;">(' + cpuGame.playerCorrect + '/' + (cpuGame.currentIndex) + ' ✓)</div>';
+            var diffEmoji = { 'easy': '🟢', 'medium': '🟡', 'hard': '🔴' };
+            
+            var html = '<div style="text-align: center; margin: 0 15px;">';
+            html += '<div style="color: #fff; font-size: 12px; margin-bottom: 5px;">👤 ' + playerName + '</div>';
+            for (var i = 0; i < 3; i++) {
+                html += '<span class="life' + (i >= cpuGame.playerLives ? ' lost' : '') + '">❤️</span>';
+            }
             html += '</div>';
             
-            // CPU
+            html += '<div style="text-align: center; margin: 0 15px;">';
+            html += '<div style="color: #fff; font-size: 12px; margin-bottom: 5px;">🤖 CPU ' + diffEmoji[cpuDifficulty] + '</div>';
+            for (var i = 0; i < 3; i++) {
+                html += '<span class="life' + (i >= cpuGame.cpuLives ? ' lost' : '') + '">❤️</span>';
+            }
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+        
+        function updateCpuScoreboard() {
             var diffEmoji = { 'easy': '🟢', 'medium': '🟡', 'hard': '🔴' };
-            html += '<div style="flex: 1; min-width: 120px; text-align: center;">';
-            html += '<div style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700; margin-bottom: 4px;">🤖 CPU ' + diffEmoji[cpuDifficulty] + '</div>';
+            
+            var html = '<div style="display: flex; justify-content: space-around; gap: 10px;">';
+            
+            html += '<div style="flex: 1; text-align: center;">';
+            html += '<div style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700;">👤 ' + playerName + '</div>';
+            html += '<div style="color: #FFD700; font-size: 15px; font-weight: 900;">' + cpuGame.playerScore + ' pts</div>';
+            if (cpuMode === 'classic') {
+                html += '<div style="color: rgba(255,255,255,0.7); font-size: 11px;">(' + cpuGame.playerCorrect + '/' + cpuGame.currentIndex + ' ✓)</div>';
+            }
+            html += '</div>';
+            
+            html += '<div style="flex: 1; text-align: center;">';
+            html += '<div style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700;">🤖 CPU ' + diffEmoji[cpuDifficulty] + '</div>';
             html += '<div style="color: #FFD700; font-size: 15px; font-weight: 900;">' + cpuGame.cpuScore + ' pts</div>';
-            html += '<div style="color: rgba(255,255,255,0.7); font-size: 11px;">(' + cpuGame.cpuCorrect + '/' + (cpuGame.currentIndex) + ' ✓)</div>';
+            if (cpuMode === 'classic') {
+                html += '<div style="color: rgba(255,255,255,0.7); font-size: 11px;">(' + cpuGame.cpuCorrect + '/' + cpuGame.currentIndex + ' ✓)</div>';
+            }
             html += '</div>';
             
             html += '</div>';
             document.getElementById('liveScoreboard').innerHTML = html;
         }
         
-        function endCpuGame() {
+        function endCpuGame(forcedWinner) {
             cpuGame.active = false;
             clearInterval(timerInterval);
             
-            var playerWins = cpuGame.playerScore > cpuGame.cpuScore;
-            var tie = cpuGame.playerScore === cpuGame.cpuScore;
+            var winner;
+            if (forcedWinner) {
+                winner = forcedWinner;
+            } else if (cpuMode === 'survival') {
+                if (cpuGame.playerLives > cpuGame.cpuLives) winner = 'player';
+                else if (cpuGame.cpuLives > cpuGame.playerLives) winner = 'cpu';
+                else winner = cpuGame.playerScore >= cpuGame.cpuScore ? 'player' : 'cpu';
+            } else {
+                winner = cpuGame.playerScore >= cpuGame.cpuScore ? 'player' : 'cpu';
+            }
             
             var diffNames = { 'easy': 'Fácil', 'medium': 'Normal', 'hard': 'Difícil' };
             var diffEmoji = { 'easy': '🟢', 'medium': '🟡', 'hard': '🔴' };
+            var playerWins = winner === 'player';
             
             var html = '<div style="text-align: center; padding: 10px;">';
             
-            if (tie) {
-                html += '<h2 style="color: #fff; margin: 20px 0;">🤝 ¡EMPATE!</h2>';
-            } else if (playerWins) {
-                html += '<h2 style="color: #fff; margin: 20px 0;">🎉 ¡GANASTE!</h2>';
+            if (cpuMode === 'survival') {
+                if (playerWins) {
+                    html += '<h2 style="color: #4CAF50; margin: 20px 0;">🎉 ¡SOBREVIVISTE!</h2>';
+                } else {
+                    html += '<h2 style="color: #f44336; margin: 20px 0;">💀 La CPU sobrevivió</h2>';
+                }
             } else {
-                html += '<h2 style="color: #fff; margin: 20px 0;">😢 La CPU gana</h2>';
+                if (cpuGame.playerScore === cpuGame.cpuScore) {
+                    html += '<h2 style="color: #fff; margin: 20px 0;">🤝 ¡EMPATE!</h2>';
+                } else if (playerWins) {
+                    html += '<h2 style="color: #4CAF50; margin: 20px 0;">🎉 ¡GANASTE!</h2>';
+                } else {
+                    html += '<h2 style="color: #f44336; margin: 20px 0;">😢 La CPU gana</h2>';
+                }
             }
             
-            html += '<p style="color: rgba(255,255,255,0.8); margin-bottom: 15px;">CPU ' + diffEmoji[cpuDifficulty] + ' ' + diffNames[cpuDifficulty] + '</p>';
+            html += '<p style="color: rgba(255,255,255,0.8); margin-bottom: 15px;">CPU ' + diffEmoji[cpuDifficulty] + ' ' + diffNames[cpuDifficulty] + ' · ' + (cpuMode === 'classic' ? 'Clásico' : 'Supervivencia') + '</p>';
             
             // Jugador
             var playerBg = playerWins ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'linear-gradient(135deg, #C0C0C0, #808080)';
             html += '<div style="background: ' + playerBg + '; color: white; padding: 15px; margin: 10px; border-radius: 15px;">';
             html += '<div style="font-size: 32px;">' + (playerWins ? '🥇' : '🥈') + '</div>';
             html += '<strong style="font-size: 20px;">👤 ' + playerName + '</strong><br>';
-            html += '<span style="font-size: 24px;">' + cpuGame.playerScore + ' pts</span><br>';
-            html += '<span style="font-size: 14px;">(' + cpuGame.playerCorrect + '/' + cpuQuestions + ' aciertos)</span>';
+            if (cpuMode === 'survival') {
+                html += '<span style="font-size: 18px;">' + '❤️'.repeat(cpuGame.playerLives) + '🖤'.repeat(3 - cpuGame.playerLives) + '</span><br>';
+            }
+            html += '<span style="font-size: 24px;">' + cpuGame.playerScore + ' pts</span>';
+            if (cpuMode === 'classic') {
+                html += '<br><span style="font-size: 14px;">(' + cpuGame.playerCorrect + '/' + cpuQuestions + ' aciertos)</span>';
+            }
             html += '</div>';
             
             // CPU
-            var cpuBg = !playerWins && !tie ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'linear-gradient(135deg, #C0C0C0, #808080)';
+            var cpuBg = !playerWins ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'linear-gradient(135deg, #C0C0C0, #808080)';
             html += '<div style="background: ' + cpuBg + '; color: white; padding: 15px; margin: 10px; border-radius: 15px;">';
-            html += '<div style="font-size: 32px;">' + (!playerWins && !tie ? '🥇' : '🥈') + '</div>';
+            html += '<div style="font-size: 32px;">' + (!playerWins ? '🥇' : '🥈') + '</div>';
             html += '<strong style="font-size: 20px;">🤖 CPU ' + diffEmoji[cpuDifficulty] + '</strong><br>';
-            html += '<span style="font-size: 24px;">' + cpuGame.cpuScore + ' pts</span><br>';
-            html += '<span style="font-size: 14px;">(' + cpuGame.cpuCorrect + '/' + cpuQuestions + ' aciertos)</span>';
+            if (cpuMode === 'survival') {
+                html += '<span style="font-size: 18px;">' + '❤️'.repeat(cpuGame.cpuLives) + '🖤'.repeat(3 - cpuGame.cpuLives) + '</span><br>';
+            }
+            html += '<span style="font-size: 24px;">' + cpuGame.cpuScore + ' pts</span>';
+            if (cpuMode === 'classic') {
+                html += '<br><span style="font-size: 14px;">(' + cpuGame.cpuCorrect + '/' + cpuQuestions + ' aciertos)</span>';
+            }
             html += '</div>';
             
             html += '</div>';
             
             document.getElementById('finalScores').innerHTML = html;
+            document.getElementById('resultsTitle').textContent = cpuMode === 'survival' ? '💀 ¡Supervivencia!' : '🏆 ¡Fin del Juego!';
             showScreen('resultsScreen');
         }
-        // ===== FIN CONFIGURACIÓN CPU =====
-        
-        function showMultiplayerConfig() {
-            playerName = document.getElementById('playerName').value.trim();
-            if (!playerName) {
-                showError('Por favor escribe tu nombre');
-                return;
-            }
-            showScreen('multiplayerConfigScreen');
-        }
-        
-        function selectMultiplayerRounds(rounds) {
-            multiplayerRounds = rounds;
-            document.querySelectorAll('.config-btn[data-rounds]').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            document.querySelector('.config-btn[data-rounds="' + rounds + '"]').classList.add('selected');
-            updateMultiplayerSummary();
-        }
-        
-        function selectMultiplayerQuestions(questions) {
-            multiplayerQuestionsPerRound = questions;
-            document.querySelectorAll('.config-btn[data-questions]').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            document.querySelector('.config-btn[data-questions="' + questions + '"]').classList.add('selected');
-            updateMultiplayerSummary();
-        }
-        
-        function updateMultiplayerSummary() {
-            var total = multiplayerRounds * multiplayerQuestionsPerRound;
-            var time = Math.ceil(total * 0.4);
-            document.getElementById('multiplayerTotalQuestions').textContent = total;
-            document.getElementById('multiplayerEstimatedTime').textContent = time;
-        }
-        
-        function createRoomWithConfig() {
-            socket.emit('createRoom', { 
-                playerName: playerName,
-                totalRounds: multiplayerRounds,
-                questionsPerRound: multiplayerQuestionsPerRound
-            });
-        }
-        
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(function(s) {
-                s.classList.remove('active');
-            });
-            document.getElementById(screenId).classList.add('active');
-        }
-        
-        function showError(message) {
-            document.getElementById('errorContainer').innerHTML = '<div class="error">' + message + '</div>';
-            setTimeout(function() {
-                document.getElementById('errorContainer').innerHTML = '';
-            }, 3000);
-        }
-        
-        function showJoinScreen() {
-            showScreen('joinScreen');
-        }
-        
-        function joinRoom() {
-            playerName = document.getElementById('playerName2').value.trim();
-            var roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-            
-            if (!playerName || !roomCode) {
-                showError('Por favor completa todos los campos');
-                return;
-            }
-            socket.emit('joinRoom', { roomCode: roomCode, playerName: playerName });
-        }
-        
-        function markReady() {
-            socket.emit('playerReady', currentRoom);
-        }
-        
-        function submitAnswer(index) {
-            if (hasAnswered) return;
-            hasAnswered = true;
-            clearInterval(timerInterval);
-            
-            window.selectedAnswerIndex = index;
-            
-            socket.emit('submitAnswer', {
-                roomCode: currentRoom,
-                answerIndex: index,
-                timeLeft: timeLeft
-            });
-        }
-        
-        // SOCKET EVENTS
-        socket.on('roomCreated', function(data) {
-            currentRoom = data.roomCode;
-            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
-            document.getElementById('playersList').innerHTML = '<div class="player">' + playerName + ' (Tú)</div>';
-            showScreen('waitingScreen');
-        });
-        
-        socket.on('roomError', function(message) {
-            showError(message);
-        });
-        
-        socket.on('playerJoined', function(data) {
-            currentRoom = data.roomCode;
-            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
-            var html = '';
-            data.players.forEach(function(p) {
-                var readyText = p.ready ? ' ✓' : '';
-                var className = p.ready ? 'player ready' : 'player';
-                html += '<div class="' + className + '">' + p.name + readyText + '</div>';
-            });
-            document.getElementById('playersList').innerHTML = html;
-            document.getElementById('playerCount').textContent = data.players.length;
-            showScreen('waitingScreen');
-        });
-        
-        socket.on('playersUpdate', function(players) {
-            var html = '';
-            players.forEach(function(p) {
-                var readyText = p.ready ? ' ✓' : '';
-                var className = p.ready ? 'player ready' : 'player';
-                html += '<div class="' + className + '">' + p.name + readyText + '</div>';
-            });
-            document.getElementById('playersList').innerHTML = html;
-            document.getElementById('playerCount').textContent = players.length;
-        });
-        
-        socket.on('newQuestion', function(data) {
-            currentQuestion = data;
-            hasAnswered = false;
-            timeLeft = 15;
-            
-            // Guardar índice correcto para el 50/50
-            currentQuestion.correct = data.correctAnswer !== undefined ? data.correctAnswer : 0;
-            
-            // Actualizar botón 50/50
-            var btn = document.getElementById('fiftyFiftyBtn');
-            if (multiplayerQuestionsPerRound >= 10) {
-                document.querySelector('.powerup-container').style.display = 'block';
-                if (fiftyFiftyUsed) {
-                    btn.disabled = true;
-                    btn.textContent = '✓ Usado';
-                    btn.style.opacity = '0.5';
-                } else {
-                    btn.disabled = false;
-                    btn.textContent = '⚡ 50/50 (1 por partida)';
-                    btn.style.opacity = '1';
-                }
-            } else {
-                document.querySelector('.powerup-container').style.display = 'none';
-            }
-            
-            var roundText = data.totalRounds > 1 ? '🔄 RONDA ' + data.currentRound + '/' + data.totalRounds + ' · ' : '';
-            document.getElementById('questionNumber').textContent = roundText + 'Pregunta ' + data.questionNumber + ' de ' + data.totalQuestions;
-            
-            // Actualizar marcador en vivo si hay datos de jugadores
-            if (data.allPlayers && data.allPlayers.length > 0) {
-                updateLiveScoreboard(data.allPlayers);
-            }
-            
-            document.getElementById('questionText').textContent = data.question;
-            document.getElementById('timer').textContent = timeLeft;
-            
-            var grid = document.getElementById('optionsGrid');
-            grid.innerHTML = '';
-            data.options.forEach(function(option, index) {
-                var btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.textContent = option;
-                btn.onclick = function() { submitAnswer(index); };
-                grid.appendChild(btn);
-            });
-            
-            showScreen('gameScreen');
-            
-            clearInterval(timerInterval);
-            timerInterval = setInterval(function() {
-                timeLeft--;
-                document.getElementById('timer').textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    if (!hasAnswered) {
-                        hasAnswered = true;
-                        socket.emit('nextQuestion', currentRoom);
-                    }
-                }
-            }, 1000);
-        });
-        
-        socket.on('answerResult', function(data) {
-            var options = document.querySelectorAll('.option-btn');
-            var selectedIndex = window.selectedAnswerIndex;
-            if (selectedIndex !== undefined && options[selectedIndex]) {
-                options[selectedIndex].classList.add('selected');
-                if (data.isCorrect) {
-                    options[selectedIndex].classList.add('correct');
-                } else {
-                    options[selectedIndex].classList.add('wrong');
-                }
-            }
-        });
-        
-        socket.on('waitingTurn', function(data) {
-            document.getElementById('otherPlayerName').textContent = data.currentPlayerName;
-            
-            // Actualizar marcador en vivo
-            if (data.allPlayers && data.allPlayers.length > 0) {
-                var html = '<div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 12px; margin: 20px 0;">';
-                html += '<h4 style="color: #fff; margin-bottom: 10px;">📊 Puntuaciones:</h4>';
-                
-                var sorted = data.allPlayers.sort((a, b) => b.score - a.score);
-                sorted.forEach(function(p) {
-                    var isCurrent = p.name === data.currentPlayerName;
-                    html += '<div style="padding: 8px; margin: 5px 0; background: rgba(255,255,255,' + (isCurrent ? '0.2' : '0.05') + '); border-radius: 8px; border-left: 3px solid ' + (isCurrent ? '#e94560' : '#667eea') + ';">';
-                    html += '<strong style="color: #fff;">' + p.name + (isCurrent ? ' 🎯' : '') + ':</strong> ';
-                    html += '<span style="color: #FFD700; font-weight: 900;">' + p.score + ' pts</span>';
-                    html += '</div>';
-                });
-                html += '</div>';
-                
-                var waitingDiv = document.getElementById('otherPlayerName').parentElement;
-                var existing = waitingDiv.querySelector('.scores-display');
-                if (existing) existing.remove();
-                var div = document.createElement('div');
-                div.className = 'scores-display';
-                div.innerHTML = html;
-                waitingDiv.appendChild(div);
-            }
-            
-            showScreen('waitingTurnScreen');
-        });
-        
-        function useFiftyFifty() {
-            if (fiftyFiftyUsed || hasAnswered) return;
-            
-            fiftyFiftyUsed = true;
-            document.getElementById('fiftyFiftyBtn').disabled = true;
-            document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
-            document.getElementById('fiftyFiftyBtn').style.opacity = '0.5';
-            
-            var options = document.querySelectorAll('.option-btn');
-            var correctIndex = currentQuestion.correct || 0;
-            var incorrectIndices = [];
-            
-            for (var i = 0; i < options.length; i++) {
-                if (i !== correctIndex) {
-                    incorrectIndices.push(i);
-                }
-            }
-            
-            // Eliminar 2 incorrectas aleatoriamente
-            var toRemove = [];
-            while (toRemove.length < 2 && incorrectIndices.length > 0) {
-                var randomIndex = Math.floor(Math.random() * incorrectIndices.length);
-                toRemove.push(incorrectIndices[randomIndex]);
-                incorrectIndices.splice(randomIndex, 1);
-            }
-            
-            toRemove.forEach(function(index) {
-                options[index].style.display = 'none';
-            });
-        }
-        
-        function updateLiveScoreboard(players) {
-            var html = '<div style="display: flex; justify-content: space-around; gap: 10px; flex-wrap: wrap;">';
-            
-            players.forEach(function(p) {
-                var isMe = p.name === playerName;
-                html += '<div style="flex: 1; min-width: 120px; text-align: center;">';
-                html += '<div style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700; margin-bottom: 4px;">';
-                html += (isMe ? '👤 ' : '👥 ') + p.name;
-                html += '</div>';
-                html += '<div style="color: #FFD700; font-size: 15px; font-weight: 900;">';
-                html += p.score + ' pts';
-                html += '</div>';
-                html += '</div>';
-            });
-            
-            html += '</div>';
-            document.getElementById('liveScoreboard').innerHTML = html;
-        }
-        
-        socket.on('roundEnd', function(data) {
-            var html = '<div style="text-align: center; padding: 10px;">';
-            html += '<h2 style="color: #fff; margin: 20px 0;">🎯 FIN DE RONDA ' + data.currentRound + '/' + data.totalRounds + '</h2>';
-            html += '<p style="color: rgba(255,255,255,0.8); margin: 15px 0;">Puntuaciones:</p>';
-            
-            data.ranking.forEach(function(p, index) {
-                var medal = index === 0 ? '🥇' : '🥈';
-                html += '<div style="background: ' + (index === 0 ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'linear-gradient(135deg, #C0C0C0, #808080)') + '; color: white; padding: 15px; margin: 10px; border-radius: 15px;">';
-                html += '<div style="font-size: 32px;">' + medal + '</div>';
-                html += '<strong style="font-size: 20px;">' + p.name + '</strong><br>';
-                html += '<span style="font-size: 24px;">' + p.score + ' pts</span>';
-                html += '</div>';
-            });
-            
-            html += '<p style="color: rgba(255,255,255,0.9); margin-top: 20px;">Preparando Ronda ' + (data.currentRound + 1) + '...</p>';
-            html += '</div>';
-            
-            document.getElementById('finalScores').innerHTML = html;
-            showScreen('resultsScreen');
-        });
-        
-        socket.on('gameOver', function(data) {
-            var html = '<div style="text-align: center; padding: 10px;">';
-            html += '<h2 style="color: #fff; margin: 20px 0;">🏆 RANKING FINAL</h2>';
-            if (data.totalRounds > 1) {
-                html += '<p style="color: rgba(255,255,255,0.8); margin-bottom: 15px;">' + data.totalRounds + ' rondas completadas</p>';
-            }
-            
-            var medals = ['🥇', '🥈', '🥉', '4º'];
-            data.ranking.forEach(function(p, index) {
-                var colors = [
-                    'linear-gradient(135deg, #FFD700, #FFA500)',
-                    'linear-gradient(135deg, #C0C0C0, #808080)',
-                    'linear-gradient(135deg, #CD7F32, #8B4513)',
-                    'rgba(255,255,255,0.9)'
-                ];
-                
-                html += '<div style="background: ' + colors[index] + '; color: ' + (index < 3 ? 'white' : '#333') + '; padding: 15px; margin: 10px; border-radius: 15px;">';
-                html += '<div style="font-size: 32px;">' + medals[index] + '</div>';
-                html += '<strong style="font-size: 20px;">' + p.name + '</strong><br>';
-                html += '<span style="font-size: 24px;">' + p.score + ' pts</span>';
-                html += '</div>';
-            });
-            
-            html += '</div>';
-            document.getElementById('finalScores').innerHTML = html;
-            showScreen('resultsScreen');
-        });
-        
-        socket.on('playerLeft', function(players) {
-            if (players.length === 0) {
-                showError('El otro jugador se desconectó');
-                setTimeout(function() {
-                    location.reload();
-                }, 2000);
-            }
-        });
-        
-        socket.on('connect_error', function() {
-            showError('Error de conexión');
-        });
     </script>
 </body>
 </html>
