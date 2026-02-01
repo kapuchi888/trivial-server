@@ -173,6 +173,613 @@ const backupQuestions = [
     { question: "¿Qué guerra enfrentó al Norte y Sur de Estados Unidos?", options: ["Independencia", "Civil", "Vietnam", "Corea"], correct: 1, category: "Historia" },
     { question: "¿Quién fue Abraham Lincoln?", options: ["Primer presidente", "Presidente durante Guerra Civil", "Último presidente", "Fundador del país"], correct: 1, category: "Historia" },
     { question: "¿En qué año terminó la Guerra Fría?", options: ["1985", "1989", "1991", "1995"], correct: 2, category: "Historia" },
+    { question: "¿Quién fue Alejandro Magno?", options: ["Emperador romano", "Rey de Macedonia", "Faraón egipcio", "Rey persa"], correct: 1, category: "Historia" },
+    { question: "¿En qué año se firmó la Declaración de Independencia de EEUU?", options: ["1774", "1776", "1778", "1780"], correct: 1, category: "Historia" },
+    { question: "¿Qué país fue el primero en llegar al espacio?", options: ["EEUU", "URSS", "China", "Alemania"], correct: 1, category: "Historia" },
+    { question: "¿Quién fue el primer hombre en el espacio?", options: ["Neil Armstrong", "Yuri Gagarin", "Buzz Aldrin", "John Glenn"], correct: 1, category: "Historia" },
+    { question: "¿En qué año se creó la ONU?", options: ["1942", "1945", "1948", "1950"], correct: 1, category: "Historia" },
+    { question: "¿Quién fue Marco Polo?", options: ["Conquistador", "Explorador y comerciante", "Emperador", "Pirata"], correct: 1, category: "Historia" },
+
+    // ENTRETENIMIENTO (40)
+    { question: "¿Quién interpretó a Jack en Titanic?", options: ["Brad Pitt", "Leonardo DiCaprio", "Tom Cruise", "Johnny Depp"], correct: 1, category: "Entretenimiento" },
+    { question: "¿En qué año se estrenó el primer Harry Potter?", options: ["1999", "2001", "2003", "2005"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Cómo se llama el protagonista de Mario Bros?", options: ["Luigi", "Mario", "Wario", "Toad"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Qué banda cantó 'Bohemian Rhapsody'?", options: ["The Beatles", "Queen", "Led Zeppelin", "Pink Floyd"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Quién es el creador de Mickey Mouse?", options: ["Pixar", "Walt Disney", "Warner Bros", "DreamWorks"], correct: 1, category: "Entretenimiento" },
+    { question: "¿En qué película aparece Darth Vader?", options: ["Star Trek", "Star Wars", "Alien", "Blade Runner"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Cuántos jugadores hay en un equipo de fútbol?", options: ["9", "11", "10", "12"], correct: 1, category: "Entretenimiento" },
+    { question: "¿En qué deporte se usa una raqueta y pelota amarilla?", options: ["Badminton", "Tenis", "Squash", "Ping Pong"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Quién escribió 'Romeo y Julieta'?", options: ["Dickens", "Shakespeare", "Cervantes", "Dante"], correct: 1, category: "Entretenimiento" },
+    { question: "¿De qué país es el grupo ABBA?", options: ["Noruega", "Suecia", "Finlandia", "Dinamarca"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Qué superhéroe es de Krypton?", options: ["Batman", "Superman", "Spiderman", "Flash"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Quién es el archienemigo de Batman?", options: ["Lex Luthor", "Joker", "Thanos", "Magneto"], correct: 1, category: "Entretenimiento" },
+    { question: "¿En qué saga aparece Frodo?", options: ["Harry Potter", "El Señor de los Anillos", "Narnia", "Eragon"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Quién canta 'Thriller'?", options: ["Prince", "Michael Jackson", "Stevie Wonder", "James Brown"], correct: 1, category: "Entretenimiento" },
+    { question: "¿De qué país es el anime?", options: ["China", "Japón", "Corea", "Tailandia"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Cómo se llama el protagonista de Zelda?", options: ["Zelda", "Link", "Ganondorf", "Epona"], correct: 1, category: "Entretenimiento" },
+    { question: "¿En qué año se fundó YouTube?", options: ["2003", "2005", "2007", "2009"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Quién es el creador de Facebook?", options: ["Bill Gates", "Mark Zuckerberg", "Steve Jobs", "Elon Musk"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Cuántos Grand Slams hay en tenis?", options: ["3", "4", "5", "6"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Cuántas casillas tiene un tablero de ajedrez?", options: ["36", "64", "81", "100"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Qué banda cantó 'Smells Like Teen Spirit'?", options: ["Pearl Jam", "Nirvana", "Soundgarden", "Alice in Chains"], correct: 1, category: "Entretenimiento" },
+    { question: "¿En qué película aparece 'I'll be back'?", options: ["Rambo", "Terminator", "Robocop", "Predator"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Quién dirigió Titanic?", options: ["Spielberg", "James Cameron", "Scorsese", "Tarantino"], correct: 1, category: "Entretenimiento" },
+    { question: "¿En qué año se estrenó el primer Toy Story?", options: ["1993", "1995", "1997", "1999"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Qué compañía creó el PlayStation?", options: ["Nintendo", "Sony", "Microsoft", "Sega"], correct: 1, category: "Entretenimiento" },
+    { question: "¿En qué año salió el primer iPhone?", options: ["2005", "2007", "2009", "2010"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Cuántos libros hay de Harry Potter?", options: ["5", "7", "8", "6"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Quién escribió Harry Potter?", options: ["Stephen King", "J.K. Rowling", "Tolkien", "C.S. Lewis"], correct: 1, category: "Entretenimiento" },
+    { question: "¿En qué casa de Hogwarts está Harry?", options: ["Slytherin", "Gryffindor", "Ravenclaw", "Hufflepuff"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Qué superhéroe es Peter Parker?", options: ["Batman", "Spiderman", "Superman", "Iron Man"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Quién es Tony Stark?", options: ["Capitán América", "Iron Man", "Thor", "Hulk"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Cuál es el verdadero nombre de Batman?", options: ["Clark Kent", "Bruce Wayne", "Peter Parker", "Tony Stark"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Qué deporte practica Messi?", options: ["Baloncesto", "Fútbol", "Tenis", "Golf"], correct: 1, category: "Entretenimiento" },
+    { question: "¿En qué país se celebró el Mundial 2022?", options: ["Rusia", "Qatar", "Brasil", "Alemania"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Quién ganó el Mundial 2022?", options: ["Francia", "Argentina", "Brasil", "Croacia"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Qué equipo tiene más Champions League?", options: ["Barcelona", "Real Madrid", "Milan", "Bayern"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Quién es el máximo goleador de la historia?", options: ["Messi", "Cristiano Ronaldo", "Pelé", "Maradona"], correct: 1, category: "Entretenimiento" },
+    { question: "¿En qué deporte destaca LeBron James?", options: ["Fútbol", "Baloncesto", "Béisbol", "Hockey"], correct: 1, category: "Entretenimiento" },
+    { question: "¿Qué país ha ganado más mundiales de fútbol?", options: ["Alemania", "Brasil", "Argentina", "Italia"], correct: 1, category: "Entretenimiento" },
+    { question: "¿En qué año se creó Minecraft?", options: ["2009", "2011", "2013", "2015"], correct: 1, category: "Entretenimiento" },
+
+    // CULTURA GENERAL (40)
+    { question: "¿Cuántos días tiene un año bisiesto?", options: ["365", "366", "364", "367"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántos minutos tiene una hora?", options: ["30", "60", "90", "120"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuál es el color del semáforo para parar?", options: ["Verde", "Rojo", "Amarillo", "Azul"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántos colores tiene el arcoíris?", options: ["5", "7", "6", "8"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántas letras tiene el abecedario español?", options: ["26", "27", "28", "29"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuál es el idioma más hablado del mundo?", options: ["Español", "Chino mandarín", "Inglés", "Hindi"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántos años tiene un siglo?", options: ["50", "100", "1000", "10"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántos signos del zodiaco hay?", options: ["10", "12", "14", "8"], correct: 1, category: "Cultura General" },
+    { question: "¿Qué animal representa a España?", options: ["Águila", "Toro", "León", "Oso"], correct: 1, category: "Cultura General" },
+    { question: "¿De qué color es la bandera de Japón?", options: ["Azul y blanca", "Roja y blanca", "Verde y blanca", "Negra y roja"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántas estrellas tiene la bandera de Estados Unidos?", options: ["48", "50", "52", "51"], correct: 1, category: "Cultura General" },
+    { question: "¿Qué se celebra el 25 de diciembre?", options: ["Año Nuevo", "Navidad", "Pascua", "Halloween"], correct: 1, category: "Cultura General" },
+    { question: "¿En qué mes se celebra Halloween?", options: ["Septiembre", "Octubre", "Noviembre", "Diciembre"], correct: 1, category: "Cultura General" },
+    { question: "¿Qué moneda se usa en Japón?", options: ["Yuan", "Yen", "Won", "Dólar"], correct: 1, category: "Cultura General" },
+    { question: "¿Qué moneda se usa en Reino Unido?", options: ["Euro", "Libra", "Dólar", "Franco"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántos lados tiene un hexágono?", options: ["5", "6", "7", "8"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuál es el número de emergencias en España?", options: ["911", "112", "999", "100"], correct: 1, category: "Cultura General" },
+    { question: "¿Qué día se celebra San Valentín?", options: ["14 de enero", "14 de febrero", "14 de marzo", "14 de abril"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuál es la moneda de Estados Unidos?", options: ["Euro", "Dólar", "Peso", "Libra"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántas caras tiene un dado normal?", options: ["4", "6", "8", "12"], correct: 1, category: "Cultura General" },
+    { question: "¿Qué instrumento tiene teclas blancas y negras?", options: ["Guitarra", "Piano", "Violín", "Flauta"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántos ceros tiene un millón?", options: ["5", "6", "7", "8"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuál es el símbolo del euro?", options: ["$", "€", "£", "¥"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántos gramos tiene un kilogramo?", options: ["100", "1000", "10000", "500"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántos centímetros tiene un metro?", options: ["10", "100", "1000", "50"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuál es el código telefónico de España?", options: ["+33", "+34", "+35", "+32"], correct: 1, category: "Cultura General" },
+    { question: "¿Qué nota musical va después de Do?", options: ["Mi", "Re", "Fa", "Sol"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántas notas musicales hay?", options: ["5", "7", "8", "6"], correct: 1, category: "Cultura General" },
+    { question: "¿Qué se mide en grados Celsius?", options: ["Peso", "Temperatura", "Distancia", "Presión"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántos segundos tiene un minuto?", options: ["30", "60", "90", "100"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántos meses tiene un año?", options: ["10", "12", "11", "13"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántos días tiene una semana?", options: ["5", "7", "6", "8"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuál es el día después del sábado?", options: ["Viernes", "Domingo", "Lunes", "Martes"], correct: 1, category: "Cultura General" },
+    { question: "¿En qué estación hace más frío?", options: ["Primavera", "Invierno", "Verano", "Otoño"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántas horas tiene un día?", options: ["12", "24", "20", "48"], correct: 1, category: "Cultura General" },
+    { question: "¿Qué viene después del número 99?", options: ["98", "100", "101", "999"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántos lados tiene un triángulo?", options: ["2", "3", "4", "5"], correct: 1, category: "Cultura General" },
+    { question: "¿De qué color es la hierba?", options: ["Azul", "Verde", "Roja", "Amarilla"], correct: 1, category: "Cultura General" },
+    { question: "¿Cuántas patas tiene un perro?", options: ["2", "4", "6", "8"], correct: 1, category: "Cultura General" },
+    { question: "¿Qué animal dice 'miau'?", options: ["Perro", "Gato", "Vaca", "Pájaro"], correct: 1, category: "Cultura General" }
+];
+
+// Cargar preguntas del archivo
+function loadSpanishQuestions() {
+    try {
+        const questionsPath = path.join(__dirname, 'questions_espana.json');
+        if (fs.existsSync(questionsPath)) {
+            const data = fs.readFileSync(questionsPath, 'utf8');
+            const questions = JSON.parse(data);
+            console.log('📊 Preguntas del archivo: ' + questions.length);
+            
+            return questions.map(q => {
+                const allOptions = [...q.incorrect_answers, q.correct_answer];
+                const shuffled = shuffleArray(allOptions);
+                return {
+                    question: q.question,
+                    options: shuffled,
+                    correct: shuffled.indexOf(q.correct_answer),
+                    category: q.category
+                };
+            });
+        }
+        return [];
+    } catch (error) {
+        console.log('⚠️ Error cargando archivo:', error.message);
+        return [];
+    }
+}
+
+// Traducir texto
+async function translateToSpanish(text) {
+    try {
+        const https = require('https');
+        return new Promise((resolve) => {
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=es&dt=t&q=${encodeURIComponent(text)}`;
+            https.get(url, (res) => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => {
+                    try {
+                        const parsed = JSON.parse(data);
+                        if (parsed && parsed[0] && parsed[0][0]) {
+                            resolve(parsed[0].map(item => item[0]).join(''));
+                        } else resolve(text);
+                    } catch { resolve(text); }
+                });
+            }).on('error', () => resolve(text));
+            setTimeout(() => resolve(text), 3000);
+        });
+    } catch { return text; }
+}
+
+async function translateBatch(texts) {
+    const results = [];
+    for (let t of texts) {
+        results.push(await translateToSpanish(t));
+        await new Promise(r => setTimeout(r, 50));
+    }
+    return results;
+}
+
+// Obtener preguntas de API
+async function fetchQuestionsFromAPI(amount = 50) {
+    try {
+        const https = require('https');
+        console.log(`📥 Descargando ${amount} preguntas...`);
+        
+        return new Promise((resolve) => {
+            const url = `https://opentdb.com/api.php?amount=${amount}&difficulty=easy&type=multiple&encode=url3986`;
+            https.get(url, (resp) => {
+                let data = '';
+                resp.on('data', chunk => data += chunk);
+                resp.on('end', async () => {
+                    try {
+                        const result = JSON.parse(data);
+                        if (result.results && result.results.length > 0) {
+                            const questions = [];
+                            for (let q of result.results) {
+                                const questionText = decodeURIComponent(q.question);
+                                const correctAnswer = decodeURIComponent(q.correct_answer);
+                                const incorrects = q.incorrect_answers.map(a => decodeURIComponent(a));
+                                const allOpts = [...incorrects, correctAnswer];
+                                
+                                const translated = await translateBatch([questionText, ...allOpts]);
+                                const shuffled = shuffleArray(translated.slice(1));
+                                
+                                questions.push({
+                                    question: translated[0],
+                                    options: shuffled,
+                                    correct: shuffled.indexOf(translated[translated.length]),
+                                    category: decodeURIComponent(q.category)
+                                });
+                            }
+                            console.log(`✅ ${questions.length} preguntas traducidas`);
+                            resolve(questions);
+                        } else resolve([]);
+                    } catch { resolve([]); }
+                });
+            }).on('error', () => resolve([]));
+        });
+    } catch { return []; }
+}
+
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+async function initializeQuestions() {
+    console.log('🔄 Inicializando preguntas...');
+    
+    spanishQuestions = loadSpanishQuestions();
+    const apiQuestions = await fetchQuestionsFromAPI(100);
+    
+    allQuestions = shuffleArray([
+        ...spanishQuestions,
+        ...apiQuestions,
+        ...backupQuestions
+    ]);
+    
+    console.log(`✅ Total: ${allQuestions.length} preguntas`);
+    console.log(`   📁 Archivo: ${spanishQuestions.length}`);
+    console.log(`   🌐 API: ${apiQuestions.length}`);
+    console.log(`   📦 Respaldo: ${backupQuestions.length}`);
+}
+
+async function refillQuestionsIfNeeded(minRequired = REFILL_THRESHOLD) {
+    if (allQuestions.length < minRequired) {
+        console.log(`🔄 Recargando (quedan ${allQuestions.length})...`);
+        
+        // Añadir respaldo inmediatamente
+        const backupToAdd = shuffleArray([...backupQuestions]);
+        allQuestions.push(...backupToAdd);
+        
+        // Recargar españolas
+        const moreSpanish = shuffleArray([...spanishQuestions]);
+        allQuestions.push(...moreSpanish);
+        
+        // Intentar API
+        const apiQuestions = await fetchQuestionsFromAPI(50);
+        if (apiQuestions.length > 0) {
+            allQuestions.push(...apiQuestions);
+        }
+        
+        allQuestions = shuffleArray(allQuestions);
+        console.log(`✅ Recargadas. Total: ${allQuestions.length}`);
+    }
+}
+
+function getRandomQuestions(count) {
+    if (allQuestions.length < count) {
+        console.log(`⚠️ Pocas preguntas, añadiendo respaldo...`);
+        allQuestions.push(...shuffleArray([...backupQuestions]));
+    }
+    
+    const selected = allQuestions.splice(0, count);
+    console.log(`📤 Enviadas ${selected.length}. Quedan ${allQuestions.length}`);
+    
+    if (allQuestions.length < REFILL_THRESHOLD) {
+        refillQuestionsIfNeeded().catch(console.error);
+    }
+    
+    return selected;
+}
+
+// ===== SOCKET.IO =====
+io.on('connection', (socket) => {
+    console.log('👤 Conectado:', socket.id);
+
+    socket.on('createRoom', async (data) => {
+        const playerName = data.playerName;
+        const gameMode = data.gameMode || 'classic';
+        const totalQuestions = data.totalQuestions || 10;
+        const maxPlayers = 4;
+        
+        // Calcular preguntas necesarias
+        const questionsNeeded = gameMode === 'classic' 
+            ? totalQuestions * maxPlayers 
+            : totalQuestions; // En supervivencia todos responden la misma
+        
+        console.log(`🎮 Creando sala: ${gameMode}, ${totalQuestions} preguntas`);
+        
+        if (allQuestions.length < questionsNeeded + 50) {
+            await refillQuestionsIfNeeded(questionsNeeded + 100);
+        }
+        
+        const roomCode = generateRoomCode();
+        rooms[roomCode] = {
+            players: [{
+                id: socket.id,
+                name: playerName,
+                ready: false,
+                score: 0,
+                lives: 3,
+                answered: false
+            }],
+            gameMode: gameMode,
+            totalQuestions: totalQuestions,
+            currentQuestion: 0,
+            currentPlayerIndex: 0,
+            started: false,
+            questions: getRandomQuestions(questionsNeeded),
+            answersThisRound: {} // Para supervivencia
+        };
+        
+        socket.join(roomCode);
+        socket.emit('roomCreated', { 
+            roomCode, 
+            playerName,
+            gameMode: gameMode 
+        });
+        
+        console.log(`✅ Sala ${roomCode} creada (${gameMode})`);
+    });
+
+    socket.on('joinRoom', ({ roomCode, playerName }) => {
+        const cleanCode = roomCode.trim().toUpperCase();
+        const room = rooms[cleanCode];
+        
+        if (!room) {
+            socket.emit('roomError', 'Sala no encontrada');
+            return;
+        }
+        if (room.players.length >= 4) {
+            socket.emit('roomError', 'Sala llena (máx 4)');
+            return;
+        }
+        if (room.started) {
+            socket.emit('roomError', 'Partida ya iniciada');
+            return;
+        }
+        
+        room.players.push({
+            id: socket.id,
+            name: playerName,
+            ready: false,
+            score: 0,
+            lives: 3,
+            answered: false
+        });
+        
+        socket.join(cleanCode);
+        io.to(cleanCode).emit('playerJoined', {
+            roomCode: cleanCode,
+            players: room.players,
+            gameMode: room.gameMode
+        });
+        
+        console.log(`✅ ${playerName} unido a ${cleanCode}`);
+    });
+
+    socket.on('playerReady', (roomCode) => {
+        const room = rooms[roomCode];
+        if (!room) return;
+        
+        const player = room.players.find(p => p.id === socket.id);
+        if (player) player.ready = true;
+        
+        io.to(roomCode).emit('playersUpdate', room.players);
+        
+        // Iniciar si hay 2+ y todos listos
+        if (room.players.length >= 2 && room.players.every(p => p.ready) && !room.started) {
+            room.started = true;
+            console.log(`🎮 Iniciando partida en ${roomCode} (${room.gameMode})`);
+            sendQuestion(roomCode);
+        }
+    });
+
+    socket.on('submitAnswer', ({ roomCode, answerIndex, timeLeft }) => {
+        const room = rooms[roomCode];
+        if (!room) return;
+        
+        const player = room.players.find(p => p.id === socket.id);
+        if (!player || player.answered) return;
+        
+        const question = room.questions[room.currentQuestion];
+        if (!question) return;
+        
+        player.answered = true;
+        const isCorrect = answerIndex === question.correct;
+        
+        if (room.gameMode === 'classic') {
+            // MODO CLÁSICO: Turnos
+            if (room.players[room.currentPlayerIndex].id !== socket.id) return;
+            
+            if (isCorrect) {
+                player.score += timeLeft * 10;
+            }
+            
+            socket.emit('answerResult', {
+                isCorrect,
+                correctAnswer: question.correct,
+                selectedIndex: answerIndex
+            });
+            
+            console.log(`📝 ${player.name}: ${isCorrect ? '✅' : '❌'}`);
+            
+            // Siguiente turno
+            setTimeout(() => {
+                player.answered = false;
+                room.currentPlayerIndex = (room.currentPlayerIndex + 1) % room.players.length;
+                
+                // Si volvemos al primero, siguiente pregunta
+                if (room.currentPlayerIndex === 0) {
+                    room.currentQuestion++;
+                }
+                
+                // Verificar fin
+                if (room.currentQuestion >= room.totalQuestions) {
+                    endGame(roomCode);
+                } else {
+                    sendQuestion(roomCode);
+                }
+            }, 2000);
+            
+        } else {
+            // MODO SUPERVIVENCIA: Todos a la vez
+            room.answersThisRound[socket.id] = {
+                answerIndex,
+                timeLeft,
+                isCorrect
+            };
+            
+            if (isCorrect) {
+                player.score += 10;
+            } else {
+                player.lives--;
+            }
+            
+            socket.emit('answerResult', {
+                isCorrect,
+                correctAnswer: question.correct,
+                selectedIndex: answerIndex,
+                lostLife: !isCorrect
+            });
+            
+            console.log(`📝 ${player.name}: ${isCorrect ? '✅' : '❌'} (${player.lives} vidas)`);
+            
+            // Verificar si todos respondieron
+            const alivePlayers = room.players.filter(p => p.lives > 0);
+            const allAnswered = alivePlayers.every(p => p.answered);
+            
+            if (allAnswered) {
+                setTimeout(() => {
+                    // Resetear respuestas
+                    room.players.forEach(p => p.answered = false);
+                    room.answersThisRound = {};
+                    room.currentQuestion++;
+                    
+                    // Verificar eliminados
+                    const stillAlive = room.players.filter(p => p.lives > 0);
+                    
+                    if (stillAlive.length <= 1 || room.currentQuestion >= room.totalQuestions) {
+                        endGame(roomCode);
+                    } else {
+                        sendQuestion(roomCode);
+                    }
+                }, 2500);
+            }
+        }
+    });
+
+    socket.on('leaveRoom', (roomCode) => {
+        leaveRoom(socket, roomCode);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('👋 Desconectado:', socket.id);
+        for (let roomCode in rooms) {
+            leaveRoom(socket, roomCode);
+        }
+    });
+});
+
+function leaveRoom(socket, roomCode) {
+    const room = rooms[roomCode];
+    if (!room) return;
+    
+    const playerIndex = room.players.findIndex(p => p.id === socket.id);
+    if (playerIndex === -1) return;
+    
+    const playerName = room.players[playerIndex].name;
+    room.players.splice(playerIndex, 1);
+    
+    console.log(`👋 ${playerName} salió de ${roomCode}`);
+    
+    if (room.players.length === 0) {
+        delete rooms[roomCode];
+        console.log(`🗑️ Sala ${roomCode} eliminada`);
+    } else {
+        if (room.currentPlayerIndex >= room.players.length) {
+            room.currentPlayerIndex = 0;
+        }
+        io.to(roomCode).emit('playerLeft', room.players);
+    }
+}
+
+function sendQuestion(roomCode) {
+    const room = rooms[roomCode];
+    if (!room) return;
+    
+    const question = room.questions[room.currentQuestion];
+    if (!question) {
+        console.log(`❌ Sin preguntas en ${roomCode}`);
+        endGame(roomCode);
+        return;
+    }
+    
+    if (room.gameMode === 'classic') {
+        // MODO CLÁSICO: Solo al jugador actual
+        const currentPlayer = room.players[room.currentPlayerIndex];
+        
+        io.to(currentPlayer.id).emit('newQuestion', {
+            question: question.question,
+            options: question.options,
+            questionNumber: room.currentQuestion + 1,
+            totalQuestions: room.totalQuestions,
+            gameMode: 'classic',
+            allPlayers: room.players.map(p => ({ name: p.name, score: p.score })),
+            correctAnswer: question.correct
+        });
+        
+        // Otros esperan
+        room.players.forEach((p, i) => {
+            if (i !== room.currentPlayerIndex) {
+                io.to(p.id).emit('waitingTurn', {
+                    currentPlayerName: currentPlayer.name,
+                    allPlayers: room.players.map(pl => ({ name: pl.name, score: pl.score }))
+                });
+            }
+        });
+        
+    } else {
+        // MODO SUPERVIVENCIA: A todos los vivos
+        const alivePlayers = room.players.filter(p => p.lives > 0);
+        
+        alivePlayers.forEach(p => {
+            io.to(p.id).emit('newQuestion', {
+                question: question.question,
+                options: question.options,
+                questionNumber: room.currentQuestion + 1,
+                totalQuestions: room.totalQuestions,
+                gameMode: 'survival',
+                myLives: p.lives,
+                allPlayers: room.players.map(pl => ({ 
+                    name: pl.name, 
+                    score: pl.score, 
+                    lives: pl.lives 
+                })),
+                correctAnswer: question.correct
+            });
+        });
+        
+        // Eliminados ven pantalla de eliminado
+        room.players.filter(p => p.lives <= 0).forEach(p => {
+            io.to(p.id).emit('playerEliminated', {
+                odocéId: p.id,
+                remainingPlayers: alivePlayers.length
+            });
+        });
+    }
+    
+    console.log(`📤 Pregunta ${room.currentQuestion + 1}/${room.totalQuestions} en ${roomCode}`);
+}
+
+function endGame(roomCode) {
+    const room = rooms[roomCode];
+    if (!room) return;
+    
+    let ranking;
+    let winner;
+    
+    if (room.gameMode === 'survival') {
+        // Ordenar por vidas, luego por puntos
+        ranking = [...room.players].sort((a, b) => {
+            if (b.lives !== a.lives) return b.lives - a.lives;
+            return b.score - a.score;
+        });
+        winner = ranking[0].name;
+    } else {
+        ranking = [...room.players].sort((a, b) => b.score - a.score);
+        winner = ranking[0].name;
+    }
+    
+    console.log(`🏆 Fin en ${roomCode}. Ganador: ${winner}`);
+    
+    io.to(roomCode).emit('gameOver', {
+        ranking: ranking.map(p => ({
+            name: p.name,
+            score: p.score,
+            lives: p.lives
+        })),
+        winner: winner,
+        gameMode: room.gameMode
+    });
+    
+    delete rooms[roomCode];
+}
+
+function generateRoomCode() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+// ===== INICIAR SERVIDOR =====
+(async () => {
+    console.log('🚀 Iniciando Trivial Kapuchi...');
+    await initializeQuestions();
+    
+    server.listen(PORT, () => {
+        console.log(`🚀 Servidor en puerto ${PORT}`);
+        console.log(`📚 Preguntas: ${allQuestions.length}`);
+    });
+})(); correct: 2, category: "Historia" },
 
     // ENTRETENIMIENTO (40 preguntas)
     { question: "¿Quién interpretó a Jack en Titanic?", options: ["Brad Pitt", "Leonardo DiCaprio", "Tom Cruise", "Johnny Depp"], correct: 1, category: "Entretenimiento" },
