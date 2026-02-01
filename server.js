@@ -559,8 +559,7 @@ io.on('connection', (socket) => {
             }
             
             socket.emit('answerResult', {
-                isCorrect,
-                correctAnswer: question.correct,
+                isCorrect: isCorrect,
                 selectedIndex: answerIndex
             });
             
@@ -599,8 +598,7 @@ io.on('connection', (socket) => {
             }
             
             socket.emit('answerResult', {
-                isCorrect,
-                correctAnswer: question.correct,
+                isCorrect: isCorrect,
                 selectedIndex: answerIndex,
                 lostLife: !isCorrect
             });
