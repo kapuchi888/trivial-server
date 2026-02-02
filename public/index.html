@@ -1,1098 +1,544 @@
-<!DOCTYPE html>
-<!-- Trivial Kapuchi v3.2 - CORREGIDO - 2026-02-01 -->
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 Trivial Kapuchi 2026</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #533483 75%, #e94560 100%);
-            background-size: 200% 200%;
-            animation: gradientShift 20s ease infinite;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-        
-        .container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(30px);
-            padding: 25px;
-            border-radius: 30px;
-            max-width: 600px;
-            width: 90%;
-            position: relative;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            max-height: 98vh;
-            overflow-y: auto;
-            z-index: 1;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        h1 { 
-            text-align: center; 
-            color: #ffffff;
-            font-size: 42px;
-            margin-bottom: 15px;
-            font-weight: 900;
-            text-shadow: 0 0 20px rgba(233, 69, 96, 0.8);
-        }
-        
-        input, button {
-            width: 100%;
-            padding: 14px;
-            margin: 8px 0;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-        }
-        
-        input {
-            border: 3px solid rgba(102, 126, 234, 0.3);
-            background: rgba(255, 255, 255, 0.9);
-        }
-        
-        button {
-            border: none;
-            cursor: pointer;
-            color: white;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        button:hover { transform: translateY(-3px); }
-        
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .btn-survival { background: linear-gradient(135deg, #f12711 0%, #f5af19 100%); }
-        .btn-cpu { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
-        .btn-secondary { background: linear-gradient(135deg, #4ecdc4 0%, #44a3a0 100%); }
-        .btn-join { background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%); }
-        
-        .screen { display: none; }
-        .screen.active { display: block; }
-        
-        .config-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-            margin: 15px 0;
-        }
-        
-        .config-btn {
-            padding: 20px 10px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.9);
-        }
-        
-        .config-btn:hover { transform: translateY(-5px); }
-        
-        .config-btn.selected {
-            border-color: #e94560;
-            background: linear-gradient(135deg, rgba(233, 69, 96, 0.3), rgba(233, 69, 96, 0.5));
-            box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
-            transform: scale(1.05);
-        }
-        
-        .config-number { font-size: 32px; font-weight: 900; margin-bottom: 5px; }
-        .config-label { font-size: 13px; font-weight: 600; }
-        
-        .room-code {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            font-size: 36px;
-            font-weight: bold;
-            margin: 20px 0;
-            letter-spacing: 8px;
-        }
-        
-        .player { padding: 12px; margin: 5px 0; background: rgba(255,255,255,0.9); border-radius: 8px; font-weight: 600; }
-        .player.ready { background: linear-gradient(135deg, #4CAF50, #45a049); color: white; }
-        
-        .error { background: linear-gradient(135deg, #f44336, #d32f2f); color: white; padding: 12px; border-radius: 8px; margin: 10px 0; text-align: center; }
-        
-        .question-text {
-            font-size: 20px;
-            font-weight: 700;
-            margin: 15px 0;
-            text-align: center;
-            padding: 25px 20px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 18px;
-            color: #ffffff;
-            min-height: 90px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .timer {
-            width: 120px;
-            height: 120px;
-            font-size: 56px;
-            font-weight: 900;
-            text-align: center;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
-            color: #ffffff;
-            margin: 15px auto;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 30px rgba(255, 107, 107, 0.8);
-            border: 5px solid rgba(255, 255, 255, 0.4);
-        }
-        
-        .option-btn {
-            padding: 16px 20px;
-            border: none;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.12);
-            color: #ffffff;
-            transition: all 0.3s;
-            margin: 6px 0;
-            width: 100%;
-            text-align: left;
-        }
-        
-        .option-btn:hover:not(:disabled) { transform: translateY(-4px); background: rgba(255, 255, 255, 0.25); }
-        .option-btn:disabled { cursor: not-allowed; opacity: 0.7; }
-        .option-btn.selected { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
-        .option-btn.correct { background: linear-gradient(135deg, #06ffa5 0%, #00d4aa 100%) !important; }
-        .option-btn.wrong { background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%) !important; }
-        
-        .lives-container { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-        .life { font-size: 36px; transition: all 0.3s; }
-        .life.lost { opacity: 0.2; transform: scale(0.8); }
-        
-        .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
-        
-        .mode-btn {
-            padding: 25px 15px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.95);
-        }
-        
-        .mode-btn:hover { transform: translateY(-5px); }
-        .mode-btn.selected { transform: scale(1.05); }
-        
-        .mode-btn[data-mode="classic"].selected {
-            border-color: #667eea;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.4));
-            box-shadow: 0 0 25px rgba(102, 126, 234, 0.5);
-        }
-        
-        .mode-btn[data-mode="survival"].selected {
-            border-color: #f5af19;
-            background: linear-gradient(135deg, rgba(241, 39, 17, 0.3), rgba(245, 175, 25, 0.4));
-            box-shadow: 0 0 25px rgba(245, 175, 25, 0.5);
-        }
-        
-        .mode-icon { font-size: 48px; margin-bottom: 10px; }
-        .mode-title { font-size: 18px; font-weight: 800; margin-bottom: 5px; }
-        .mode-desc { font-size: 12px; opacity: 0.8; }
-        
-        .difficulty-selector { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 15px 0; }
-        
-        .difficulty-btn {
-            padding: 15px 10px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.9);
-        }
-        
-        .difficulty-btn:hover { transform: translateY(-3px); }
-        .difficulty-btn.selected { transform: scale(1.05); }
-        
-        .difficulty-btn[data-diff="easy"].selected {
-            border-color: #4CAF50;
-            background: linear-gradient(135deg, rgba(76, 175, 80, 0.4), rgba(76, 175, 80, 0.6));
-        }
-        .difficulty-btn[data-diff="medium"].selected {
-            border-color: #FF9800;
-            background: linear-gradient(135deg, rgba(255, 152, 0, 0.4), rgba(255, 152, 0, 0.6));
-        }
-        .difficulty-btn[data-diff="hard"].selected {
-            border-color: #f44336;
-            background: linear-gradient(135deg, rgba(244, 67, 54, 0.4), rgba(244, 67, 54, 0.6));
-        }
-        
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-        .shake { animation: shake 0.5s ease-in-out; }
-        
-        .powerup-container { text-align: center; margin: 15px 0; }
-        .powerup-btn {
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-            color: #000;
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 800;
-            cursor: pointer;
-            border: none;
-        }
-        .powerup-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div id="errorContainer"></div>
-        
-        <!-- PANTALLA INICIAL -->
-        <div id="homeScreen" class="screen active">
-            <h1>🎮 Trivial Kapuchi</h1>
-            <p style="text-align: center; color: rgba(255, 255, 255, 0.5); font-size: 10px; margin: -10px 0 10px 0;">v3.2</p>
-            <p style="text-align: center; color: rgba(255, 255, 255, 0.9); font-size: 16px; margin: 20px 0;">
-                ¡Pon a prueba tus conocimientos!
-            </p>
-            <input type="text" id="playerName" placeholder="✨ Escribe tu nombre" maxlength="20">
-            <button class="btn-cpu" onclick="showCpuModeSelect()">🤖 Jugar vs CPU</button>
-            <button class="btn-primary" onclick="showOnlineModeSelect()">🌐 Multijugador Online</button>
-            <button class="btn-join" onclick="showJoinScreen()">🎯 Unirse a Partida</button>
-        </div>
-        
-        <!-- SELECCIÓN MODO ONLINE -->
-        <div id="modeSelectScreen" class="screen">
-            <h1>🌐 Multijugador</h1>
-            <h3 style="text-align: center; margin: 15px 0; color: rgba(255, 255, 255, 0.9);">Elige el modo de juego</h3>
-            <div class="mode-selector">
-                <div class="mode-btn selected" data-mode="classic" onclick="selectGameMode('classic')">
-                    <div class="mode-icon">🎯</div>
-                    <div class="mode-title">Clásico</div>
-                    <div class="mode-desc">Turnos alternados<br>El que más puntos gana</div>
-                </div>
-                <div class="mode-btn" data-mode="survival" onclick="selectGameMode('survival')">
-                    <div class="mode-icon">💀</div>
-                    <div class="mode-title">Supervivencia</div>
-                    <div class="mode-desc">3 vidas · Todos a la vez<br>El último en pie gana</div>
-                </div>
-            </div>
-            <button class="btn-primary" onclick="showConfigScreen()">Continuar</button>
-            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
-        </div>
-        
-        <!-- SELECCIÓN MODO CPU -->
-        <div id="cpuModeSelectScreen" class="screen">
-            <h1>🤖 vs CPU</h1>
-            <h3 style="text-align: center; margin: 15px 0; color: rgba(255, 255, 255, 0.9);">Elige el modo de juego</h3>
-            <div class="mode-selector">
-                <div class="mode-btn selected" data-mode="classic" onclick="selectCpuGameMode('classic')">
-                    <div class="mode-icon">🎯</div>
-                    <div class="mode-title">Clásico</div>
-                    <div class="mode-desc">Turnos alternados<br>El que más puntos gana</div>
-                </div>
-                <div class="mode-btn" data-mode="survival" onclick="selectCpuGameMode('survival')">
-                    <div class="mode-icon">💀</div>
-                    <div class="mode-title">Supervivencia</div>
-                    <div class="mode-desc">3 vidas · Misma pregunta<br>El último en pie gana</div>
-                </div>
-            </div>
-            <button class="btn-cpu" onclick="showCpuConfigScreen()">Continuar</button>
-            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
-        </div>
-        
-        <!-- CONFIGURACIÓN ONLINE -->
-        <div id="configScreen" class="screen">
-            <h1 id="configTitle">🎯 Modo Clásico</h1>
-            <div id="configModeInfo" style="text-align: center; color: rgba(255,255,255,0.8); margin: 10px 0; font-size: 14px;"></div>
-            
-            <div style="margin: 25px 0;">
-                <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); margin-bottom: 12px;">❓ Número de Preguntas</h4>
-                <div class="config-selector">
-                    <div class="config-btn" onclick="selectQuestions(5)" data-questions="5">
-                        <div class="config-number">5</div>
-                        <div class="config-label">Rápido</div>
-                    </div>
-                    <div class="config-btn selected" onclick="selectQuestions(10)" data-questions="10">
-                        <div class="config-number">10</div>
-                        <div class="config-label">Normal</div>
-                    </div>
-                    <div class="config-btn" onclick="selectQuestions(15)" data-questions="15">
-                        <div class="config-number">15</div>
-                        <div class="config-label">Largo</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; margin: 20px 0;">
-                <div style="text-align: center; color: rgba(255, 255, 255, 0.95); font-size: 15px;">
-                    📊 <strong id="configSummary">10 preguntas · Modo Clásico</strong>
-                </div>
-            </div>
-            
-            <button class="btn-primary" id="createRoomBtn" onclick="createRoom()">⚡ CREAR SALA</button>
-            <button class="btn-secondary" onclick="showScreen('modeSelectScreen')">Volver</button>
-        </div>
-        
-        <!-- CONFIGURACIÓN CPU -->
-        <div id="cpuConfigScreen" class="screen">
-            <h1 id="cpuConfigTitle">🎯 vs CPU</h1>
-            <div id="cpuModeInfo" style="text-align: center; color: rgba(255,255,255,0.8); margin: 10px 0; font-size: 14px;"></div>
-            
-            <div style="margin: 20px 0;">
-                <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); margin-bottom: 12px;">🎯 Dificultad CPU</h4>
-                <div class="difficulty-selector">
-                    <div class="difficulty-btn selected" data-diff="easy" onclick="selectCpuDifficulty('easy')">
-                        <div style="font-size: 24px;">🟢</div>
-                        <div style="font-weight: 700;">Fácil</div>
-                        <div style="font-size: 11px; opacity: 0.8;">40%</div>
-                    </div>
-                    <div class="difficulty-btn" data-diff="medium" onclick="selectCpuDifficulty('medium')">
-                        <div style="font-size: 24px;">🟡</div>
-                        <div style="font-weight: 700;">Normal</div>
-                        <div style="font-size: 11px; opacity: 0.8;">60%</div>
-                    </div>
-                    <div class="difficulty-btn" data-diff="hard" onclick="selectCpuDifficulty('hard')">
-                        <div style="font-size: 24px;">🔴</div>
-                        <div style="font-weight: 700;">Difícil</div>
-                        <div style="font-size: 11px; opacity: 0.8;">85%</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="margin: 20px 0;">
-                <h4 style="text-align: center; color: rgba(255, 255, 255, 0.95); margin-bottom: 12px;">❓ Número de Preguntas</h4>
-                <div class="config-selector">
-                    <div class="config-btn" onclick="selectCpuQuestions(5)" data-cpuq="5">
-                        <div class="config-number">5</div>
-                        <div class="config-label">Rápido</div>
-                    </div>
-                    <div class="config-btn selected" onclick="selectCpuQuestions(10)" data-cpuq="10">
-                        <div class="config-number">10</div>
-                        <div class="config-label">Normal</div>
-                    </div>
-                    <div class="config-btn" onclick="selectCpuQuestions(15)" data-cpuq="15">
-                        <div class="config-number">15</div>
-                        <div class="config-label">Largo</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; margin: 20px 0;">
-                <div style="text-align: center; color: rgba(255, 255, 255, 0.95); font-size: 15px;">
-                    📊 <strong id="cpuConfigSummary">10 preguntas · CPU Fácil · Clásico</strong>
-                </div>
-            </div>
-            
-            <button class="btn-cpu" onclick="startCpuGame()">⚡ COMENZAR</button>
-            <button class="btn-secondary" onclick="showScreen('cpuModeSelectScreen')">Volver</button>
-        </div>
-        
-        <!-- UNIRSE -->
-        <div id="joinScreen" class="screen">
-            <h1>🎯 Unirse</h1>
-            <input type="text" id="playerName2" placeholder="Tu nombre" maxlength="20">
-            <input type="text" id="roomCodeInput" placeholder="Código de sala (6 letras)" maxlength="6" style="text-transform: uppercase;">
-            <button class="btn-join" onclick="joinRoom()">Unirse a la Sala</button>
-            <button class="btn-secondary" onclick="showScreen('homeScreen')">Volver</button>
-        </div>
-        
-        <!-- SALA DE ESPERA -->
-        <div id="waitingScreen" class="screen">
-            <h1>⏳ Sala de Espera</h1>
-            <div id="roomCodeDisplay" class="room-code"></div>
-            <p style="text-align: center; color: rgba(255,255,255,0.8); margin: 10px 0;">
-                Comparte el código · <span id="playerCount">1</span>/4 jugadores
-            </p>
-            <div id="gameModeDisplay" style="text-align: center; color: #FFD700; font-weight: 700; margin: 10px 0;"></div>
-            <div id="gameQuestionsDisplay" style="text-align: center; color: rgba(255,255,255,0.8); margin: 5px 0;"></div>
-            <div id="playersList"></div>
-            <button class="btn-primary" id="readyBtn" onclick="markReady()">✅ ¡Estoy Listo!</button>
-            <button class="btn-secondary" onclick="leaveRoom()">Salir</button>
-        </div>
-        
-        <!-- JUEGO -->
-        <div id="gameScreen" class="screen">
-            <div id="questionNumber" style="text-align: center; color: #fff; font-weight: 900; font-size: 18px; margin: 8px 0;"></div>
-            <div id="livesDisplay" class="lives-container" style="display: none;"></div>
-            <div id="liveScoreboard" style="text-align: center; margin: 10px 0; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 12px;"></div>
-            <div id="timer" class="timer">15</div>
-            <div id="questionText" class="question-text"></div>
-            <div id="optionsGrid"></div>
-            <div class="powerup-container" id="powerupContainer">
-                <button id="fiftyFiftyBtn" class="powerup-btn" onclick="useFiftyFifty()">⚡ 50/50 (1 por partida)</button>
-            </div>
-        </div>
-        
-        <!-- ESPERANDO TURNO -->
-        <div id="waitingTurnScreen" class="screen">
-            <h1 style="color: #ffffff;">⏳ Esperando...</h1>
-            <p style="text-align: center; font-size: 22px; color: rgba(255, 255, 255, 0.95); margin: 25px 0;">
-                <strong id="otherPlayerName"></strong> está respondiendo
-            </p>
-            <div id="waitingScores"></div>
-            <div style="text-align: center; margin: 40px 0;">
-                <div style="display: inline-block; width: 80px; height: 80px; border: 6px solid rgba(255,255,255,0.2); border-top: 6px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-            </div>
-        </div>
-        
-        <!-- RESULTADOS -->
-        <div id="resultsScreen" class="screen">
-            <h1 id="resultsTitle">🏆 ¡Fin del Juego!</h1>
-            <div id="finalScores"></div>
-            <button class="btn-primary" onclick="location.reload()">🎮 Nueva Partida</button>
-        </div>
-    </div>
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+const path = require('path');
+const fs = require('fs');
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"></script>
-    <script>
-        // ===== CONEXIÓN =====
-        var socket = io('https://trivial-kapuchi.onrender.com');
-        
-        // ===== VARIABLES GLOBALES =====
-        var playerName = '';
-        var currentRoom = null;
-        var gameMode = 'classic';
-        var totalQuestions = 10;
-        var timeLeft = 15;
-        var timerInterval = null;
-        var hasAnswered = false;
-        var currentQuestion = null;
-        var fiftyFiftyUsed = false;
-        var myLives = 3;
-        
-        // Variables CPU
-        var cpuMode = 'classic';
-        var cpuDifficulty = 'easy';
-        var cpuQuestionsCount = 10;
-        var cpuGame = null;
-        var cpuAccuracy = { 'easy': 0.40, 'medium': 0.60, 'hard': 0.85 };
-        
-        // ===== PANTALLAS =====
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
-            document.getElementById(screenId).classList.add('active');
-        }
-        
-        function showError(message) {
-            document.getElementById('errorContainer').innerHTML = '<div class="error">' + message + '</div>';
-            setTimeout(function() { document.getElementById('errorContainer').innerHTML = ''; }, 3000);
-        }
-        
-        function showOnlineModeSelect() {
-            playerName = document.getElementById('playerName').value.trim();
-            if (!playerName) { showError('Escribe tu nombre'); return; }
-            gameMode = 'classic';
-            document.querySelectorAll('#modeSelectScreen .mode-btn').forEach(function(btn) { btn.classList.remove('selected'); });
-            document.querySelector('#modeSelectScreen .mode-btn[data-mode="classic"]').classList.add('selected');
-            showScreen('modeSelectScreen');
-        }
-        
-        function showCpuModeSelect() {
-            playerName = document.getElementById('playerName').value.trim();
-            if (!playerName) { showError('Escribe tu nombre'); return; }
-            cpuMode = 'classic';
-            document.querySelectorAll('#cpuModeSelectScreen .mode-btn').forEach(function(btn) { btn.classList.remove('selected'); });
-            document.querySelector('#cpuModeSelectScreen .mode-btn[data-mode="classic"]').classList.add('selected');
-            showScreen('cpuModeSelectScreen');
-        }
-        
-        function showJoinScreen() {
-            showScreen('joinScreen');
-        }
-        
-        // ===== SELECCIÓN DE MODO =====
-        function selectGameMode(mode) {
-            gameMode = mode;
-            document.querySelectorAll('#modeSelectScreen .mode-btn').forEach(function(btn) { btn.classList.remove('selected'); });
-            document.querySelector('#modeSelectScreen .mode-btn[data-mode="' + mode + '"]').classList.add('selected');
-        }
-        
-        function selectCpuGameMode(mode) {
-            cpuMode = mode;
-            document.querySelectorAll('#cpuModeSelectScreen .mode-btn').forEach(function(btn) { btn.classList.remove('selected'); });
-            document.querySelector('#cpuModeSelectScreen .mode-btn[data-mode="' + mode + '"]').classList.add('selected');
-        }
-        
-        function showConfigScreen() {
-            var isClassic = gameMode === 'classic';
-            document.getElementById('configTitle').textContent = isClassic ? '🎯 Modo Clásico' : '💀 Modo Supervivencia';
-            document.getElementById('configModeInfo').textContent = isClassic ? 'Turnos alternados · El que más puntos gana' : '3 vidas · Todos responden a la vez · Si fallas pierdes vida';
-            document.getElementById('createRoomBtn').className = isClassic ? 'btn-primary' : 'btn-survival';
-            
-            // Reset selección de preguntas
-            totalQuestions = 10;
-            document.querySelectorAll('.config-btn[data-questions]').forEach(function(btn) { btn.classList.remove('selected'); });
-            document.querySelector('.config-btn[data-questions="10"]').classList.add('selected');
-            
-            updateConfigSummary();
-            showScreen('configScreen');
-        }
-        
-        function showCpuConfigScreen() {
-            var isClassic = cpuMode === 'classic';
-            document.getElementById('cpuConfigTitle').textContent = isClassic ? '🎯 vs CPU Clásico' : '💀 vs CPU Supervivencia';
-            document.getElementById('cpuModeInfo').textContent = isClassic ? 'Turnos alternados · El que más puntos gana' : '3 vidas · Misma pregunta · Si fallas pierdes vida';
-            
-            // Reset
-            cpuQuestionsCount = 10;
-            cpuDifficulty = 'easy';
-            document.querySelectorAll('.config-btn[data-cpuq]').forEach(function(btn) { btn.classList.remove('selected'); });
-            document.querySelector('.config-btn[data-cpuq="10"]').classList.add('selected');
-            document.querySelectorAll('.difficulty-btn').forEach(function(btn) { btn.classList.remove('selected'); });
-            document.querySelector('.difficulty-btn[data-diff="easy"]').classList.add('selected');
-            
-            updateCpuConfigSummary();
-            showScreen('cpuConfigScreen');
-        }
-        
-        // ===== CONFIGURACIÓN ONLINE =====
-        function selectQuestions(num) {
-            totalQuestions = num;
-            document.querySelectorAll('.config-btn[data-questions]').forEach(function(btn) { btn.classList.remove('selected'); });
-            document.querySelector('.config-btn[data-questions="' + num + '"]').classList.add('selected');
-            updateConfigSummary();
-        }
-        
-        function updateConfigSummary() {
-            var modeText = gameMode === 'classic' ? 'Clásico' : 'Supervivencia';
-            document.getElementById('configSummary').textContent = totalQuestions + ' preguntas · Modo ' + modeText;
-        }
-        
-        // ===== CONFIGURACIÓN CPU =====
-        function selectCpuDifficulty(diff) {
-            cpuDifficulty = diff;
-            document.querySelectorAll('.difficulty-btn').forEach(function(btn) { btn.classList.remove('selected'); });
-            document.querySelector('.difficulty-btn[data-diff="' + diff + '"]').classList.add('selected');
-            updateCpuConfigSummary();
-        }
-        
-        function selectCpuQuestions(num) {
-            cpuQuestionsCount = num;
-            document.querySelectorAll('.config-btn[data-cpuq]').forEach(function(btn) { btn.classList.remove('selected'); });
-            document.querySelector('.config-btn[data-cpuq="' + num + '"]').classList.add('selected');
-            updateCpuConfigSummary();
-        }
-        
-        function updateCpuConfigSummary() {
-            var diffNames = { 'easy': 'Fácil', 'medium': 'Normal', 'hard': 'Difícil' };
-            var modeText = cpuMode === 'classic' ? 'Clásico' : 'Supervivencia';
-            document.getElementById('cpuConfigSummary').textContent = cpuQuestionsCount + ' preguntas · CPU ' + diffNames[cpuDifficulty] + ' · ' + modeText;
-        }
-        
-        // ===== CREAR/UNIRSE SALA =====
-        function createRoom() {
-            console.log('=== CREANDO SALA ===');
-            console.log('gameMode:', gameMode);
-            console.log('totalQuestions:', totalQuestions);
-            socket.emit('createRoom', {
-                playerName: playerName,
-                gameMode: gameMode,
-                totalQuestions: totalQuestions
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+    cors: { origin: "*", methods: ["GET", "POST"] }
+});
+
+const PORT = process.env.PORT || 3000;
+
+app.use(express.static('public'));
+
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/index.html');
+});
+
+app.get('/api/questions', async (req, res) => {
+    const count = parseInt(req.query.count) || 10;
+    if (allQuestions.length < count) {
+        await refillQuestionsIfNeeded(count + 50);
+    }
+    res.json(getRandomQuestions(count));
+});
+
+const rooms = {};
+let allQuestions = [];
+let spanishQuestions = [];
+const REFILL_THRESHOLD = 100;
+
+// 200 PREGUNTAS DE RESPALDO
+const backupQuestions = [
+    // GEOGRAFÍA
+    { question: "¿Cuál es la capital de Francia?", options: ["Londres", "París", "Berlín", "Madrid"], correct: 1 },
+    { question: "¿Cuál es la capital de España?", options: ["Barcelona", "Madrid", "Sevilla", "Valencia"], correct: 1 },
+    { question: "¿Cuál es la capital de Italia?", options: ["Milán", "Roma", "Nápoles", "Florencia"], correct: 1 },
+    { question: "¿Cuál es la capital de Alemania?", options: ["Múnich", "Berlín", "Hamburgo", "Frankfurt"], correct: 1 },
+    { question: "¿Cuál es la capital de Portugal?", options: ["Oporto", "Lisboa", "Faro", "Coímbra"], correct: 1 },
+    { question: "¿Cuál es la capital de Reino Unido?", options: ["Manchester", "Londres", "Liverpool", "Birmingham"], correct: 1 },
+    { question: "¿Cuál es la capital de Japón?", options: ["Osaka", "Tokio", "Kioto", "Hiroshima"], correct: 1 },
+    { question: "¿Cuál es la capital de China?", options: ["Shanghái", "Pekín", "Hong Kong", "Cantón"], correct: 1 },
+    { question: "¿Cuál es la capital de Brasil?", options: ["Río de Janeiro", "Brasilia", "São Paulo", "Salvador"], correct: 1 },
+    { question: "¿Cuál es la capital de Argentina?", options: ["Córdoba", "Buenos Aires", "Rosario", "Mendoza"], correct: 1 },
+    { question: "¿Cuál es la capital de México?", options: ["Guadalajara", "Ciudad de México", "Monterrey", "Cancún"], correct: 1 },
+    { question: "¿Cuál es la capital de Estados Unidos?", options: ["Nueva York", "Washington D.C.", "Los Ángeles", "Chicago"], correct: 1 },
+    { question: "¿Cuál es el río más largo del mundo?", options: ["Amazonas", "Nilo", "Yangtsé", "Misisipi"], correct: 1 },
+    { question: "¿Cuál es el océano más grande?", options: ["Atlántico", "Pacífico", "Índico", "Ártico"], correct: 1 },
+    { question: "¿En qué continente está Egipto?", options: ["Asia", "África", "Europa", "Oceanía"], correct: 1 },
+    { question: "¿Cuál es el país más grande del mundo?", options: ["China", "Rusia", "Canadá", "Estados Unidos"], correct: 1 },
+    { question: "¿Cuál es la montaña más alta del mundo?", options: ["K2", "Everest", "Kilimanjaro", "Mont Blanc"], correct: 1 },
+    { question: "¿En qué país está la Torre Eiffel?", options: ["Italia", "Francia", "España", "Alemania"], correct: 1 },
+    { question: "¿En qué país está el Coliseo?", options: ["Grecia", "Italia", "España", "Turquía"], correct: 1 },
+    { question: "¿En qué país está la Sagrada Familia?", options: ["Portugal", "España", "Italia", "Francia"], correct: 1 },
+    { question: "¿Cuál es la capital de Rusia?", options: ["San Petersburgo", "Moscú", "Kiev", "Minsk"], correct: 1 },
+    { question: "¿Cuál es el desierto más grande del mundo?", options: ["Gobi", "Sahara", "Kalahari", "Atacama"], correct: 1 },
+    { question: "¿Cuántos continentes hay?", options: ["5", "7", "6", "8"], correct: 1 },
+    { question: "¿En qué país está Machu Picchu?", options: ["Bolivia", "Perú", "Ecuador", "Colombia"], correct: 1 },
+    { question: "¿Cuál es la capital de Grecia?", options: ["Tesalónica", "Atenas", "Creta", "Esparta"], correct: 1 },
+    { question: "¿En qué país está la Gran Muralla?", options: ["Japón", "China", "Corea", "Mongolia"], correct: 1 },
+    { question: "¿Cuál es la capital de Egipto?", options: ["Alejandría", "El Cairo", "Luxor", "Giza"], correct: 1 },
+    { question: "¿En qué país está el Taj Mahal?", options: ["Pakistán", "India", "Bangladesh", "Nepal"], correct: 1 },
+    { question: "¿Cuál es la capital de Turquía?", options: ["Estambul", "Ankara", "Izmir", "Antalya"], correct: 1 },
+    { question: "¿Cuál es la capital de Canadá?", options: ["Toronto", "Ottawa", "Montreal", "Vancouver"], correct: 1 },
+    { question: "¿Cuál es la capital de Australia?", options: ["Sídney", "Canberra", "Melbourne", "Brisbane"], correct: 1 },
+    { question: "¿En qué país está Venecia?", options: ["Francia", "Italia", "Grecia", "Croacia"], correct: 1 },
+    { question: "¿Cuál es la capital de Suiza?", options: ["Zúrich", "Berna", "Ginebra", "Basilea"], correct: 1 },
+    { question: "¿En qué país está Ámsterdam?", options: ["Bélgica", "Países Bajos", "Alemania", "Dinamarca"], correct: 1 },
+    { question: "¿Cuál es la capital de Austria?", options: ["Salzburgo", "Viena", "Innsbruck", "Graz"], correct: 1 },
+    
+    // CIENCIA
+    { question: "¿Cuál es el planeta más grande del sistema solar?", options: ["Tierra", "Júpiter", "Saturno", "Neptuno"], correct: 1 },
+    { question: "¿Cuál es el planeta más cercano al Sol?", options: ["Venus", "Mercurio", "Marte", "Tierra"], correct: 1 },
+    { question: "¿Cuántos planetas hay en el sistema solar?", options: ["7", "8", "9", "10"], correct: 1 },
+    { question: "¿Qué gas respiramos principalmente?", options: ["Oxígeno", "Nitrógeno", "CO2", "Hidrógeno"], correct: 0 },
+    { question: "¿Cuál es el símbolo químico del oro?", options: ["Ag", "Au", "Fe", "Cu"], correct: 1 },
+    { question: "¿Cuál es el símbolo químico del agua?", options: ["O2", "H2O", "CO2", "NaCl"], correct: 1 },
+    { question: "¿Cuántos huesos tiene el cuerpo humano adulto?", options: ["196", "206", "216", "226"], correct: 1 },
+    { question: "¿Cuál es el órgano más grande del cuerpo?", options: ["Hígado", "Piel", "Cerebro", "Intestino"], correct: 1 },
+    { question: "¿Qué científico descubrió la gravedad?", options: ["Einstein", "Newton", "Galileo", "Darwin"], correct: 1 },
+    { question: "¿Cuál es el animal más grande del mundo?", options: ["Elefante", "Ballena azul", "Jirafa", "Tiburón"], correct: 1 },
+    { question: "¿Cuántas patas tiene una araña?", options: ["6", "8", "10", "12"], correct: 1 },
+    { question: "¿Qué tipo de animal es la ballena?", options: ["Pez", "Mamífero", "Reptil", "Anfibio"], correct: 1 },
+    { question: "¿Cuál es el punto de ebullición del agua?", options: ["90°C", "100°C", "110°C", "120°C"], correct: 1 },
+    { question: "¿Quién inventó la bombilla?", options: ["Tesla", "Edison", "Bell", "Franklin"], correct: 1 },
+    { question: "¿Cuál es el elemento más abundante en el universo?", options: ["Oxígeno", "Hidrógeno", "Carbono", "Helio"], correct: 1 },
+    { question: "¿Cuántos cromosomas tiene el ser humano?", options: ["23", "46", "48", "44"], correct: 1 },
+    { question: "¿Qué planeta es conocido como el planeta rojo?", options: ["Venus", "Marte", "Júpiter", "Mercurio"], correct: 1 },
+    { question: "¿Qué tipo de sangre es el donante universal?", options: ["A", "O negativo", "AB", "B"], correct: 1 },
+    { question: "¿Cuántos dientes tiene un adulto?", options: ["28", "32", "30", "34"], correct: 1 },
+    { question: "¿Qué vitamina proporciona el sol?", options: ["A", "D", "C", "B12"], correct: 1 },
+    { question: "¿Cuál es el hueso más largo del cuerpo?", options: ["Húmero", "Fémur", "Tibia", "Radio"], correct: 1 },
+    { question: "¿Cuál es la estrella más cercana a la Tierra?", options: ["Alfa Centauri", "Sol", "Sirio", "Betelgeuse"], correct: 1 },
+    { question: "¿Qué órgano bombea la sangre?", options: ["Pulmón", "Corazón", "Hígado", "Riñón"], correct: 1 },
+    { question: "¿Cuál es el gas más abundante en la atmósfera?", options: ["Oxígeno", "Nitrógeno", "CO2", "Argón"], correct: 1 },
+    { question: "¿Cuántos sentidos tiene el ser humano?", options: ["4", "5", "6", "7"], correct: 1 },
+    { question: "¿Qué planeta tiene anillos visibles?", options: ["Júpiter", "Saturno", "Urano", "Neptuno"], correct: 1 },
+    { question: "¿Qué inventó Alexander Graham Bell?", options: ["Radio", "Teléfono", "Televisión", "Internet"], correct: 1 },
+    { question: "¿Qué científico propuso la teoría de la relatividad?", options: ["Newton", "Einstein", "Hawking", "Bohr"], correct: 1 },
+    { question: "¿Cuál es el metal líquido a temperatura ambiente?", options: ["Plomo", "Mercurio", "Estaño", "Zinc"], correct: 1 },
+    { question: "¿Qué estudia la botánica?", options: ["Animales", "Plantas", "Rocas", "Estrellas"], correct: 1 },
+    
+    // HISTORIA
+    { question: "¿En qué año llegó Colón a América?", options: ["1482", "1492", "1502", "1512"], correct: 1 },
+    { question: "¿En qué año comenzó la Segunda Guerra Mundial?", options: ["1935", "1939", "1941", "1945"], correct: 1 },
+    { question: "¿En qué año terminó la Segunda Guerra Mundial?", options: ["1943", "1945", "1947", "1950"], correct: 1 },
+    { question: "¿Quién fue el primer presidente de Estados Unidos?", options: ["Lincoln", "Washington", "Jefferson", "Adams"], correct: 1 },
+    { question: "¿En qué año cayó el Muro de Berlín?", options: ["1987", "1989", "1991", "1993"], correct: 1 },
+    { question: "¿Quién pintó la Mona Lisa?", options: ["Miguel Ángel", "Leonardo da Vinci", "Rafael", "Botticelli"], correct: 1 },
+    { question: "¿En qué año llegó el hombre a la Luna?", options: ["1967", "1969", "1971", "1973"], correct: 1 },
+    { question: "¿Quién escribió Don Quijote?", options: ["Lope de Vega", "Cervantes", "Quevedo", "Calderón"], correct: 1 },
+    { question: "¿En qué año se hundió el Titanic?", options: ["1910", "1912", "1914", "1916"], correct: 1 },
+    { question: "¿Quién descubrió América?", options: ["Vasco da Gama", "Cristóbal Colón", "Magallanes", "Vespucio"], correct: 1 },
+    { question: "¿En qué año comenzó la Primera Guerra Mundial?", options: ["1912", "1914", "1916", "1918"], correct: 1 },
+    { question: "¿Qué civilización inventó la democracia?", options: ["Romana", "Griega", "Egipcia", "Persa"], correct: 1 },
+    { question: "¿Quién fue Napoleón Bonaparte?", options: ["Rey de Francia", "Emperador francés", "Presidente", "Duque"], correct: 1 },
+    { question: "¿Qué país lanzó la primera bomba atómica?", options: ["Alemania", "Estados Unidos", "Rusia", "Japón"], correct: 1 },
+    { question: "¿Quién fue Martin Luther King?", options: ["Presidente", "Activista derechos civiles", "Científico", "Escritor"], correct: 1 },
+    { question: "¿Quién fue el primer emperador romano?", options: ["Julio César", "Augusto", "Nerón", "Calígula"], correct: 1 },
+    { question: "¿Qué país inició la Revolución Industrial?", options: ["Francia", "Inglaterra", "Alemania", "Estados Unidos"], correct: 1 },
+    { question: "¿Quién fue Mahatma Gandhi?", options: ["Emperador indio", "Líder independentista", "Presidente", "Rey"], correct: 1 },
+    { question: "¿Quién fue Simón Bolívar?", options: ["Conquistador", "Libertador de América", "Rey de España", "Virrey"], correct: 1 },
+    { question: "¿Qué imperio dominó gran parte de América del Sur?", options: ["Azteca", "Inca", "Maya", "Olmeca"], correct: 1 },
+    { question: "¿En qué año terminó la Guerra Civil Española?", options: ["1936", "1939", "1942", "1945"], correct: 1 },
+    { question: "¿Quién inventó la imprenta?", options: ["Da Vinci", "Gutenberg", "Galileo", "Newton"], correct: 1 },
+    { question: "¿Quién fue Abraham Lincoln?", options: ["Primer presidente", "Presidente Guerra Civil", "Último presidente", "Fundador"], correct: 1 },
+    { question: "¿En qué año terminó la Guerra Fría?", options: ["1985", "1989", "1991", "1995"], correct: 2 },
+    { question: "¿Quién fue Cleopatra?", options: ["Emperatriz romana", "Reina de Egipto", "Diosa griega", "Princesa"], correct: 1 },
+    
+    // ENTRETENIMIENTO
+    { question: "¿Quién interpretó a Jack en Titanic?", options: ["Brad Pitt", "Leonardo DiCaprio", "Tom Cruise", "Johnny Depp"], correct: 1 },
+    { question: "¿Cómo se llama el protagonista de Mario Bros?", options: ["Luigi", "Mario", "Wario", "Toad"], correct: 1 },
+    { question: "¿Qué banda cantó 'Bohemian Rhapsody'?", options: ["The Beatles", "Queen", "Led Zeppelin", "Pink Floyd"], correct: 1 },
+    { question: "¿Quién es el creador de Mickey Mouse?", options: ["Pixar", "Walt Disney", "Warner Bros", "DreamWorks"], correct: 1 },
+    { question: "¿En qué película aparece Darth Vader?", options: ["Star Trek", "Star Wars", "Alien", "Blade Runner"], correct: 1 },
+    { question: "¿Cuántos jugadores hay en un equipo de fútbol?", options: ["9", "11", "10", "12"], correct: 1 },
+    { question: "¿Quién escribió 'Romeo y Julieta'?", options: ["Dickens", "Shakespeare", "Cervantes", "Dante"], correct: 1 },
+    { question: "¿De qué país es el grupo ABBA?", options: ["Noruega", "Suecia", "Finlandia", "Dinamarca"], correct: 1 },
+    { question: "¿Qué superhéroe es de Krypton?", options: ["Batman", "Superman", "Spiderman", "Flash"], correct: 1 },
+    { question: "¿Quién es el archienemigo de Batman?", options: ["Lex Luthor", "Joker", "Thanos", "Magneto"], correct: 1 },
+    { question: "¿En qué saga aparece Frodo?", options: ["Harry Potter", "El Señor de los Anillos", "Narnia", "Eragon"], correct: 1 },
+    { question: "¿Quién canta 'Thriller'?", options: ["Prince", "Michael Jackson", "Stevie Wonder", "James Brown"], correct: 1 },
+    { question: "¿De qué país es el anime?", options: ["China", "Japón", "Corea", "Tailandia"], correct: 1 },
+    { question: "¿Cómo se llama el protagonista de Zelda?", options: ["Zelda", "Link", "Ganondorf", "Epona"], correct: 1 },
+    { question: "¿Quién es el creador de Facebook?", options: ["Bill Gates", "Mark Zuckerberg", "Steve Jobs", "Elon Musk"], correct: 1 },
+    { question: "¿Cuántas casillas tiene un tablero de ajedrez?", options: ["36", "64", "81", "100"], correct: 1 },
+    { question: "¿Qué banda cantó 'Smells Like Teen Spirit'?", options: ["Pearl Jam", "Nirvana", "Soundgarden", "Alice in Chains"], correct: 1 },
+    { question: "¿Quién dirigió Titanic?", options: ["Spielberg", "James Cameron", "Scorsese", "Tarantino"], correct: 1 },
+    { question: "¿Qué compañía creó el PlayStation?", options: ["Nintendo", "Sony", "Microsoft", "Sega"], correct: 1 },
+    { question: "¿Cuántos libros hay de Harry Potter?", options: ["5", "7", "8", "6"], correct: 1 },
+    { question: "¿Quién escribió Harry Potter?", options: ["Stephen King", "J.K. Rowling", "Tolkien", "C.S. Lewis"], correct: 1 },
+    { question: "¿En qué casa de Hogwarts está Harry?", options: ["Slytherin", "Gryffindor", "Ravenclaw", "Hufflepuff"], correct: 1 },
+    { question: "¿Qué superhéroe es Peter Parker?", options: ["Batman", "Spiderman", "Superman", "Iron Man"], correct: 1 },
+    { question: "¿Quién es Tony Stark?", options: ["Capitán América", "Iron Man", "Thor", "Hulk"], correct: 1 },
+    { question: "¿Cuál es el verdadero nombre de Batman?", options: ["Clark Kent", "Bruce Wayne", "Peter Parker", "Tony Stark"], correct: 1 },
+    { question: "¿Qué deporte practica Messi?", options: ["Baloncesto", "Fútbol", "Tenis", "Golf"], correct: 1 },
+    { question: "¿En qué país se celebró el Mundial 2022?", options: ["Rusia", "Qatar", "Brasil", "Alemania"], correct: 1 },
+    { question: "¿Quién ganó el Mundial 2022?", options: ["Francia", "Argentina", "Brasil", "Croacia"], correct: 1 },
+    { question: "¿Qué país ha ganado más mundiales de fútbol?", options: ["Alemania", "Brasil", "Argentina", "Italia"], correct: 1 },
+    
+    // CULTURA GENERAL
+    { question: "¿Cuántos días tiene un año bisiesto?", options: ["365", "366", "364", "367"], correct: 1 },
+    { question: "¿Cuántos minutos tiene una hora?", options: ["30", "60", "90", "120"], correct: 1 },
+    { question: "¿Cuál es el color del semáforo para parar?", options: ["Verde", "Rojo", "Amarillo", "Azul"], correct: 1 },
+    { question: "¿Cuántos colores tiene el arcoíris?", options: ["5", "7", "6", "8"], correct: 1 },
+    { question: "¿Cuántas letras tiene el abecedario español?", options: ["26", "27", "28", "29"], correct: 1 },
+    { question: "¿Cuántos años tiene un siglo?", options: ["50", "100", "1000", "10"], correct: 1 },
+    { question: "¿Cuántos signos del zodiaco hay?", options: ["10", "12", "14", "8"], correct: 1 },
+    { question: "¿Qué animal representa a España?", options: ["Águila", "Toro", "León", "Oso"], correct: 1 },
+    { question: "¿Cuántas estrellas tiene la bandera de EEUU?", options: ["48", "50", "52", "51"], correct: 1 },
+    { question: "¿Qué se celebra el 25 de diciembre?", options: ["Año Nuevo", "Navidad", "Pascua", "Halloween"], correct: 1 },
+    { question: "¿En qué mes se celebra Halloween?", options: ["Septiembre", "Octubre", "Noviembre", "Diciembre"], correct: 1 },
+    { question: "¿Qué moneda se usa en Japón?", options: ["Yuan", "Yen", "Won", "Dólar"], correct: 1 },
+    { question: "¿Qué moneda se usa en Reino Unido?", options: ["Euro", "Libra", "Dólar", "Franco"], correct: 1 },
+    { question: "¿Cuántos lados tiene un hexágono?", options: ["5", "6", "7", "8"], correct: 1 },
+    { question: "¿Cuál es el número de emergencias en España?", options: ["911", "112", "999", "100"], correct: 1 },
+    { question: "¿Cuál es la moneda de Estados Unidos?", options: ["Euro", "Dólar", "Peso", "Libra"], correct: 1 },
+    { question: "¿Cuántas caras tiene un dado normal?", options: ["4", "6", "8", "12"], correct: 1 },
+    { question: "¿Qué instrumento tiene teclas blancas y negras?", options: ["Guitarra", "Piano", "Violín", "Flauta"], correct: 1 },
+    { question: "¿Cuántos ceros tiene un millón?", options: ["5", "6", "7", "8"], correct: 1 },
+    { question: "¿Cuál es el símbolo del euro?", options: ["$", "€", "£", "¥"], correct: 1 },
+    { question: "¿Cuántos gramos tiene un kilogramo?", options: ["100", "1000", "10000", "500"], correct: 1 },
+    { question: "¿Cuántos centímetros tiene un metro?", options: ["10", "100", "1000", "50"], correct: 1 },
+    { question: "¿Cuántos segundos tiene un minuto?", options: ["30", "60", "90", "100"], correct: 1 },
+    { question: "¿Cuántos meses tiene un año?", options: ["10", "12", "11", "13"], correct: 1 },
+    { question: "¿Cuántos días tiene una semana?", options: ["5", "7", "6", "8"], correct: 1 },
+    { question: "¿Cuántas horas tiene un día?", options: ["12", "24", "20", "48"], correct: 1 },
+    { question: "¿Cuántos lados tiene un triángulo?", options: ["2", "3", "4", "5"], correct: 1 },
+    { question: "¿De qué color es la hierba?", options: ["Azul", "Verde", "Roja", "Amarilla"], correct: 1 },
+    { question: "¿Cuántas patas tiene un perro?", options: ["2", "4", "6", "8"], correct: 1 },
+    { question: "¿Qué animal dice 'miau'?", options: ["Perro", "Gato", "Vaca", "Pájaro"], correct: 1 }
+];
+
+function loadSpanishQuestions() {
+    try {
+        const questionsPath = path.join(__dirname, 'questions_espana.json');
+        if (fs.existsSync(questionsPath)) {
+            const data = fs.readFileSync(questionsPath, 'utf8');
+            const questions = JSON.parse(data);
+            return questions.map(q => {
+                const allOptions = [...q.incorrect_answers, q.correct_answer];
+                const shuffled = shuffleArray(allOptions);
+                return {
+                    question: q.question,
+                    options: shuffled,
+                    correct: shuffled.indexOf(q.correct_answer)
+                };
             });
         }
+        return [];
+    } catch (error) {
+        console.log('Error cargando archivo:', error.message);
+        return [];
+    }
+}
+
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+async function initializeQuestions() {
+    console.log('Inicializando preguntas...');
+    spanishQuestions = loadSpanishQuestions();
+    allQuestions = shuffleArray([...spanishQuestions, ...backupQuestions]);
+    console.log('Total preguntas: ' + allQuestions.length);
+}
+
+async function refillQuestionsIfNeeded(minRequired) {
+    if (allQuestions.length < minRequired) {
+        console.log('Recargando preguntas...');
+        allQuestions.push(...shuffleArray([...backupQuestions]));
+        allQuestions.push(...shuffleArray([...spanishQuestions]));
+        allQuestions = shuffleArray(allQuestions);
+    }
+}
+
+function getRandomQuestions(count) {
+    if (allQuestions.length < count) {
+        allQuestions.push(...shuffleArray([...backupQuestions]));
+    }
+    const selected = allQuestions.splice(0, count);
+    console.log('Enviadas ' + selected.length + ' preguntas. Quedan ' + allQuestions.length);
+    return selected;
+}
+
+// SOCKET.IO
+io.on('connection', (socket) => {
+    console.log('Conectado:', socket.id);
+
+    socket.on('createRoom', async (data) => {
+        const playerName = data.playerName;
+        const gameMode = data.gameMode || 'classic';
+        const totalQuestions = data.totalQuestions || 10;
         
-        function joinRoom() {
-            playerName = document.getElementById('playerName2').value.trim();
-            var roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-            if (!playerName || !roomCode) { showError('Completa todos los campos'); return; }
-            socket.emit('joinRoom', { roomCode: roomCode, playerName: playerName });
+        console.log('Creando sala - Modo: ' + gameMode + ', Preguntas: ' + totalQuestions);
+        
+        const questionsNeeded = gameMode === 'classic' ? totalQuestions * 4 : totalQuestions;
+        
+        if (allQuestions.length < questionsNeeded + 50) {
+            await refillQuestionsIfNeeded(questionsNeeded + 100);
         }
         
-        function markReady() {
-            socket.emit('playerReady', currentRoom);
-            document.getElementById('readyBtn').disabled = true;
-            document.getElementById('readyBtn').textContent = '✅ Listo';
+        const roomCode = generateRoomCode();
+        rooms[roomCode] = {
+            players: [{
+                id: socket.id,
+                name: playerName,
+                ready: false,
+                score: 0,
+                lives: 3,
+                answered: false
+            }],
+            gameMode: gameMode,
+            totalQuestions: totalQuestions,
+            currentQuestion: 0,
+            currentPlayerIndex: 0,
+            started: false,
+            questions: getRandomQuestions(questionsNeeded)
+        };
+        
+        socket.join(roomCode);
+        socket.emit('roomCreated', { 
+            roomCode: roomCode, 
+            playerName: playerName,
+            gameMode: gameMode,
+            totalQuestions: totalQuestions
+        });
+        
+        console.log('Sala ' + roomCode + ' creada');
+    });
+
+    socket.on('joinRoom', (data) => {
+        const roomCode = data.roomCode.trim().toUpperCase();
+        const playerName = data.playerName;
+        const room = rooms[roomCode];
+        
+        if (!room) {
+            socket.emit('roomError', 'Sala no encontrada');
+            return;
+        }
+        if (room.players.length >= 4) {
+            socket.emit('roomError', 'Sala llena');
+            return;
+        }
+        if (room.started) {
+            socket.emit('roomError', 'Partida ya iniciada');
+            return;
         }
         
-        function leaveRoom() {
-            socket.emit('leaveRoom', currentRoom);
-            location.reload();
+        room.players.push({
+            id: socket.id,
+            name: playerName,
+            ready: false,
+            score: 0,
+            lives: 3,
+            answered: false
+        });
+        
+        socket.join(roomCode);
+        io.to(roomCode).emit('playerJoined', {
+            roomCode: roomCode,
+            players: room.players,
+            gameMode: room.gameMode,
+            totalQuestions: room.totalQuestions
+        });
+    });
+
+    socket.on('playerReady', (roomCode) => {
+        const room = rooms[roomCode];
+        if (!room) return;
+        
+        const player = room.players.find(p => p.id === socket.id);
+        if (player) player.ready = true;
+        
+        io.to(roomCode).emit('playersUpdate', room.players);
+        
+        if (room.players.length >= 2 && room.players.every(p => p.ready) && !room.started) {
+            room.started = true;
+            console.log('Iniciando partida en ' + roomCode);
+            sendQuestion(roomCode);
         }
+    });
+
+    socket.on('submitAnswer', (data) => {
+        const roomCode = data.roomCode;
+        const answerIndex = data.answerIndex;
+        const timeLeft = data.timeLeft;
         
-        // ===== SOCKET EVENTS =====
-        socket.on('roomCreated', function(data) {
-            console.log('Sala creada:', data);
-            currentRoom = data.roomCode;
-            // Usar los datos del servidor
-            gameMode = data.gameMode;
-            totalQuestions = data.totalQuestions;
+        const room = rooms[roomCode];
+        if (!room) return;
+        
+        const player = room.players.find(p => p.id === socket.id);
+        if (!player || player.answered) return;
+        
+        const question = room.questions[room.currentQuestion];
+        if (!question) return;
+        
+        player.answered = true;
+        const isCorrect = answerIndex === question.correct;
+        
+        if (room.gameMode === 'classic') {
+            // MODO CLÁSICO
+            if (room.players[room.currentPlayerIndex].id !== socket.id) return;
             
-            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
-            document.getElementById('gameModeDisplay').textContent = gameMode === 'classic' ? '🎯 Modo Clásico' : '💀 Modo Supervivencia';
-            document.getElementById('gameQuestionsDisplay').textContent = totalQuestions + ' preguntas';
-            document.getElementById('playersList').innerHTML = '<div class="player">' + playerName + ' (Tú)</div>';
-            showScreen('waitingScreen');
-        });
-        
-        socket.on('roomError', function(msg) { showError(msg); });
-        
-        socket.on('playerJoined', function(data) {
-            console.log('Jugador unido:', data);
-            currentRoom = data.roomCode;
-            gameMode = data.gameMode;
-            totalQuestions = data.totalQuestions;
-            
-            document.getElementById('roomCodeDisplay').textContent = data.roomCode;
-            document.getElementById('gameModeDisplay').textContent = gameMode === 'classic' ? '🎯 Modo Clásico' : '💀 Modo Supervivencia';
-            document.getElementById('gameQuestionsDisplay').textContent = totalQuestions + ' preguntas';
-            updatePlayersList(data.players);
-            showScreen('waitingScreen');
-        });
-        
-        socket.on('playersUpdate', function(players) {
-            updatePlayersList(players);
-        });
-        
-        function updatePlayersList(players) {
-            var html = '';
-            players.forEach(function(p) {
-                var readyClass = p.ready ? ' ready' : '';
-                var readyText = p.ready ? ' ✓' : '';
-                html += '<div class="player' + readyClass + '">' + p.name + readyText + '</div>';
-            });
-            document.getElementById('playersList').innerHTML = html;
-            document.getElementById('playerCount').textContent = players.length;
-        }
-        
-        // ===== JUEGO ONLINE =====
-        socket.on('newQuestion', function(data) {
-            console.log('Nueva pregunta:', data);
-            currentQuestion = data;
-            hasAnswered = false;
-            timeLeft = 15;
-            gameMode = data.gameMode;
-            
-            // Vidas si es supervivencia
-            if (gameMode === 'survival') {
-                myLives = data.myLives !== undefined ? data.myLives : 3;
-                showLives(data.allPlayers || []);
-            } else {
-                document.getElementById('livesDisplay').style.display = 'none';
+            if (isCorrect) {
+                player.score += timeLeft * 10;
             }
             
-            document.getElementById('questionNumber').textContent = 'Pregunta ' + data.questionNumber + ' de ' + data.totalQuestions;
-            updateLiveScoreboard(data.allPlayers || [], gameMode);
-            
-            // 50/50
-            var showPowerup = data.totalQuestions >= 10 && !fiftyFiftyUsed;
-            document.getElementById('powerupContainer').style.display = showPowerup ? 'block' : 'none';
-            if (showPowerup) {
-                document.getElementById('fiftyFiftyBtn').disabled = false;
-                document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por partida)';
-            }
-            
-            document.getElementById('questionText').textContent = data.question;
-            document.getElementById('timer').textContent = timeLeft;
-            
-            var grid = document.getElementById('optionsGrid');
-            grid.innerHTML = '';
-            data.options.forEach(function(opt, idx) {
-                var btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.textContent = opt;
-                btn.onclick = function() { submitAnswer(idx); };
-                grid.appendChild(btn);
-            });
-            
-            showScreen('gameScreen');
-            startTimer();
-        });
-        
-        function startTimer() {
-            clearInterval(timerInterval);
-            timerInterval = setInterval(function() {
-                timeLeft--;
-                document.getElementById('timer').textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    if (!hasAnswered) {
-                        hasAnswered = true;
-                        // Tiempo agotado = respuesta incorrecta
-                        socket.emit('submitAnswer', { roomCode: currentRoom, answerIndex: -1, timeLeft: 0 });
-                    }
-                }
-            }, 1000);
-        }
-        
-        function submitAnswer(index) {
-            if (hasAnswered) return;
-            hasAnswered = true;
-            clearInterval(timerInterval);
-            
-            var options = document.querySelectorAll('.option-btn');
-            options.forEach(function(btn) { btn.disabled = true; });
-            if (index >= 0 && options[index]) {
-                options[index].classList.add('selected');
-            }
-            
-            socket.emit('submitAnswer', { roomCode: currentRoom, answerIndex: index, timeLeft: timeLeft });
-        }
-        
-        socket.on('answerResult', function(data) {
-            var options = document.querySelectorAll('.option-btn');
-            
-            // Solo mostrar si acertó o falló - NO mostrar la correcta
-            if (data.selectedIndex >= 0 && options[data.selectedIndex]) {
-                if (data.isCorrect) {
-                    options[data.selectedIndex].classList.add('correct');
-                } else {
-                    options[data.selectedIndex].classList.add('wrong');
-                }
-            }
-            
-            if (data.lostLife) {
-                document.querySelector('.container').classList.add('shake');
-                setTimeout(function() { document.querySelector('.container').classList.remove('shake'); }, 500);
-            }
-        });
-        
-        socket.on('waitingTurn', function(data) {
-            document.getElementById('otherPlayerName').textContent = data.currentPlayerName;
-            
-            var html = '<div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 12px; margin: 20px 0;">';
-            html += '<h4 style="color: #fff; margin-bottom: 10px;">📊 Puntuaciones:</h4>';
-            var sorted = data.allPlayers.sort(function(a, b) { return b.score - a.score; });
-            sorted.forEach(function(p) {
-                var isCurrent = p.name === data.currentPlayerName;
-                html += '<div style="padding: 8px; margin: 5px 0; background: rgba(255,255,255,' + (isCurrent ? '0.2' : '0.05') + '); border-radius: 8px;">';
-                html += '<strong style="color: #fff;">' + p.name + (isCurrent ? ' 🎯' : '') + ':</strong> ';
-                html += '<span style="color: #FFD700; font-weight: 900;">' + p.score + ' pts</span>';
-                html += '</div>';
-            });
-            html += '</div>';
-            document.getElementById('waitingScores').innerHTML = html;
-            
-            showScreen('waitingTurnScreen');
-        });
-        
-        socket.on('gameOver', function(data) {
-            var html = '<div style="text-align: center; padding: 10px;">';
-            
-            if (data.gameMode === 'survival') {
-                html += '<h2 style="color: #FFD700; margin: 20px 0;">👑 ' + data.winner + ' sobrevive!</h2>';
-            } else {
-                html += '<h2 style="color: #fff; margin: 20px 0;">🏆 RANKING FINAL</h2>';
-            }
-            
-            var medals = ['🥇', '🥈', '🥉', '4️⃣'];
-            var colors = ['linear-gradient(135deg, #FFD700, #FFA500)', 'linear-gradient(135deg, #C0C0C0, #A0A0A0)', 'linear-gradient(135deg, #CD7F32, #8B4513)', 'linear-gradient(135deg, #666, #444)'];
-            
-            data.ranking.forEach(function(p, i) {
-                html += '<div style="background: ' + colors[i] + '; color: white; padding: 15px; margin: 10px; border-radius: 15px;">';
-                html += '<div style="font-size: 32px;">' + medals[i] + '</div>';
-                html += '<strong style="font-size: 20px;">' + p.name + '</strong>';
-                if (data.gameMode === 'survival') {
-                    html += '<br><span style="font-size: 16px;">' + (p.lives > 0 ? '❤️'.repeat(p.lives) : '💀') + '</span>';
-                }
-                html += '<br><span style="font-size: 24px;">' + p.score + ' pts</span>';
-                html += '</div>';
+            socket.emit('answerResult', {
+                isCorrect: isCorrect,
+                selectedIndex: answerIndex
             });
             
-            html += '</div>';
-            document.getElementById('finalScores').innerHTML = html;
-            document.getElementById('resultsTitle').textContent = data.gameMode === 'survival' ? '💀 ¡Supervivencia!' : '🏆 ¡Fin del Juego!';
-            showScreen('resultsScreen');
-        });
-        
-        socket.on('playerLeft', function(players) {
-            updatePlayersList(players);
-        });
-        
-        socket.on('connect_error', function() { showError('Error de conexión'); });
-        
-        // ===== FUNCIONES AUXILIARES =====
-        function showLives(players) {
-            var container = document.getElementById('livesDisplay');
-            container.style.display = 'flex';
-            var html = '';
-            players.forEach(function(p) {
-                html += '<div style="text-align: center; margin: 0 15px;">';
-                html += '<div style="color: #fff; font-size: 12px; margin-bottom: 5px;">' + p.name + '</div>';
-                for (var i = 0; i < 3; i++) {
-                    var lost = i >= p.lives;
-                    html += '<span class="life' + (lost ? ' lost' : '') + '">❤️</span>';
-                }
-                html += '</div>';
-            });
-            container.innerHTML = html;
-        }
-        
-        function updateLiveScoreboard(players, mode) {
-            var html = '<div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px;">';
-            players.forEach(function(p) {
-                var isMe = p.name === playerName;
-                html += '<div style="flex: 1; min-width: 100px; text-align: center;">';
-                html += '<div style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700;">' + (isMe ? '👤 ' : '👥 ') + p.name + '</div>';
-                if (mode === 'survival') {
-                    html += '<div style="font-size: 14px;">' + '❤️'.repeat(p.lives) + '🖤'.repeat(3 - p.lives) + '</div>';
-                }
-                html += '<div style="color: #FFD700; font-size: 15px; font-weight: 900;">' + p.score + ' pts</div>';
-                html += '</div>';
-            });
-            html += '</div>';
-            document.getElementById('liveScoreboard').innerHTML = html;
-        }
-        
-        function useFiftyFifty() {
-            if (fiftyFiftyUsed || hasAnswered) return;
-            fiftyFiftyUsed = true;
-            
-            document.getElementById('fiftyFiftyBtn').disabled = true;
-            document.getElementById('fiftyFiftyBtn').textContent = '✓ Usado';
-            
-            var options = document.querySelectorAll('.option-btn');
-            var correctIdx = currentQuestion.correctAnswer || 0;
-            var incorrects = [];
-            
-            for (var i = 0; i < options.length; i++) {
-                if (i !== correctIdx) incorrects.push(i);
-            }
-            
-            for (var j = 0; j < 2 && incorrects.length > 0; j++) {
-                var randIdx = Math.floor(Math.random() * incorrects.length);
-                var toHide = incorrects.splice(randIdx, 1)[0];
-                options[toHide].style.display = 'none';
-            }
-        }
-        
-        // ===== JUEGO CPU =====
-        async function startCpuGame() {
-            cpuGame = {
-                active: true,
-                questions: [],
-                currentIndex: 0,
-                playerScore: 0,
-                cpuScore: 0,
-                playerLives: 3,
-                cpuLives: 3,
-                playerCorrect: 0,
-                cpuCorrect: 0
-            };
-            fiftyFiftyUsed = false;
-            
-            try {
-                var response = await fetch('/api/questions?count=' + cpuQuestionsCount);
-                cpuGame.questions = await response.json();
-                if (cpuGame.questions.length === 0) { showError('Error cargando preguntas'); return; }
-                showCpuQuestion();
-            } catch (error) {
-                showError('Error de conexión');
-            }
-        }
-        
-        function showCpuQuestion() {
-            if (cpuMode === 'survival') {
-                if (cpuGame.playerLives <= 0) { endCpuGame('cpu'); return; }
-                if (cpuGame.cpuLives <= 0) { endCpuGame('player'); return; }
-            }
-            
-            if (cpuGame.currentIndex >= cpuGame.questions.length) { endCpuGame(); return; }
-            
-            hasAnswered = false;
-            timeLeft = 15;
-            var q = cpuGame.questions[cpuGame.currentIndex];
-            currentQuestion = q;
-            currentQuestion.correctAnswer = q.correct;
-            
-            document.getElementById('questionNumber').textContent = 'Pregunta ' + (cpuGame.currentIndex + 1) + ' de ' + cpuGame.questions.length;
-            updateCpuScoreboard();
-            
-            if (cpuMode === 'survival') { showCpuLives(); }
-            else { document.getElementById('livesDisplay').style.display = 'none'; }
-            
-            var showPowerup = cpuQuestionsCount >= 10 && !fiftyFiftyUsed;
-            document.getElementById('powerupContainer').style.display = showPowerup ? 'block' : 'none';
-            if (showPowerup) {
-                document.getElementById('fiftyFiftyBtn').disabled = false;
-                document.getElementById('fiftyFiftyBtn').textContent = '⚡ 50/50 (1 por partida)';
-            }
-            
-            document.getElementById('questionText').textContent = q.question;
-            document.getElementById('timer').textContent = timeLeft;
-            
-            var grid = document.getElementById('optionsGrid');
-            grid.innerHTML = '';
-            q.options.forEach(function(opt, idx) {
-                var btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.textContent = opt;
-                btn.onclick = function() { submitCpuAnswer(idx); };
-                grid.appendChild(btn);
-            });
-            
-            showScreen('gameScreen');
-            
-            clearInterval(timerInterval);
-            timerInterval = setInterval(function() {
-                timeLeft--;
-                document.getElementById('timer').textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    if (!hasAnswered) {
-                        hasAnswered = true;
-                        processCpuAnswer(-1);
-                    }
-                }
-            }, 1000);
-        }
-        
-        function submitCpuAnswer(index) {
-            if (hasAnswered) return;
-            hasAnswered = true;
-            clearInterval(timerInterval);
-            processCpuAnswer(index);
-        }
-        
-        function processCpuAnswer(playerAnswer) {
-            var q = cpuGame.questions[cpuGame.currentIndex];
-            var playerCorrect = playerAnswer === q.correct;
-            var cpuCorrect = Math.random() < cpuAccuracy[cpuDifficulty];
-            
-            var options = document.querySelectorAll('.option-btn');
-            options.forEach(function(btn) { btn.disabled = true; });
-            
-            if (playerAnswer >= 0 && options[playerAnswer]) {
-                options[playerAnswer].classList.add('selected');
-                options[playerAnswer].classList.add(playerCorrect ? 'correct' : 'wrong');
-            }
-            
-            if (cpuMode === 'classic') {
-                if (playerCorrect) { cpuGame.playerScore += timeLeft * 10; cpuGame.playerCorrect++; }
-                if (cpuCorrect) {
-                    var cpuTime = Math.floor(Math.random() * 8) + 5;
-                    cpuGame.cpuScore += cpuTime * 10;
-                    cpuGame.cpuCorrect++;
-                }
-            } else {
-                if (playerCorrect) { cpuGame.playerScore += 10; cpuGame.playerCorrect++; }
-                else {
-                    cpuGame.playerLives--;
-                    document.querySelector('.container').classList.add('shake');
-                    setTimeout(function() { document.querySelector('.container').classList.remove('shake'); }, 500);
+            setTimeout(() => {
+                player.answered = false;
+                room.currentPlayerIndex = (room.currentPlayerIndex + 1) % room.players.length;
+                
+                if (room.currentPlayerIndex === 0) {
+                    room.currentQuestion++;
                 }
                 
-                if (cpuCorrect) { cpuGame.cpuScore += 10; cpuGame.cpuCorrect++; }
-                else { cpuGame.cpuLives--; }
-            }
-            
-            updateCpuScoreboard();
-            if (cpuMode === 'survival') showCpuLives();
-            
-            setTimeout(function() {
-                cpuGame.currentIndex++;
-                showCpuQuestion();
+                if (room.currentQuestion >= room.totalQuestions) {
+                    endGame(roomCode);
+                } else {
+                    sendQuestion(roomCode);
+                }
             }, 2000);
-        }
-        
-        function showCpuLives() {
-            var container = document.getElementById('livesDisplay');
-            container.style.display = 'flex';
-            var diffEmoji = { 'easy': '🟢', 'medium': '🟡', 'hard': '🔴' };
             
-            var html = '<div style="text-align: center; margin: 0 15px;">';
-            html += '<div style="color: #fff; font-size: 12px; margin-bottom: 5px;">👤 ' + playerName + '</div>';
-            for (var i = 0; i < 3; i++) { html += '<span class="life' + (i >= cpuGame.playerLives ? ' lost' : '') + '">❤️</span>'; }
-            html += '</div>';
-            
-            html += '<div style="text-align: center; margin: 0 15px;">';
-            html += '<div style="color: #fff; font-size: 12px; margin-bottom: 5px;">🤖 CPU ' + diffEmoji[cpuDifficulty] + '</div>';
-            for (var i = 0; i < 3; i++) { html += '<span class="life' + (i >= cpuGame.cpuLives ? ' lost' : '') + '">❤️</span>'; }
-            html += '</div>';
-            
-            container.innerHTML = html;
-        }
-        
-        function updateCpuScoreboard() {
-            var diffEmoji = { 'easy': '🟢', 'medium': '🟡', 'hard': '🔴' };
-            var html = '<div style="display: flex; justify-content: space-around; gap: 10px;">';
-            
-            html += '<div style="flex: 1; text-align: center;">';
-            html += '<div style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700;">👤 ' + playerName + '</div>';
-            html += '<div style="color: #FFD700; font-size: 15px; font-weight: 900;">' + cpuGame.playerScore + ' pts</div>';
-            html += '</div>';
-            
-            html += '<div style="flex: 1; text-align: center;">';
-            html += '<div style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 700;">🤖 CPU ' + diffEmoji[cpuDifficulty] + '</div>';
-            html += '<div style="color: #FFD700; font-size: 15px; font-weight: 900;">' + cpuGame.cpuScore + ' pts</div>';
-            html += '</div>';
-            
-            html += '</div>';
-            document.getElementById('liveScoreboard').innerHTML = html;
-        }
-        
-        function endCpuGame(forcedWinner) {
-            cpuGame.active = false;
-            clearInterval(timerInterval);
-            
-            var winner;
-            if (forcedWinner) { winner = forcedWinner; }
-            else if (cpuMode === 'survival') {
-                if (cpuGame.playerLives > cpuGame.cpuLives) winner = 'player';
-                else if (cpuGame.cpuLives > cpuGame.playerLives) winner = 'cpu';
-                else winner = cpuGame.playerScore >= cpuGame.cpuScore ? 'player' : 'cpu';
+        } else {
+            // MODO SUPERVIVENCIA
+            if (isCorrect) {
+                player.score += 10;
             } else {
-                winner = cpuGame.playerScore >= cpuGame.cpuScore ? 'player' : 'cpu';
+                player.lives--;
             }
             
-            var diffNames = { 'easy': 'Fácil', 'medium': 'Normal', 'hard': 'Difícil' };
-            var diffEmoji = { 'easy': '🟢', 'medium': '🟡', 'hard': '🔴' };
-            var playerWins = winner === 'player';
+            socket.emit('answerResult', {
+                isCorrect: isCorrect,
+                selectedIndex: answerIndex,
+                lostLife: !isCorrect
+            });
             
-            var html = '<div style="text-align: center; padding: 10px;">';
+            const alivePlayers = room.players.filter(p => p.lives > 0);
+            const allAnswered = alivePlayers.every(p => p.answered);
             
-            if (cpuMode === 'survival') {
-                html += '<h2 style="color: ' + (playerWins ? '#4CAF50' : '#f44336') + '; margin: 20px 0;">' + (playerWins ? '🎉 ¡SOBREVIVISTE!' : '💀 La CPU sobrevivió') + '</h2>';
-            } else {
-                if (cpuGame.playerScore === cpuGame.cpuScore) html += '<h2 style="color: #fff; margin: 20px 0;">🤝 ¡EMPATE!</h2>';
-                else html += '<h2 style="color: ' + (playerWins ? '#4CAF50' : '#f44336') + '; margin: 20px 0;">' + (playerWins ? '🎉 ¡GANASTE!' : '😢 La CPU gana') + '</h2>';
+            if (allAnswered) {
+                setTimeout(() => {
+                    room.players.forEach(p => p.answered = false);
+                    room.currentQuestion++;
+                    
+                    const stillAlive = room.players.filter(p => p.lives > 0);
+                    
+                    if (stillAlive.length <= 1 || room.currentQuestion >= room.totalQuestions) {
+                        endGame(roomCode);
+                    } else {
+                        sendQuestion(roomCode);
+                    }
+                }, 2500);
             }
-            
-            html += '<p style="color: rgba(255,255,255,0.8); margin-bottom: 15px;">CPU ' + diffEmoji[cpuDifficulty] + ' ' + diffNames[cpuDifficulty] + '</p>';
-            
-            var playerBg = playerWins ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'linear-gradient(135deg, #C0C0C0, #808080)';
-            html += '<div style="background: ' + playerBg + '; color: white; padding: 15px; margin: 10px; border-radius: 15px;">';
-            html += '<div style="font-size: 32px;">' + (playerWins ? '🥇' : '🥈') + '</div>';
-            html += '<strong style="font-size: 20px;">👤 ' + playerName + '</strong><br>';
-            if (cpuMode === 'survival') { html += '<span style="font-size: 18px;">' + '❤️'.repeat(cpuGame.playerLives) + '🖤'.repeat(3 - cpuGame.playerLives) + '</span><br>'; }
-            html += '<span style="font-size: 24px;">' + cpuGame.playerScore + ' pts</span>';
-            html += '</div>';
-            
-            var cpuBg = !playerWins ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'linear-gradient(135deg, #C0C0C0, #808080)';
-            html += '<div style="background: ' + cpuBg + '; color: white; padding: 15px; margin: 10px; border-radius: 15px;">';
-            html += '<div style="font-size: 32px;">' + (!playerWins ? '🥇' : '🥈') + '</div>';
-            html += '<strong style="font-size: 20px;">🤖 CPU ' + diffEmoji[cpuDifficulty] + '</strong><br>';
-            if (cpuMode === 'survival') { html += '<span style="font-size: 18px;">' + '❤️'.repeat(cpuGame.cpuLives) + '🖤'.repeat(3 - cpuGame.cpuLives) + '</span><br>'; }
-            html += '<span style="font-size: 24px;">' + cpuGame.cpuScore + ' pts</span>';
-            html += '</div>';
-            
-            html += '</div>';
-            
-            document.getElementById('finalScores').innerHTML = html;
-            document.getElementById('resultsTitle').textContent = cpuMode === 'survival' ? '💀 ¡Supervivencia!' : '🏆 ¡Fin del Juego!';
-            showScreen('resultsScreen');
         }
-    </script>
-</body>
-</html>
+    });
+
+    socket.on('leaveRoom', (roomCode) => {
+        leaveRoom(socket, roomCode);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Desconectado:', socket.id);
+        for (let roomCode in rooms) {
+            leaveRoom(socket, roomCode);
+        }
+    });
+});
+
+function leaveRoom(socket, roomCode) {
+    const room = rooms[roomCode];
+    if (!room) return;
+    
+    const playerIndex = room.players.findIndex(p => p.id === socket.id);
+    if (playerIndex === -1) return;
+    
+    room.players.splice(playerIndex, 1);
+    
+    if (room.players.length === 0) {
+        delete rooms[roomCode];
+    } else {
+        if (room.currentPlayerIndex >= room.players.length) {
+            room.currentPlayerIndex = 0;
+        }
+        io.to(roomCode).emit('playerLeft', room.players);
+    }
+}
+
+function sendQuestion(roomCode) {
+    const room = rooms[roomCode];
+    if (!room) return;
+    
+    const question = room.questions[room.currentQuestion];
+    if (!question) {
+        endGame(roomCode);
+        return;
+    }
+    
+    if (room.gameMode === 'classic') {
+        const currentPlayer = room.players[room.currentPlayerIndex];
+        
+        io.to(currentPlayer.id).emit('newQuestion', {
+            question: question.question,
+            options: question.options,
+            questionNumber: room.currentQuestion + 1,
+            totalQuestions: room.totalQuestions,
+            gameMode: 'classic',
+            allPlayers: room.players.map(p => ({ name: p.name, score: p.score })),
+            correctAnswer: question.correct
+        });
+        
+        room.players.forEach((p, i) => {
+            if (i !== room.currentPlayerIndex) {
+                io.to(p.id).emit('waitingTurn', {
+                    currentPlayerName: currentPlayer.name,
+                    allPlayers: room.players.map(pl => ({ name: pl.name, score: pl.score }))
+                });
+            }
+        });
+    } else {
+        const alivePlayers = room.players.filter(p => p.lives > 0);
+        
+        alivePlayers.forEach(p => {
+            io.to(p.id).emit('newQuestion', {
+                question: question.question,
+                options: question.options,
+                questionNumber: room.currentQuestion + 1,
+                totalQuestions: room.totalQuestions,
+                gameMode: 'survival',
+                myLives: p.lives,
+                allPlayers: room.players.map(pl => ({ name: pl.name, score: pl.score, lives: pl.lives })),
+                correctAnswer: question.correct
+            });
+        });
+    }
+}
+
+function endGame(roomCode) {
+    const room = rooms[roomCode];
+    if (!room) return;
+    
+    let ranking;
+    if (room.gameMode === 'survival') {
+        ranking = [...room.players].sort((a, b) => {
+            if (b.lives !== a.lives) return b.lives - a.lives;
+            return b.score - a.score;
+        });
+    } else {
+        ranking = [...room.players].sort((a, b) => b.score - a.score);
+    }
+    
+    io.to(roomCode).emit('gameOver', {
+        ranking: ranking.map(p => ({ name: p.name, score: p.score, lives: p.lives })),
+        winner: ranking[0].name,
+        gameMode: room.gameMode
+    });
+    
+    delete rooms[roomCode];
+}
+
+function generateRoomCode() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+(async () => {
+    console.log('Iniciando Trivial Kapuchi...');
+    await initializeQuestions();
+    
+    server.listen(PORT, () => {
+        console.log('Servidor en puerto ' + PORT);
+    });
+})();
